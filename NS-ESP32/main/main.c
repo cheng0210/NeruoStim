@@ -8,7 +8,7 @@
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
 
-#define DEVICE_NAME "MY BLE DEVICE"
+#define DEVICE_NAME "ESP32"
 uint8_t ble_addr_type;
 void ble_app_advertise(void);
 
@@ -113,9 +113,8 @@ void app_main(void)
     ble_svc_gap_init();
     ble_svc_gatt_init();
 
-    ble_gatts_count_cfg(gat_svcs);
     ble_gatts_add_svcs(gat_svcs);
-    ESP_LOGI("GATT", "GATT SVCS SETTED");
+    ble_gatts_count_cfg(gat_svcs);
 
 
     ble_hs_cfg.sync_cb = ble_app_on_sync;
