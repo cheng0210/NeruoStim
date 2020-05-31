@@ -10,10 +10,14 @@
 #include "host/ble_hs.h"
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
+#include <esp32/rom/ets_sys.h>
+#include <sys/time.h>
 
 #define DEVICE_NAME "NeuroStimulator"
 
 uint8_t BATTERY_LEVEL;
 TickType_t BATTERY_UPDATE_TIME_INTERVAL;//in millisecond
+
+void delay_test();
 
 #endif

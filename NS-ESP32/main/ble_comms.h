@@ -42,7 +42,7 @@ uint8_t ble_addr_type;
 /*
  * a timer handler which is used to update battery level
  */
-static xTimerHandle battery_update_timer_handler;
+xTimerHandle battery_update_timer_handler;
 
 
 /*
