@@ -9,4 +9,9 @@ device_info:
     local_time
 battery_info:
     battery_level
-
+stimulation_commands:
+    pulse_one
+    inter_pulse_delay
+    pulse_two
+    inter_stim_delay
+    stimulation_duration
