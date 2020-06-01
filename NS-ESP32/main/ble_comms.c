@@ -32,16 +32,38 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
          {.uuid = BLE_UUID128_DECLARE(0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff),
           .flags = BLE_GATT_CHR_F_WRITE,
           .access_cb = device_write},
-         {0}}},
-    {.type = BLE_GATT_SVC_TYPE_PRIMARY,
-     .uuid = BLE_UUID16_DECLARE(BATTRY_SERVICE),
-     .characteristics = (struct ble_gatt_chr_def[]){
-         {.uuid = BLE_UUID16_DECLARE(BATTRY_LEVEL_CHAR),
-          .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
-          .access_cb = battry_level, 
-          .val_handle = &batt_char_attr_hdl},
-        {0}}},
-    {0}};
+         {0}
+        }
+    },
+    // {.type = BLE_GATT_SVC_TYPE_PRIMARY,
+    //  .uuid = BLE_UUID128_DECLARE(STIMULATION_COMMAND_SERVICE),
+    //  .characteristics = (struct ble_gatt_chr_def[]){
+    //      {
+    //         .uuid = BLE_UUID128_DECLARE(PULSE_ONE),
+    //         .flags = BLE_GATT_CHR_F_WRITE,
+    //         .access_cb = device_info
+    //       },
+    //     {
+    //         .uuid = BLE_UUID128_DECLARE(PULSE_TWO),
+    //         .flags = BLE_GATT_CHR_F_WRITE,
+    //         .access_cb = device_info
+    //     },
+    //      {0}
+    //     }
+    // },
+    // {
+    //     .type = BLE_GATT_SVC_TYPE_PRIMARY,
+    //     .uuid = BLE_UUID16_DECLARE(BATTRY_SERVICE),
+    //     .characteristics = (struct ble_gatt_chr_def[]){
+    //         {.uuid = BLE_UUID16_DECLARE(BATTRY_LEVEL_CHAR),
+    //         .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+    //         .access_cb = battry_level,
+    //         .val_handle = &batt_char_attr_hdl},
+    //         {0}
+    //     }
+    // },
+    {0}
+    };
 
 static int ble_gap_event(struct ble_gap_event *event, void *arg)
 {
