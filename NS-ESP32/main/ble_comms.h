@@ -54,7 +54,7 @@ xTimerHandle battery_update_timer_handler;
 /*
  * functions relate to bluetooth comms
  */
-void battery_level_notify(); //todo
+//void battery_level_notify(); //todo
 void ble_app_advertise(void);
 void ble_init(void);
 
