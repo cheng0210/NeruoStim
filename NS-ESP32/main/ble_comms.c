@@ -1,21 +1,90 @@
 #include "ble_comms.h"
 
-
-static int device_write(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+static int manufacturer_name(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
-    printf("incoming message: %.*s\n", ctxt->om->om_len, ctxt->om->om_data);
+    os_mbuf_append(ctxt->om, "ESPRESSIF SYSTEMS (SHANGHAI) CO., LTD.", strlen("ESPRESSIF SYSTEMS (SHANGHAI) CO., LTD."));
     return 0;
 }
 
-static int device_info(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+static int firmware_revision(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
-    os_mbuf_append(ctxt->om, "ESPRESSIF SYSTEMS (SHANGHAI) CO., LTD.", strlen("ESPRESSIF SYSTEMS (SHANGHAI) CO., LTD."));
+    os_mbuf_append(ctxt->om, "V0.1", strlen("V0.1"));
+    return 0;
+}
+
+static int hardware_revision(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    os_mbuf_append(ctxt->om, "ESP32 REV1", strlen("ESP32 REV1"));
+    return 0;
+}
+
+static int software_revision(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    os_mbuf_append(ctxt->om, "ESP-IDF V4.0.1", strlen("ESP-IDF V4.0.1"));
+    return 0;
+}
+
+static int channel_number(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    os_mbuf_append(ctxt->om,&CHANNEL_NUM,sizeof(CHANNEL_NUM));
+    return 0;
+}
+
+static int maximum_frequency(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    os_mbuf_append(ctxt->om, &MAX_FREQ, sizeof(MAX_FREQ));
+    return 0;
+}
+
+static int ota_support(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    os_mbuf_append(ctxt->om,"No", strlen("No"));
     return 0;
 }
 
 static int battry_level(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     os_mbuf_append(ctxt->om, &BATTERY_LEVEL, sizeof(BATTERY_LEVEL));
+    return 0;
+}
+
+static int set_phase_one(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    printf("setting phase one time as ");
+    PHASE_ONE_TIME = atoi((char *)ctxt->om->om_data);
+    printf("%d microseconds\n", PHASE_ONE_TIME);
+    return 0;
+}
+
+static int read_phase_one(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char buffer[8];
+    sprintf(buffer, "%d", PHASE_ONE_TIME);
+    os_mbuf_append(ctxt->om, &buffer[0], strlen(buffer));
+    return 0;
+}
+
+static int set_phase_two(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    printf("setting phase two time as ");
+    PHASE_TWO_TIME = atoi((char *)ctxt->om->om_data);
+    printf("%d microseconds\n", PHASE_TWO_TIME);
+    return 0;
+}
+
+static int read_phase_two(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char buffer[8];
+    sprintf(buffer, "%d", PHASE_TWO_TIME);
+    os_mbuf_append(ctxt->om, &buffer[0], strlen(buffer));
+    return 0;
+}
+
+static int set_stim_amp(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    printf("setting stim amp as ");
+    STIM_AMP = atoi((char *)ctxt->om->om_data);
+    printf("%d uA\n", STIM_AMP);
     return 0;
 }
 
@@ -28,19 +97,53 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
      .characteristics = (struct ble_gatt_chr_def[]){
          {.uuid = BLE_UUID16_DECLARE(MANUFACTURER_NAME_CHAR),
           .flags = BLE_GATT_CHR_F_READ,
-          .access_cb = device_info},
-         {.uuid = BLE_UUID128_DECLARE(0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff),
-          .flags = BLE_GATT_CHR_F_WRITE,
-          .access_cb = device_write},
+          .access_cb = manufacturer_name},
+         {.uuid = BLE_UUID16_DECLARE(FIRMWARE_REVISION_CHAR),
+          .flags = BLE_GATT_CHR_F_READ,
+          .access_cb = firmware_revision},
+         {.uuid = BLE_UUID16_DECLARE(HARDWARE_REVISION_CHAR),
+          .flags = BLE_GATT_CHR_F_READ,
+          .access_cb = hardware_revision},
+         {.uuid = BLE_UUID16_DECLARE(SOFTWARE_REVISION_CHAR),
+          .flags = BLE_GATT_CHR_F_READ,
+          .access_cb = software_revision},
+         {.uuid = BLE_UUID128_DECLARE(CHANNEL_NUM_CHAR),
+          .flags = BLE_GATT_CHR_F_READ,
+          .access_cb = channel_number},
+         {.uuid = BLE_UUID128_DECLARE(MAX_FREQ_CHAR),
+          .flags = BLE_GATT_CHR_F_READ,
+          .access_cb = maximum_frequency},
+         {.uuid = BLE_UUID128_DECLARE(OTA_SUPPORT_CHAR),
+          .flags = BLE_GATT_CHR_F_READ,
+          .access_cb = ota_support},
          {0}}},
-    {.type = BLE_GATT_SVC_TYPE_PRIMARY,
-     .uuid = BLE_UUID16_DECLARE(BATTRY_SERVICE),
+    {.type = BLE_GATT_SVC_TYPE_PRIMARY, 
+     .uuid = BLE_UUID16_DECLARE(BATTRY_SERVICE), 
      .characteristics = (struct ble_gatt_chr_def[]){
          {.uuid = BLE_UUID16_DECLARE(BATTRY_LEVEL_CHAR),
           .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
           .access_cb = battry_level, 
           .val_handle = &batt_char_attr_hdl},
-        {0}}},
+         {0}}},
+    {.type = BLE_GATT_SVC_TYPE_PRIMARY,
+     .uuid = BLE_UUID128_DECLARE(STIMULATION_COMMAND_SERVICE),
+     .characteristics = (struct ble_gatt_chr_def[]){
+         {.uuid = BLE_UUID128_DECLARE(PHASE_ONE_WRITE_CHAR),
+          .flags = BLE_GATT_CHR_F_WRITE,
+          .access_cb = set_phase_one},
+         {.uuid = BLE_UUID128_DECLARE(PHASE_ONE_READ_CHAR),
+          .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+          .access_cb = read_phase_one},
+         {.uuid = BLE_UUID128_DECLARE(PHASE_TWO_WRITE_CHAR),
+          .flags = BLE_GATT_CHR_F_WRITE,
+          .access_cb = set_phase_two},
+         {.uuid = BLE_UUID128_DECLARE(PHASE_ONE_READ_CHAR),
+          .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+          .access_cb = read_phase_two},
+         {.uuid = BLE_UUID128_DECLARE(STIM_AMP_WRITE_CHAR),
+          .flags = BLE_GATT_CHR_F_WRITE,
+          .access_cb = set_stim_amp},
+         {0}}},
     {0}};
 
 static int ble_gap_event(struct ble_gap_event *event, void *arg)
@@ -110,7 +213,6 @@ void host_task(void *param)
 {
     nimble_port_run();
 }
-
 
 void ble_init(void)
 {

@@ -15,8 +15,23 @@
 
 #define DEVICE_NAME "NeuroStimulator"
 
+uint8_t CHANNEL_NUM;
+uint32_t MAX_FREQ;
+
 uint8_t BATTERY_LEVEL;
 TickType_t BATTERY_UPDATE_TIME_INTERVAL;//in millisecond
+
+uint16_t STIM_AMP;
+uint32_t PHASE_ONE_TIME;
+uint32_t PHASE_TWO_TIME;
+uint32_t INTER_PHASE_GAP;
+uint32_t INTER_STIM_DELAY;
+uint32_t PULSE_PERIOD;
+uint32_t STIM_DURATION;
+
+
+
+
 
 void delay_test();
 

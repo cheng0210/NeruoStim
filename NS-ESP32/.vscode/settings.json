@@ -26,7 +26,7 @@
       "priority": 4
     }
   ],
-  "idf.port": "/dev/cu.usbserial-145420",
+  "idf.port": "/dev/cu.usbserial-144420",
   "idf.portWin": "COM4",
   "C_Cpp.errorSquiggles": "Disabled",
   "files.associations": {

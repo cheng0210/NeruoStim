@@ -4,7 +4,7 @@ device_info:
     firmware_revision
     channel_numbers
     max_stim_frequency
-    minimum_software_version
+    //minimum_software_version
     ota_support
     local_time
 battery_info:
