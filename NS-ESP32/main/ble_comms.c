@@ -55,40 +55,57 @@ static int battry_level(uint16_t conn_handle, uint16_t attr_handle, struct ble_g
 static int set_phase_one(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     printf("setting phase one time as ");
-    PHASE_ONE_TIME = atoi((char *)ctxt->om->om_data);
+    char buffer[32];
+    memcpy(buffer,ctxt->om->om_data,ctxt->om->om_len);
+    PHASE_ONE_TIME = atoi(buffer);
     printf("%d microseconds\n", PHASE_ONE_TIME);
+    ble_gattc_notify_custom(conn_hdl, phase_one_char_attr_hdl, ctxt->om);
     return 0;
 }
 
 static int read_phase_one(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
-    char buffer[8];
-    sprintf(buffer, "%d", PHASE_ONE_TIME);
-    os_mbuf_append(ctxt->om, &buffer[0], strlen(buffer));
+    char buffer[32];
+    snprintf(buffer,32,"%d",PHASE_ONE_TIME);
+    os_mbuf_append(ctxt->om, buffer, strlen(buffer));
     return 0;
 }
 
 static int set_phase_two(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     printf("setting phase two time as ");
-    PHASE_TWO_TIME = atoi((char *)ctxt->om->om_data);
+    char buffer[32];
+    memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
+    PHASE_TWO_TIME = atoi(buffer);
     printf("%d microseconds\n", PHASE_TWO_TIME);
+    ble_gattc_notify_custom(conn_hdl, phase_two_char_attr_hdl, ctxt->om);
     return 0;
 }
 
 static int read_phase_two(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
-    char buffer[8];
-    sprintf(buffer, "%d", PHASE_TWO_TIME);
-    os_mbuf_append(ctxt->om, &buffer[0], strlen(buffer));
+    char buffer[32];
+    snprintf(buffer,32, "%d", PHASE_TWO_TIME);
+    os_mbuf_append(ctxt->om, buffer, strlen(buffer));
     return 0;
 }
 
 static int set_stim_amp(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     printf("setting stim amp as ");
-    STIM_AMP = atoi((char *)ctxt->om->om_data);
+    char buffer[32];
+    memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
+    STIM_AMP = atoi(buffer);
     printf("%d uA\n", STIM_AMP);
+    ble_gattc_notify_custom(conn_hdl, stim_amp_char_attr_hdl, ctxt->om);
+    return 0;
+}
+
+static int read_stim_amp(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char buffer[32];
+    snprintf(buffer, 32, "%d", STIM_AMP);
+    os_mbuf_append(ctxt->om, buffer, strlen(buffer));
     return 0;
 }
 
@@ -137,16 +154,22 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
           .access_cb = set_phase_one},
          {.uuid = BLE_UUID128_DECLARE(PHASE_ONE_READ_CHAR),
           .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
-          .access_cb = read_phase_one},
+          .access_cb = read_phase_one,
+          .val_handle = &phase_one_char_attr_hdl},
          {.uuid = BLE_UUID128_DECLARE(PHASE_TWO_WRITE_CHAR),
           .flags = BLE_GATT_CHR_F_WRITE,
           .access_cb = set_phase_two},
-         {.uuid = BLE_UUID128_DECLARE(PHASE_ONE_READ_CHAR),
+         {.uuid = BLE_UUID128_DECLARE(PHASE_TWO_READ_CHAR),
           .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
-          .access_cb = read_phase_two},
+          .access_cb = read_phase_two,
+          .val_handle = &phase_two_char_attr_hdl},
          {.uuid = BLE_UUID128_DECLARE(STIM_AMP_WRITE_CHAR),
           .flags = BLE_GATT_CHR_F_WRITE,
           .access_cb = set_stim_amp},
+         {.uuid = BLE_UUID128_DECLARE(STIM_AMP_READ_CHAR),
+          .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+          .access_cb = read_stim_amp,
+          .val_handle = &stim_amp_char_attr_hdl},
          {0}}},
     {0}};
 

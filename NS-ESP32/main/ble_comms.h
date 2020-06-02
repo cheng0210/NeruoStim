@@ -47,9 +47,17 @@
 uint16_t conn_hdl;
 
 /*
- * attribute handler of battery characteristic
+ * attribute handlers
  */
 uint16_t batt_char_attr_hdl;
+uint16_t phase_one_char_attr_hdl;
+uint16_t phase_two_char_attr_hdl; 
+uint16_t stim_amp_char_attr_hdl;
+uint16_t inter_phase_gap_char_attr_hdl;
+uint16_t inter_stim_delay_char_attr_hdl;
+uint16_t stim_duration_char_attr_hdl;
+uint16_t pulse_period_char_attr_hdl;
+
 
 /*
  *  best address type configured by ble_hs_id_infer_auto

@@ -2,6 +2,7 @@ device_info:
     manufacturer_name
     hardware_revision
     firmware_revision
+    software_revision
     channel_numbers
     max_stim_frequency
     //minimum_software_version
@@ -9,4 +10,9 @@ device_info:
     local_time
 battery_info:
     battery_level
-
+stimulation_commands:
+    pulse_one
+    inter_pulse_delay
+    pulse_two
+    inter_stim_delay
+    stimulation_duration
