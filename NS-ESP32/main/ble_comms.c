@@ -26,13 +26,17 @@ static int software_revision(uint16_t conn_handle, uint16_t attr_handle, struct 
 
 static int channel_number(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
-    os_mbuf_append(ctxt->om,&CHANNEL_NUM,sizeof(CHANNEL_NUM));
+    char buffer[8];
+    sprintf(buffer, "%d", CHANNEL_NUM);
+    os_mbuf_append(ctxt->om,&buffer[0],strlen(buffer));
     return 0;
 }
 
 static int maximum_frequency(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
-    os_mbuf_append(ctxt->om, &MAX_FREQ, sizeof(MAX_FREQ));
+    char buffer[8];
+    sprintf(buffer, "%d", MAX_FREQ);
+    os_mbuf_append(ctxt->om, &buffer[0], strlen(buffer));
     return 0;
 }
 
