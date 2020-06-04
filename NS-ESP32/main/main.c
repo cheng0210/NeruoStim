@@ -32,7 +32,7 @@ void delay_test()
         printf("***********************************************************\n");
         printf("%s and %s\n",ANODIC_CATHODIC?"CATHODIC":"ANODIC",STIM_TYPE?"BURST":"UNIFORM");
         printf("stim amp : %d   phase one time : %d    phase two time: %d\n",STIM_AMP,PHASE_ONE_TIME,PHASE_TWO_TIME);
-        printf("inter phase gap : %d   inter stim delay : %d  stim duration : %d\n",INTER_PHASE_GAP,INTER_STIM_DELAY,STIM_DURATION);
+        printf("inter phase gap : %d   inter stim delay : %d  stim duration : %u\n",INTER_PHASE_GAP,INTER_STIM_DELAY,STIM_DURATION);
         printf("burst time : %d    inter burst delay : %d\n",BURST_TIME,INTER_BURST_DELAY);
         vTaskDelay(30000/ portTICK_PERIOD_MS);
     }
