@@ -147,6 +147,101 @@ static int read_inter_stim(uint16_t conn_handle, uint16_t attr_handle, struct bl
     return 0;
 }
 
+static int set_stim_duration(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    printf("setting stim duration as ");
+    char buffer[32];
+    memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
+    STIM_DURATION = atoi(buffer);
+    printf("%d us\n", STIM_DURATION);
+    ble_gattc_notify_custom(conn_hdl, stim_duration_char_attr_hdl, ctxt->om);
+    return 0;
+}
+
+static int read_stim_duration(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char buffer[32];
+    snprintf(buffer, 32, "%d", STIM_DURATION);
+    os_mbuf_append(ctxt->om, buffer, strlen(buffer));
+    return 0;
+}
+
+static int set_acf(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    printf("setting ");
+    char buffer[32];
+    memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
+    ANODIC_CATHODIC = atoi(buffer);
+    printf("%s \n", ANODIC_CATHODIC?"CATHODIC":"ANODIC");
+    ble_gattc_notify_custom(conn_hdl, anodic_cathodic_char_attr_hdl, ctxt->om);
+    return 0;
+}
+
+static int read_acf(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char buffer[32];
+    snprintf(buffer, 32, "%d", ANODIC_CATHODIC);
+    os_mbuf_append(ctxt->om, buffer, strlen(buffer));
+    return 0;
+}
+
+static int set_stim_type(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    printf("setting stim type as ");
+    char buffer[32];
+    memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
+    STIM_TYPE = atoi(buffer);
+    printf("%s\n", STIM_TYPE?"BURST":"UNIFORM");
+    ble_gattc_notify_custom(conn_hdl, STIM_TYPE, ctxt->om);
+    return 0;
+}
+
+static int read_stim_type(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char buffer[32];
+    snprintf(buffer, 32, "%d", STIM_TYPE);
+    os_mbuf_append(ctxt->om, buffer, strlen(buffer));
+    return 0;
+}
+
+static int set_burst_time(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    printf("setting burst time as ");
+    char buffer[32];
+    memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
+    BURST_TIME = atoi(buffer);
+    printf("%d us\n", BURST_TIME);
+    ble_gattc_notify_custom(conn_hdl, burst_time_char_attr_hdl, ctxt->om);
+    return 0;
+}
+
+static int read_burst_time(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char buffer[32];
+    snprintf(buffer, 32, "%d", BURST_TIME);
+    os_mbuf_append(ctxt->om, buffer, strlen(buffer));
+    return 0;
+}
+
+static int set_inter_burst(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    printf("setting inter burst delay as ");
+    char buffer[32];
+    memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
+    INTER_BURST_DELAY = atoi(buffer);
+    printf("%d us\n", INTER_BURST_DELAY);
+    ble_gattc_notify_custom(conn_hdl, inter_burst_delay_char_attr_hdl, ctxt->om);
+    return 0;
+}
+
+static int read_inter_burst(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char buffer[32];
+    snprintf(buffer, 32, "%d", INTER_BURST_DELAY);
+    os_mbuf_append(ctxt->om, buffer, strlen(buffer));
+    return 0;
+}
+
 /*
  * Add BLE services/characteristics/descriptors here
  */
@@ -222,6 +317,41 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
           .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
           .access_cb = read_inter_stim,
           .val_handle = &inter_stim_delay_char_attr_hdl},
+         {.uuid = BLE_UUID128_DECLARE(STIMULATION_DURATION_WRITE_CHAR),
+          .flags = BLE_GATT_CHR_F_WRITE,
+          .access_cb = set_stim_duration},
+         {.uuid = BLE_UUID128_DECLARE(STIMULATION_DURATION_READ_CHAR),
+          .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+          .access_cb = read_stim_duration,
+          .val_handle = &stim_duration_char_attr_hdl},
+         {.uuid = BLE_UUID128_DECLARE(ANODIC_CATHODIC_FIRST_WRITE_CHAR),
+          .flags = BLE_GATT_CHR_F_WRITE,
+          .access_cb = set_acf},
+         {.uuid = BLE_UUID128_DECLARE(ANODIC_CATHODIC_FIRST_READ_CHAR),
+          .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+          .access_cb = read_acf,
+          .val_handle = &anodic_cathodic_char_attr_hdl},
+         {.uuid = BLE_UUID128_DECLARE(STIM_TYPE_WRITE_CHAR),
+          .flags = BLE_GATT_CHR_F_WRITE,
+          .access_cb = set_stim_type},
+         {.uuid = BLE_UUID128_DECLARE(STIM_TYPE_READ_CHAR),
+          .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+          .access_cb = read_stim_type,
+          .val_handle = &stim_type_char_attr_hdl},
+         {.uuid = BLE_UUID128_DECLARE(BURST_TIME_WRITE_CHAR),
+          .flags = BLE_GATT_CHR_F_WRITE,
+          .access_cb = set_burst_time},
+         {.uuid = BLE_UUID128_DECLARE(BURST_TIME_READ_CHAR),
+          .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+          .access_cb = read_burst_time,
+          .val_handle = &burst_time_char_attr_hdl},
+         {.uuid = BLE_UUID128_DECLARE(INTER_BURST_DELAY_WRITE_CHAR),
+          .flags = BLE_GATT_CHR_F_WRITE,
+          .access_cb = set_inter_burst},
+         {.uuid = BLE_UUID128_DECLARE(INTER_BURST_DELAY_READ_CHAR),
+          .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+          .access_cb = read_inter_burst,
+          .val_handle = &inter_burst_delay_char_attr_hdl},
          {0}}},
     {0}};
 

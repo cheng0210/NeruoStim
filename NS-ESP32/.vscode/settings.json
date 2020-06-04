@@ -30,6 +30,7 @@
   "idf.portWin": "COM4",
   "C_Cpp.errorSquiggles": "Disabled",
   "files.associations": {
-    "condition_variable": "cpp"
+    "condition_variable": "cpp",
+    "complex": "c"
   }
 }
