@@ -16,3 +16,4 @@ stimulation_commands:
     pulse_two
     inter_stim_delay
     stimulation_duration
+    stim_amp

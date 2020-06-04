@@ -109,6 +109,44 @@ static int read_stim_amp(uint16_t conn_handle, uint16_t attr_handle, struct ble_
     return 0;
 }
 
+static int set_inter_phase(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    printf("setting interphase delay as ");
+    char buffer[32];
+    memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
+    INTER_PHASE_GAP = atoi(buffer);
+    printf("%d us\n", INTER_PHASE_GAP);
+    ble_gattc_notify_custom(conn_hdl, inter_phase_gap_char_attr_hdl, ctxt->om);
+    return 0;
+}
+
+static int read_inter_phase(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char buffer[32];
+    snprintf(buffer, 32, "%d", INTER_PHASE_GAP);
+    os_mbuf_append(ctxt->om, buffer, strlen(buffer));
+    return 0;
+}
+
+static int set_inter_stim(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    printf("setting interstim delay as ");
+    char buffer[32];
+    memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
+    INTER_STIM_DELAY = atoi(buffer);
+    printf("%d us\n", INTER_STIM_DELAY);
+    ble_gattc_notify_custom(conn_hdl, inter_stim_delay_char_attr_hdl, ctxt->om);
+    return 0;
+}
+
+static int read_inter_stim(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char buffer[32];
+    snprintf(buffer, 32, "%d", INTER_STIM_DELAY);
+    os_mbuf_append(ctxt->om, buffer, strlen(buffer));
+    return 0;
+}
+
 /*
  * Add BLE services/characteristics/descriptors here
  */
@@ -170,6 +208,20 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
           .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
           .access_cb = read_stim_amp,
           .val_handle = &stim_amp_char_attr_hdl},
+         {.uuid = BLE_UUID128_DECLARE(INTER_PHASE_GAP_WRITE_CHAR),
+          .flags = BLE_GATT_CHR_F_WRITE,
+          .access_cb = set_inter_phase},
+         {.uuid = BLE_UUID128_DECLARE(INTER_PHASE_GAP_READ_CHAR),
+          .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+          .access_cb = read_inter_phase,
+          .val_handle = &inter_phase_gap_char_attr_hdl},
+         {.uuid = BLE_UUID128_DECLARE(INTER_STIM_DELAY_WRITE_CHAR),
+          .flags = BLE_GATT_CHR_F_WRITE,
+          .access_cb = set_inter_stim},
+         {.uuid = BLE_UUID128_DECLARE(INTER_STIM_DELAY_READ_CHAR),
+          .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+          .access_cb = read_inter_stim,
+          .val_handle = &inter_stim_delay_char_attr_hdl},
          {0}}},
     {0}};
 

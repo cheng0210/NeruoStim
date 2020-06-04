@@ -69,7 +69,6 @@ uint8_t ble_addr_type;
  */
 xTimerHandle battery_update_timer_handler;
 
-
 /*
  * functions relate to bluetooth comms
  */ 
