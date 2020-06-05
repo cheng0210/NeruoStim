@@ -1,5 +1,7 @@
 #include "ble_comms.h"
-
+/*
+ * call back functions for bluetooth access
+ */
 static int manufacturer_name(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     os_mbuf_append(ctxt->om, "ESPRESSIF SYSTEMS (SHANGHAI) CO., LTD.", strlen("ESPRESSIF SYSTEMS (SHANGHAI) CO., LTD."));
