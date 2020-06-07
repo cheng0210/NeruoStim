@@ -11,7 +11,7 @@ void app_main(){ // runs in cpu0
     INTER_STIM_DELAY = 0;//default 0us
     ANODIC_CATHODIC = 1;//default cathodic
     STIM_TYPE = 0;//default uniform stim
-    STIM_DURATION = 0xffffffff;//default is forever
+    STIM_DURATION = 0xffffffff;//default is forever in ms
     BURST_TIME = 0;
     INTER_BURST_DELAY = 0;
     
@@ -20,20 +20,41 @@ void app_main(){ // runs in cpu0
 }
 void delay_test()
 {
-    while (1)
+    dac_output_enable(DAC_CHANNEL_1);
+    /* while (1)
     {
         //there is a ~16us delay in gettimeofday
-        /* gettimeofday(&tv1, NULL);
+        gettimeofday(&tv1, NULL);
         ets_delay_us(i);//this delay function is very accurate
         gettimeofday(&tv2, NULL);
         printf("delay %ld us\n", (tv2.tv_usec - tv1.tv_usec));//delay i+16 us
         i++;
-        vTaskDelay(1000 / portTICK_PERIOD_MS); */
+        vTaskDelay(1000 / portTICK_PERIOD_MS); 
         printf("***********************************************************\n");
-        printf("%s and %s\n",ANODIC_CATHODIC?"CATHODIC":"ANODIC",STIM_TYPE?"BURST":"UNIFORM");
-        printf("stim amp : %d   phase one time : %d    phase two time: %d\n",STIM_AMP,PHASE_ONE_TIME,PHASE_TWO_TIME);
-        printf("inter phase gap : %d   inter stim delay : %d  stim duration : %u\n",INTER_PHASE_GAP,INTER_STIM_DELAY,STIM_DURATION);
-        printf("burst time : %d    inter burst delay : %d\n",BURST_TIME,INTER_BURST_DELAY);
-        vTaskDelay(30000/ portTICK_PERIOD_MS);
+        printf("%s and %s\n", ANODIC_CATHODIC ? "CATHODIC" : "ANODIC", STIM_TYPE ? "BURST" : "UNIFORM");
+        printf("stim amp : %u   phase one time : %u    phase two time: %u\n", STIM_AMP, PHASE_ONE_TIME, PHASE_TWO_TIME);
+        printf("inter phase gap : %u   inter stim delay : %u  stim duration : %u\n", INTER_PHASE_GAP, INTER_STIM_DELAY, STIM_DURATION);
+        printf("burst time : %u    inter burst delay : %u\n", BURST_TIME, INTER_BURST_DELAY);
+        i = 0;
+        while(i<255){
+            dac_output_voltage(DAC_CHANNEL_1, i);
+            dac_output_voltage(DAC_CHANNEL_2, 0);
+            float out = ((float) i)/255 * 3.1 + 0.08;
+            printf("dac out is %f\n",out);
+            vTaskDelay(5000 / portTICK_PERIOD_MS);
+            i = i + 1;
+        }
+           
+    } */
+    char i;
+    int x = 0;
+    while(1){
+        i = getchar();
+        if(i=='\n'&&x<256){
+            dac_output_voltage(DAC_CHANNEL_1, x);
+            printf("x is %d\n",x);
+            x++;
+        }
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 }
