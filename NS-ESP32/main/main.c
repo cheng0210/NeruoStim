@@ -9,7 +9,7 @@ void app_main(){ // runs in cpu0
     STIM_AMP = 0;// default 0uA
     INTER_PHASE_GAP = 0;//default 0us
     INTER_STIM_DELAY = 0;//default 0us
-    ANODIC_CATHODIC = 0;//default anodic
+    ANODIC_CATHODIC = 1;//default cathodic
     STIM_TYPE = 0;//default uniform stim
     STIM_DURATION = 0xffffffff;//default is forever
     BURST_TIME = 0;
