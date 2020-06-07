@@ -12,6 +12,8 @@
 #include "services/gatt/ble_svc_gatt.h"
 #include <esp32/rom/ets_sys.h>
 #include <sys/time.h>
+#include "driver/gpio.h"
+#include "driver/dac.h"
 
 #define DEVICE_NAME "NeuroStimulator"
 

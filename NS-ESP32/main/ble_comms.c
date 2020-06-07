@@ -60,7 +60,7 @@ static int set_phase_one(uint16_t conn_handle, uint16_t attr_handle, struct ble_
     char buffer[32];
     memcpy(buffer,ctxt->om->om_data,ctxt->om->om_len);
     PHASE_ONE_TIME = atoi(buffer);
-    printf("%d microseconds\n", PHASE_ONE_TIME);
+    printf("%d us\n", PHASE_ONE_TIME);
     ble_gattc_notify_custom(conn_hdl, phase_one_char_attr_hdl, ctxt->om);
     return 0;
 }
@@ -79,7 +79,7 @@ static int set_phase_two(uint16_t conn_handle, uint16_t attr_handle, struct ble_
     char buffer[32];
     memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
     PHASE_TWO_TIME = atoi(buffer);
-    printf("%d microseconds\n", PHASE_TWO_TIME);
+    printf("%d us\n", PHASE_TWO_TIME);
     ble_gattc_notify_custom(conn_hdl, phase_two_char_attr_hdl, ctxt->om);
     return 0;
 }
@@ -155,7 +155,7 @@ static int set_stim_duration(uint16_t conn_handle, uint16_t attr_handle, struct 
     char buffer[32];
     memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
     STIM_DURATION = atoi(buffer);
-    printf("%d us\n", STIM_DURATION);
+    printf("%d ms\n", STIM_DURATION);
     ble_gattc_notify_custom(conn_hdl, stim_duration_char_attr_hdl, ctxt->om);
     return 0;
 }
