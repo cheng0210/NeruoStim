@@ -3,8 +3,8 @@
 #include "main.h"
 #include "driver/i2c.h"
 
-#define SDA_GPIO 18
-#define SCL_GPIO 19
+#define SDA_GPIO 21
+#define SCL_GPIO 22
 #define MAX17043_ADDRESS 0x36
 #define REG_ADDRESS 0x04
 
