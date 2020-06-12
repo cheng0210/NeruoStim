@@ -22,7 +22,7 @@ void app_main(){ // runs in cpu0
 }
 void delay_test()
 {
-    //dac_output_enable(DAC_CHANNEL_1);
+    dac_output_enable(DAC_CHANNEL_1);
     /* while (1)
     {
         //there is a ~16us delay in gettimeofday
@@ -48,23 +48,27 @@ void delay_test()
         }
            
     } */
-    /* char i;
     int x = 0;
     while(1){
-        i = getchar();
-        if(i=='\n'&&x<256){
-            dac_output_voltage(DAC_CHANNEL_1, x);
-            printf("x is %d\n",x);
-            x++;
+        x = !x;
+        switch(x){
+            case 1:
+                dac_output_voltage(DAC_CHANNEL_1, 255);
+                break;
+            case 0:
+                dac_output_voltage(DAC_CHANNEL_1, 0);
+                break;
+            default:
+                 break;
         }
-        vTaskDelay(100 / portTICK_PERIOD_MS);
-    } */
-    gpio_pad_select_gpio(16);
+        //ets_delay_us(20);
+    } 
+    /*gpio_pad_select_gpio(16);
     gpio_set_direction(16, GPIO_MODE_OUTPUT);
     int isOn = 0;
     while (true)
     {
         isOn = !isOn;
         gpio_set_level(16, isOn);
-    }
+    }*/
 }

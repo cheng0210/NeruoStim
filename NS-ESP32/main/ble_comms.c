@@ -50,6 +50,7 @@ static int ota_support(uint16_t conn_handle, uint16_t attr_handle, struct ble_ga
 
 static int battry_level(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
+    battery_update();
     os_mbuf_append(ctxt->om, &BATTERY_LEVEL, sizeof(BATTERY_LEVEL));
     return 0;
 }
