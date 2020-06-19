@@ -2,8 +2,8 @@
 void app_main(){ // runs in cpu0
     CHANNEL_NUM = 1;
     MAX_FREQ = 100000;//10KHZ
-    BATTERY_LEVEL = 0;
-    BATTERY_UPDATE_TIME_INTERVAL = 120000; //update battery level every 2 mins
+/*     BATTERY_LEVEL = 0;
+    BATTERY_UPDATE_TIME_INTERVAL = 120000; //update battery level every 2 mins */
     PHASE_ONE_TIME = 100;// default 100us
     PHASE_TWO_TIME = 100;// default 100us
     STIM_AMP = 0;// default 0uA
@@ -15,7 +15,7 @@ void app_main(){ // runs in cpu0
     BURST_TIME = 0;
     INTER_BURST_DELAY = 0;
 
-    i2c_connection_status = battery_init();
+    //i2c_connection_status = battery_init();
     
     ble_init();//ble host stack is running on cpu0 which will not affect cpu1
     xTaskCreatePinnedToCore(delay_test, "delay test", 2048, NULL, 2, NULL, 1); // run delay test on cpu1

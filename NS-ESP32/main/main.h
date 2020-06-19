@@ -1,7 +1,6 @@
 #ifndef main_h
 #define main_h
 #include "ble_comms.h"
-#include "battery.h"
 #include <stdio.h>
 #include "nvs_flash.h"
 #include "esp_log.h"
