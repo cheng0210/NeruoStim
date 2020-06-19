@@ -245,6 +245,14 @@ static int read_inter_burst(uint16_t conn_handle, uint16_t attr_handle, struct b
     return 0;
 }
 
+static int serial_set(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char buffer[64];
+    memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
+
+    return 0;
+}
+
 /*
  * Add BLE services/characteristics/descriptors here
  */
@@ -355,6 +363,9 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
           .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
           .access_cb = read_inter_burst,
           .val_handle = &inter_burst_delay_char_attr_hdl},
+         {.uuid = BLE_UUID128_DECLARE(SERIAL_COMMAND_INPUT_CHAR),
+          .flags = BLE_GATT_CHR_F_WRITE,
+          .access_cb = serial_set},
          {0}}},
     {0}};
 
