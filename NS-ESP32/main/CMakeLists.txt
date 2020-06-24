@@ -1,5 +1,4 @@
 idf_component_register(
-    SRCS "main.c"
-    SRCS "ble_comms.c"
+    SRCS "utils.c" "main.c" "ble_comms.c"
     INCLUDE_DIRS ""
 )

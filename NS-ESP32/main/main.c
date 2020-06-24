@@ -4,11 +4,11 @@ void app_main(){ // runs in cpu0
     MAX_FREQ = 100000;//10KHZ
 /*     BATTERY_LEVEL = 0;
     BATTERY_UPDATE_TIME_INTERVAL = 120000; //update battery level every 2 mins */
-    PHASE_ONE_TIME = 100;// default 100us
-    PHASE_TWO_TIME = 100;// default 100us
+    PHASE_ONE_TIME = 10;// default 10us
+    PHASE_TWO_TIME = 10;// default 10us
     STIM_AMP = 0;// default 0uA
     INTER_PHASE_GAP = 0;//default 0us
-    INTER_STIM_DELAY = 0;//default 0us
+    INTER_STIM_DELAY = 100;//default 0us
     ANODIC_CATHODIC = 1;//default cathodic
     STIM_TYPE = 0;//default uniform stim
     STIM_DURATION = 0xffffffff;//default is forever in ms
@@ -16,10 +16,37 @@ void app_main(){ // runs in cpu0
     INTER_BURST_DELAY = 0;
 
     //i2c_connection_status = battery_init();
-    
+    dac_output_enable(DAC_CHANNEL_1);
     ble_init();//ble host stack is running on cpu0 which will not affect cpu1
-    xTaskCreatePinnedToCore(delay_test, "delay test", 2048, NULL, 2, NULL, 1); // run delay test on cpu1
+    xTaskCreatePinnedToCore(delay_test, "gpio test", 2048, NULL, 2, NULL, 1);
 }
+
+void STIM_START(){
+    xTaskCreatePinnedToCore(biphasic_loop, "biphasic_loop", 2048, NULL, 2, &STIM_TASK, 1);
+    STIM_TASK_STATUS = 1;
+    printf("started!\n");
+}
+
+void STIM_STOP(){
+    vTaskDelete(STIM_TASK);
+    dac_output_voltage(DAC_CHANNEL_1,125);
+    printf("stopped!\n");
+}
+
+void IRAM_ATTR biphasic_loop()
+{
+    while(1){
+        dac_output_voltage(DAC_CHANNEL_1, 255);
+        ets_delay_us(PHASE_ONE_TIME);
+        dac_output_voltage(DAC_CHANNEL_1, 125);
+        ets_delay_us(INTER_PHASE_GAP);
+        dac_output_voltage(DAC_CHANNEL_1, 0);
+        ets_delay_us(PHASE_TWO_TIME);
+        dac_output_voltage(DAC_CHANNEL_1, 125);
+        ets_delay_us(INTER_STIM_DELAY);
+    }
+}
+
 void delay_test()
 {
     dac_output_enable(DAC_CHANNEL_1);
@@ -48,7 +75,7 @@ void delay_test()
         }
            
     } */
-    int x = 0;
+    /* int x = 0;
     while(1){
         x = !x;
         switch(x){
@@ -62,13 +89,13 @@ void delay_test()
                  break;
         }
         //ets_delay_us(20);
-    } 
-    /*gpio_pad_select_gpio(16);
-    gpio_set_direction(16, GPIO_MODE_OUTPUT);
+    }  */
+    gpio_pad_select_gpio(23);
+    gpio_set_direction(23, GPIO_MODE_OUTPUT);
     int isOn = 0;
     while (true)
     {
         isOn = !isOn;
-        gpio_set_level(16, isOn);
-    }*/
+        gpio_set_level(23, isOn);
+    }
 }

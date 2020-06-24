@@ -8,6 +8,8 @@
 #include <sys/time.h>
 #include "driver/gpio.h"
 #include "driver/dac.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #define DEVICE_NAME "NeuroStimulator"
 
@@ -25,10 +27,11 @@ uint8_t STIM_TYPE;
 uint32_t BURST_TIME;
 uint32_t INTER_BURST_DELAY;
 
+TaskHandle_t STIM_TASK;
+bool STIM_TASK_STATUS; //0 IDEL; 1 WORKING
 
-
-
-
+void STIM_START();
+void STIM_STOP();
 void delay_test();
-
+void biphasic_loop();
 #endif

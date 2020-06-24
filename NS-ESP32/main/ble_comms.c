@@ -49,7 +49,7 @@ static int ota_support(uint16_t conn_handle, uint16_t attr_handle, struct ble_ga
 static int set_phase_one(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     printf("setting phase one time as ");
-    char buffer[32];
+    char *buffer = calloc(32, sizeof(char));
     memcpy(buffer,ctxt->om->om_data,ctxt->om->om_len);
     PHASE_ONE_TIME = atoi(buffer);
     printf("%d us\n", PHASE_ONE_TIME);
@@ -68,7 +68,7 @@ static int read_phase_one(uint16_t conn_handle, uint16_t attr_handle, struct ble
 static int set_phase_two(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     printf("setting phase two time as ");
-    char buffer[32];
+    char *buffer = calloc(32, sizeof(char));
     memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
     PHASE_TWO_TIME = atoi(buffer);
     printf("%d us\n", PHASE_TWO_TIME);
@@ -87,7 +87,7 @@ static int read_phase_two(uint16_t conn_handle, uint16_t attr_handle, struct ble
 static int set_stim_amp(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     printf("setting stim amp as ");
-    char buffer[32];
+    char *buffer = calloc(32, sizeof(char));
     memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
     STIM_AMP = atoi(buffer);
     printf("%d uA\n", STIM_AMP);
@@ -106,7 +106,7 @@ static int read_stim_amp(uint16_t conn_handle, uint16_t attr_handle, struct ble_
 static int set_inter_phase(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     printf("setting interphase delay as ");
-    char buffer[32];
+    char *buffer = calloc(32, sizeof(char));
     memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
     INTER_PHASE_GAP = atoi(buffer);
     printf("%d us\n", INTER_PHASE_GAP);
@@ -125,7 +125,7 @@ static int read_inter_phase(uint16_t conn_handle, uint16_t attr_handle, struct b
 static int set_inter_stim(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     printf("setting interstim delay as ");
-    char buffer[32];
+    char *buffer = calloc(32, sizeof(char));
     memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
     INTER_STIM_DELAY = atoi(buffer);
     printf("%d us\n", INTER_STIM_DELAY);
@@ -144,7 +144,7 @@ static int read_inter_stim(uint16_t conn_handle, uint16_t attr_handle, struct bl
 static int set_stim_duration(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     printf("setting stim duration as ");
-    char buffer[32];
+    char *buffer = calloc(32, sizeof(char));
     memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
     STIM_DURATION = atoi(buffer);
     printf("%d ms\n", STIM_DURATION);
@@ -163,7 +163,7 @@ static int read_stim_duration(uint16_t conn_handle, uint16_t attr_handle, struct
 static int set_acf(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     printf("setting ");
-    char buffer[32];
+    char *buffer = calloc(32, sizeof(char));
     memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
     ANODIC_CATHODIC = atoi(buffer);
     printf("%s \n", ANODIC_CATHODIC?"CATHODIC":"ANODIC");
@@ -182,7 +182,7 @@ static int read_acf(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_
 static int set_stim_type(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     printf("setting stim type as ");
-    char buffer[32];
+    char *buffer = calloc(32, sizeof(char));
     memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
     STIM_TYPE = atoi(buffer);
     printf("%s\n", STIM_TYPE?"BURST":"UNIFORM");
@@ -201,7 +201,7 @@ static int read_stim_type(uint16_t conn_handle, uint16_t attr_handle, struct ble
 static int set_burst_time(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     printf("setting burst time as ");
-    char buffer[32];
+    char *buffer = calloc(32, sizeof(char));
     memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
     BURST_TIME = atoi(buffer);
     printf("%d us\n", BURST_TIME);
@@ -220,7 +220,7 @@ static int read_burst_time(uint16_t conn_handle, uint16_t attr_handle, struct bl
 static int set_inter_burst(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     printf("setting inter burst delay as ");
-    char buffer[32];
+    char *buffer = calloc(32, sizeof(char));
     memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
     INTER_BURST_DELAY = atoi(buffer);
     printf("%d us\n", INTER_BURST_DELAY);
@@ -238,8 +238,18 @@ static int read_inter_burst(uint16_t conn_handle, uint16_t attr_handle, struct b
 
 static int serial_set(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
-    char buffer[64];
+    char *buffer = calloc(64,sizeof(char));
     memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
+    printf("%s %d\n", buffer, ctxt->om->om_len);
+    if(strcmp(buffer,"start")==0){
+        printf("start!\n");
+        STIM_START();
+    }else if(strcmp(buffer,"stop")==0){
+        printf("stop!\n");
+        if(STIM_TASK_STATUS == 1){
+            STIM_STOP();
+        }
+    }
 
     return 0;
 }

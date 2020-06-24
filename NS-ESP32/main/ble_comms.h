@@ -76,10 +76,6 @@ uint16_t inter_burst_delay_char_attr_hdl;
  */
 uint8_t ble_addr_type;
 
-/*
- * a timer handler which is used to update battery level
- */
-xTimerHandle battery_update_timer_handler;
 
 /*
  * functions relate to bluetooth comms
