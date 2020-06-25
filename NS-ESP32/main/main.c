@@ -38,11 +38,11 @@ void IRAM_ATTR biphasic_loop()
     while(1){
         dac_output_voltage(DAC_CHANNEL_1, 255);
         ets_delay_us(PHASE_ONE_TIME);
-        dac_output_voltage(DAC_CHANNEL_1, 125);
+        dac_output_voltage(DAC_CHANNEL_1, 127);
         ets_delay_us(INTER_PHASE_GAP);
         dac_output_voltage(DAC_CHANNEL_1, 0);
         ets_delay_us(PHASE_TWO_TIME);
-        dac_output_voltage(DAC_CHANNEL_1, 125);
+        dac_output_voltage(DAC_CHANNEL_1, 127);
         ets_delay_us(INTER_STIM_DELAY);
     }
 }
