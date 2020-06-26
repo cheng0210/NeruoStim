@@ -54,6 +54,7 @@ static int set_phase_one(uint16_t conn_handle, uint16_t attr_handle, struct ble_
     PHASE_ONE_TIME = atoi(buffer);
     printf("%d us\n", PHASE_ONE_TIME);
     ble_gattc_notify_custom(conn_hdl, phase_one_char_attr_hdl, ctxt->om);
+    free(buffer);
     return 0;
 }
 
@@ -73,6 +74,7 @@ static int set_phase_two(uint16_t conn_handle, uint16_t attr_handle, struct ble_
     PHASE_TWO_TIME = atoi(buffer);
     printf("%d us\n", PHASE_TWO_TIME);
     ble_gattc_notify_custom(conn_hdl, phase_two_char_attr_hdl, ctxt->om);
+    free(buffer);
     return 0;
 }
 
@@ -92,6 +94,7 @@ static int set_stim_amp(uint16_t conn_handle, uint16_t attr_handle, struct ble_g
     STIM_AMP = atoi(buffer);
     printf("%d uA\n", STIM_AMP);
     ble_gattc_notify_custom(conn_hdl, stim_amp_char_attr_hdl, ctxt->om);
+    free(buffer);
     return 0;
 }
 
@@ -111,6 +114,7 @@ static int set_inter_phase(uint16_t conn_handle, uint16_t attr_handle, struct bl
     INTER_PHASE_GAP = atoi(buffer);
     printf("%d us\n", INTER_PHASE_GAP);
     ble_gattc_notify_custom(conn_hdl, inter_phase_gap_char_attr_hdl, ctxt->om);
+    free(buffer);
     return 0;
 }
 
@@ -130,6 +134,7 @@ static int set_inter_stim(uint16_t conn_handle, uint16_t attr_handle, struct ble
     INTER_STIM_DELAY = atoi(buffer);
     printf("%d us\n", INTER_STIM_DELAY);
     ble_gattc_notify_custom(conn_hdl, inter_stim_delay_char_attr_hdl, ctxt->om);
+    free(buffer);
     return 0;
 }
 
@@ -149,6 +154,7 @@ static int set_stim_duration(uint16_t conn_handle, uint16_t attr_handle, struct 
     STIM_DURATION = atoi(buffer);
     printf("%d ms\n", STIM_DURATION);
     ble_gattc_notify_custom(conn_hdl, stim_duration_char_attr_hdl, ctxt->om);
+    free(buffer);
     return 0;
 }
 
@@ -168,6 +174,7 @@ static int set_acf(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_a
     ANODIC_CATHODIC = atoi(buffer);
     printf("%s \n", ANODIC_CATHODIC?"CATHODIC":"ANODIC");
     ble_gattc_notify_custom(conn_hdl, anodic_cathodic_char_attr_hdl, ctxt->om);
+    free(buffer);
     return 0;
 }
 
@@ -187,6 +194,7 @@ static int set_stim_type(uint16_t conn_handle, uint16_t attr_handle, struct ble_
     STIM_TYPE = atoi(buffer);
     printf("%s\n", STIM_TYPE?"BURST":"UNIFORM");
     ble_gattc_notify_custom(conn_hdl, STIM_TYPE, ctxt->om);
+    free(buffer);
     return 0;
 }
 
@@ -198,21 +206,22 @@ static int read_stim_type(uint16_t conn_handle, uint16_t attr_handle, struct ble
     return 0;
 }
 
-static int set_burst_time(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+static int set_burst_num(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
-    printf("setting burst time as ");
+    printf("setting burst number as ");
     char *buffer = calloc(32, sizeof(char));
     memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
-    BURST_TIME = atoi(buffer);
-    printf("%d us\n", BURST_TIME);
-    ble_gattc_notify_custom(conn_hdl, burst_time_char_attr_hdl, ctxt->om);
+    BURST_NUM = atoi(buffer);
+    printf("%d times\n", BURST_NUM);
+    ble_gattc_notify_custom(conn_hdl, burst_num_char_attr_hdl, ctxt->om);
+    free(buffer);
     return 0;
 }
 
-static int read_burst_time(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+static int read_burst_num(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     char buffer[32];
-    snprintf(buffer, 32, "%d", BURST_TIME);
+    snprintf(buffer, 32, "%d", BURST_NUM);
     os_mbuf_append(ctxt->om, buffer, strlen(buffer));
     return 0;
 }
@@ -225,6 +234,7 @@ static int set_inter_burst(uint16_t conn_handle, uint16_t attr_handle, struct bl
     INTER_BURST_DELAY = atoi(buffer);
     printf("%d us\n", INTER_BURST_DELAY);
     ble_gattc_notify_custom(conn_hdl, inter_burst_delay_char_attr_hdl, ctxt->om);
+    free(buffer);
     return 0;
 }
 
@@ -240,17 +250,9 @@ static int serial_set(uint16_t conn_handle, uint16_t attr_handle, struct ble_gat
 {
     char *buffer = calloc(64,sizeof(char));
     memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
-    printf("%s %d\n", buffer, ctxt->om->om_len);
-    if(strcmp(buffer,"start")==0){
-        printf("start!\n");
-        STIM_START();
-    }else if(strcmp(buffer,"stop")==0){
-        printf("stop!\n");
-        if(STIM_TASK_STATUS == 1){
-            STIM_STOP();
-        }
+    if (ctxt->om->om_len!=0){
+        parse_command(buffer);
     }
-
     return 0;
 }
 
@@ -342,13 +344,13 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
           .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
           .access_cb = read_stim_type,
           .val_handle = &stim_type_char_attr_hdl},
-         {.uuid = BLE_UUID128_DECLARE(BURST_TIME_WRITE_CHAR),
+         {.uuid = BLE_UUID128_DECLARE(BURST_NUM_WRITE_CHAR),
           .flags = BLE_GATT_CHR_F_WRITE,
-          .access_cb = set_burst_time},
-         {.uuid = BLE_UUID128_DECLARE(BURST_TIME_READ_CHAR),
+          .access_cb = set_burst_num},
+         {.uuid = BLE_UUID128_DECLARE(BURST_NUM_READ_CHAR),
           .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
-          .access_cb = read_burst_time,
-          .val_handle = &burst_time_char_attr_hdl},
+          .access_cb = read_burst_num,
+          .val_handle = &burst_num_char_attr_hdl},
          {.uuid = BLE_UUID128_DECLARE(INTER_BURST_DELAY_WRITE_CHAR),
           .flags = BLE_GATT_CHR_F_WRITE,
           .access_cb = set_inter_burst},
