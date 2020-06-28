@@ -41,9 +41,9 @@ void parse_command(char *command){
     {
         INTER_STIM_DELAY = atoi(result[1]);
     }
-    else if (strcmp(result[0], "stim_duration")==0)
+    else if (strcmp(result[0], "pulse_num")==0)
     {
-        STIM_DURATION = atoi(result[1]);
+        PULSE_NUM = atoi(result[1]);
     }
     else if (strcmp(result[0], "burst_num")==0)
     {

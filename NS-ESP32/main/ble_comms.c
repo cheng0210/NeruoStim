@@ -146,22 +146,22 @@ static int read_inter_stim(uint16_t conn_handle, uint16_t attr_handle, struct bl
     return 0;
 }
 
-static int set_stim_duration(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+static int set_pulse_num(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     printf("setting stim duration as ");
     char *buffer = calloc(32, sizeof(char));
     memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
-    STIM_DURATION = atoi(buffer);
-    printf("%d ms\n", STIM_DURATION);
-    ble_gattc_notify_custom(conn_hdl, stim_duration_char_attr_hdl, ctxt->om);
+    PULSE_NUM = atoi(buffer);
+    printf("%d ms\n", PULSE_NUM);
+    ble_gattc_notify_custom(conn_hdl, pulse_num_char_attr_hdl, ctxt->om);
     free(buffer);
     return 0;
 }
 
-static int read_stim_duration(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+static int read_pulse_num(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     char buffer[32];
-    snprintf(buffer, 32, "%d", STIM_DURATION);
+    snprintf(buffer, 32, "%d", PULSE_NUM);
     os_mbuf_append(ctxt->om, buffer, strlen(buffer));
     return 0;
 }
@@ -323,13 +323,13 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
           .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
           .access_cb = read_inter_stim,
           .val_handle = &inter_stim_delay_char_attr_hdl},
-         {.uuid = BLE_UUID128_DECLARE(STIMULATION_DURATION_WRITE_CHAR),
+         {.uuid = BLE_UUID128_DECLARE(PULSE_NUM_WRITE_CHAR),
           .flags = BLE_GATT_CHR_F_WRITE,
-          .access_cb = set_stim_duration},
-         {.uuid = BLE_UUID128_DECLARE(STIMULATION_DURATION_READ_CHAR),
+          .access_cb = set_pulse_num},
+         {.uuid = BLE_UUID128_DECLARE(PULSE_NUM_READ_CHAR),
           .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
-          .access_cb = read_stim_duration,
-          .val_handle = &stim_duration_char_attr_hdl},
+          .access_cb = read_pulse_num,
+          .val_handle = &pulse_num_char_attr_hdl},
          {.uuid = BLE_UUID128_DECLARE(ANODIC_CATHODIC_FIRST_WRITE_CHAR),
           .flags = BLE_GATT_CHR_F_WRITE,
           .access_cb = set_acf},

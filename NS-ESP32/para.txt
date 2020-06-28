@@ -8,7 +8,7 @@ stimulation_commands:
     inter_phase_gap:0
     phase_two_time:10
     inter_stim_delay:100
-    stim_duration:0
+    pulse_num:0
     pulse_num_in_one_burst:0
     burst_num:0
     inter_burst_delay:0

@@ -1,4 +1,8 @@
 #include "main.h"
+#include "sys/queue.h"
+#include "soc/sens_reg.h"
+#include "soc/rtc_io_reg.h"
+portMUX_TYPE rtc_spinlock1 = portMUX_INITIALIZER_UNLOCKED;
 void app_main(){ // runs in cpu0
     CHANNEL_NUM = 1;
     MAX_FREQ = 100000;//10KHZ
@@ -9,7 +13,7 @@ void app_main(){ // runs in cpu0
     INTER_STIM_DELAY = 100;//default 0us
     ANODIC_CATHODIC = 1;//default cathodic
     STIM_TYPE = 0;//default uniform stim
-    STIM_DURATION = 0;//default 0 is forever in ms
+    PULSE_NUM = 0;//default 0 is forever in ms
     BURST_NUM = 0;// number of burst
     INTER_BURST_DELAY = 0;
     PULSE_NUM_IN_ONE_BURST = 0;
@@ -21,16 +25,16 @@ void app_main(){ // runs in cpu0
     ble_init();//ble host stack is running on cpu0 which will not affect cpu1
     //xTaskCreatePinnedToCore(delay_test, "gpio test", 2048, NULL, 2, NULL, 1);
 
-    while(1){
+     while(1){
         vTaskDelay(10000 / portTICK_PERIOD_MS);
         printf("***********************************************************\n");
         printf("%s and %s\n", ANODIC_CATHODIC ? "CATHODIC" : "ANODIC", STIM_TYPE ? "BURST" : "UNIFORM");
         printf("stim amp : %u   phase one time : %u    phase two time: %u\n", STIM_AMP, PHASE_ONE_TIME, PHASE_TWO_TIME);
-        printf("inter phase gap : %u   inter stim delay : %u  stim duration : %u\n", INTER_PHASE_GAP, INTER_STIM_DELAY, STIM_DURATION);
+        printf("inter phase gap : %u   inter stim delay : %u  pulse num : %u\n", INTER_PHASE_GAP, INTER_STIM_DELAY, PULSE_NUM);
         printf("pulse num in one burst : %u     burst num : %u    inter burst delay : %u\n", PULSE_NUM_IN_ONE_BURST,BURST_NUM, INTER_BURST_DELAY);
         printf("ramp up : %s\n",RAMP_UP?"yes":"no");
         printf("short electrode : %s\n",SHORT_ELECTRODE?"yes":"no");
-    }
+    } 
 }
 
 void STIM_START(){
@@ -47,15 +51,39 @@ void STIM_STOP(){
 
 void IRAM_ATTR biphasic_loop()
 {
+    struct timeval tv1;
+    struct timeval tv2;
+
     while(1){
+        gettimeofday(&tv1, NULL);
+        gettimeofday(&tv2, NULL);
+        printf("delay %ld us\n", (tv2.tv_usec - tv1.tv_usec));
+
+        gettimeofday(&tv1, NULL);
         dac_output_voltage(DAC_CHANNEL_1, 255);
-        ets_delay_us(PHASE_ONE_TIME);
+        gettimeofday(&tv2, NULL);
+        printf("delay %ld us\n", (tv2.tv_usec - tv1.tv_usec));
+    
+        gettimeofday(&tv1, NULL);
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 127, RTC_IO_PDAC1_DAC_S);
+        gettimeofday(&tv2, NULL);
+        printf("delay %ld us\n", (tv2.tv_usec - tv1.tv_usec));
+
+        gettimeofday(&tv1, NULL);
+        portENTER_CRITICAL(&rtc_spinlock1);
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 127, RTC_IO_PDAC1_DAC_S);
+        portEXIT_CRITICAL(&rtc_spinlock1);
+        gettimeofday(&tv2, NULL);
+        printf("delay %ld us\n", (tv2.tv_usec - tv1.tv_usec));
+
+        /* ets_delay_us(PHASE_ONE_TIME);
         dac_output_voltage(DAC_CHANNEL_1, 127);
         ets_delay_us(INTER_PHASE_GAP);
         dac_output_voltage(DAC_CHANNEL_1, 0);
         ets_delay_us(PHASE_TWO_TIME);
         dac_output_voltage(DAC_CHANNEL_1, 127);
-        ets_delay_us(INTER_STIM_DELAY);
+        ets_delay_us(INTER_STIM_DELAY); */
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
     }
 }
 
