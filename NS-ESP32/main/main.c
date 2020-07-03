@@ -5,11 +5,14 @@
 
 /**
  * GPIO 5,18,19,23 will be used to SPI comms; 5:cs;18:sck;19:miso;23:mosi
+ * GPIO 21,22 will be used as I2C to read battery lvl
  * GPIO 25,26 will be used as DACs
  * GPIO 2,4,16,17 will be used as switches
 */
 
 void app_main(){ // runs in cpu0
+    BATTERY_UPDATE_TIME_INTERVAL = 10000; //10 second
+    BATTERY_LEVEL = 0;
     CHANNEL_NUM = 1;
     MAX_FREQ = 100000;//10KHZ
     PHASE_ONE_TIME = 10;// default 10us
@@ -26,7 +29,7 @@ void app_main(){ // runs in cpu0
     RAMP_UP = 0;
     SHORT_ELECTRODE = 1;
 
-    //i2c_connection_status = battery_init();
+    i2c_connection_status = battery_init();
     dac_output_enable(DAC_CHANNEL_1);
     ble_init();//ble host stack is running on cpu0 which will not affect cpu1
     //xTaskCreatePinnedToCore(delay_test, "gpio test", 2048, NULL, 2, NULL, 1);
@@ -69,10 +72,12 @@ void IRAM_ATTR biphasic_loop(void *params)//may need to change to fit elec team'
     STIM_STATUS = 1;//mark as stimulation begin
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
-    while(1){
+
+
+    /* while(1){
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 255, RTC_IO_PDAC1_DAC_S);
-    }
-    /* while(STIM_TASK_STATUS){
+    } */
+    while(STIM_TASK_STATUS){
     
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 255, RTC_IO_PDAC1_DAC_S);
         ets_delay_us(PHASE_ONE_TIME);
@@ -82,7 +87,7 @@ void IRAM_ATTR biphasic_loop(void *params)//may need to change to fit elec team'
         ets_delay_us(PHASE_TWO_TIME);
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 127, RTC_IO_PDAC1_DAC_S);
         ets_delay_us(INTER_STIM_DELAY);
-    } */
+    }
     STIM_STATUS = 0;//mark as stimulation finish
 }
 

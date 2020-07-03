@@ -46,6 +46,13 @@ static int ota_support(uint16_t conn_handle, uint16_t attr_handle, struct ble_ga
     return 0;
 }
 
+static int battry_level(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    battery_update();
+    os_mbuf_append(ctxt->om, &BATTERY_LEVEL, sizeof(BATTERY_LEVEL));
+    return 0;
+}
+
 static int set_phase_one(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     printf("setting phase one time as ");
@@ -341,6 +348,14 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
           .flags = BLE_GATT_CHR_F_READ,
           .access_cb = ota_support},
          {0}}},
+    {.type = BLE_GATT_SVC_TYPE_PRIMARY, 
+     .uuid = BLE_UUID16_DECLARE(BATTRY_SERVICE), 
+     .characteristics = (struct ble_gatt_chr_def[]){
+         {.uuid = BLE_UUID16_DECLARE(BATTRY_LEVEL_CHAR),
+          .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+          .access_cb = battry_level, 
+          .val_handle = &batt_char_attr_hdl},
+         {0}}},
     {.type = BLE_GATT_SVC_TYPE_PRIMARY,
      .uuid = BLE_UUID128_DECLARE(STIMULATION_COMMAND_SERVICE),
      .characteristics = (struct ble_gatt_chr_def[]){
@@ -521,4 +536,9 @@ void ble_init(void)
     ble_hs_cfg.sync_cb = ble_app_on_sync;
 
     nimble_port_freertos_init(host_task);
+
+    if(i2c_connection_status == 0){
+        battery_update();
+        battery_update_timer_handler = xTimerCreate("update_battery_timer", pdMS_TO_TICKS(BATTERY_UPDATE_TIME_INTERVAL), pdTRUE, NULL, battery_level_notify);
+    } 
 }

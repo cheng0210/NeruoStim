@@ -11,6 +11,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "recording.h"
+#include "battery.h"
 
 #define DEVICE_NAME "NeuroStimulator"
 

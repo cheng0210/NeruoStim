@@ -15,6 +15,11 @@ bool i2c_connection_status; //0 is ok; -1 is failed
 uint8_t BATTERY_LEVEL;
 TickType_t BATTERY_UPDATE_TIME_INTERVAL; //in millisecond
 
+/*
+ * a timer handler which is used to update battery level
+ */
+xTimerHandle battery_update_timer_handler;
+
 int battery_init(void);
 void battery_update(void);
 
