@@ -246,6 +246,62 @@ static int read_inter_burst(uint16_t conn_handle, uint16_t attr_handle, struct b
     return 0;
 }
 
+static int set_pulse_num_in_burst(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    printf("setting pulse num in one burst as ");
+    char *buffer = calloc(32, sizeof(char));
+    memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
+    PULSE_NUM_IN_ONE_BURST = atoi(buffer);
+    printf("%d\n", PULSE_NUM_IN_ONE_BURST);
+    ble_gattc_notify_custom(conn_hdl, pulse_num_in_burst_char_attr_hdl, ctxt->om);
+    free(buffer);
+    return 0;
+}
+
+static int read_pulse_num_in_burst(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char buffer[32];
+    snprintf(buffer, 32, "%d", PULSE_NUM_IN_ONE_BURST);
+    os_mbuf_append(ctxt->om, buffer, strlen(buffer));
+    return 0;
+}
+
+static int set_ramp_up(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char *buffer = calloc(32, sizeof(char));
+    memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
+    RAMP_UP = atoi(buffer);
+    ble_gattc_notify_custom(conn_hdl, ramp_up_char_attr_hdl, ctxt->om);
+    free(buffer);
+    return 0;
+}
+
+static int read_ramp_up(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char buffer[32];
+    snprintf(buffer, 32, "%d", RAMP_UP);
+    os_mbuf_append(ctxt->om, buffer, strlen(buffer));
+    return 0;
+}
+
+static int set_short_electrode(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char *buffer = calloc(32, sizeof(char));
+    memcpy(buffer, ctxt->om->om_data, ctxt->om->om_len);
+    SHORT_ELECTRODE = atoi(buffer);
+    ble_gattc_notify_custom(conn_hdl, short_electrode_char_attr_hdl, ctxt->om);
+    free(buffer);
+    return 0;
+}
+
+static int read_short_electrode(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    char buffer[32];
+    snprintf(buffer, 32, "%d", SHORT_ELECTRODE);
+    os_mbuf_append(ctxt->om, buffer, strlen(buffer));
+    return 0;
+}
+
 static int serial_set(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     char *buffer = calloc(64,sizeof(char));
@@ -358,6 +414,27 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
           .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
           .access_cb = read_inter_burst,
           .val_handle = &inter_burst_delay_char_attr_hdl},
+         {.uuid = BLE_UUID128_DECLARE(PULSE_NUM_IN_ONE_BURST_WRITE_CHAR),
+          .flags = BLE_GATT_CHR_F_WRITE,
+          .access_cb = set_pulse_num_in_burst},
+         {.uuid = BLE_UUID128_DECLARE(PULSE_NUM_IN_ONE_BURST_READ_CHAR),
+          .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+          .access_cb = read_pulse_num_in_burst,
+          .val_handle = &pulse_num_in_burst_char_attr_hdl},
+         {.uuid = BLE_UUID128_DECLARE(RAMP_UP_WRITE_CHAR),
+          .flags = BLE_GATT_CHR_F_WRITE,
+          .access_cb = set_ramp_up},
+         {.uuid = BLE_UUID128_DECLARE(RAMP_UP_READ_CHAR),
+          .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+          .access_cb = read_ramp_up,
+          .val_handle = &ramp_up_char_attr_hdl},
+         {.uuid = BLE_UUID128_DECLARE(SHORT_ELECTRODE_WRITE_CHAR),
+          .flags = BLE_GATT_CHR_F_WRITE,
+          .access_cb = set_short_electrode},
+         {.uuid = BLE_UUID128_DECLARE(SHORT_ELECTRODE_READ_CHAR),
+          .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+          .access_cb = read_short_electrode,
+          .val_handle = &short_electrode_char_attr_hdl},
          {.uuid = BLE_UUID128_DECLARE(SERIAL_COMMAND_INPUT_CHAR),
           .flags = BLE_GATT_CHR_F_WRITE,
           .access_cb = serial_set},

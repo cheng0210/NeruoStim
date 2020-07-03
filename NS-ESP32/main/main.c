@@ -2,6 +2,13 @@
 #include "sys/queue.h"
 #include "soc/sens_reg.h"
 #include "soc/rtc_io_reg.h"
+
+/**
+ * GPIO 5,18,19,23 will be used to SPI comms; 5:cs;18:sck;19:miso;23:mosi
+ * GPIO 25,26 will be used as DACs
+ * GPIO 2,4,16,17 will be used as switches
+*/
+
 void app_main(){ // runs in cpu0
     CHANNEL_NUM = 1;
     MAX_FREQ = 100000;//10KHZ
@@ -62,7 +69,10 @@ void IRAM_ATTR biphasic_loop(void *params)//may need to change to fit elec team'
     STIM_STATUS = 1;//mark as stimulation begin
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
-    while(STIM_TASK_STATUS){
+    while(1){
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 255, RTC_IO_PDAC1_DAC_S);
+    }
+    /* while(STIM_TASK_STATUS){
     
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 255, RTC_IO_PDAC1_DAC_S);
         ets_delay_us(PHASE_ONE_TIME);
@@ -72,16 +82,7 @@ void IRAM_ATTR biphasic_loop(void *params)//may need to change to fit elec team'
         ets_delay_us(PHASE_TWO_TIME);
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 127, RTC_IO_PDAC1_DAC_S);
         ets_delay_us(INTER_STIM_DELAY);
-
-        /* dac_output_voltage(DAC_CHANNEL_1, 255);
-        ets_delay_us(PHASE_ONE_TIME);
-        dac_output_voltage(DAC_CHANNEL_1, 127);
-        ets_delay_us(INTER_PHASE_GAP);
-        dac_output_voltage(DAC_CHANNEL_1, 0);
-        ets_delay_us(PHASE_TWO_TIME);
-        dac_output_voltage(DAC_CHANNEL_1, 127);
-        ets_delay_us(INTER_STIM_DELAY); */
-    }
+    } */
     STIM_STATUS = 0;//mark as stimulation finish
 }
 
