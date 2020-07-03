@@ -10,6 +10,7 @@
 #include "driver/dac.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "recording.h"
 
 #define DEVICE_NAME "NeuroStimulator"
 
@@ -31,7 +32,8 @@ uint8_t RAMP_UP;
 uint8_t SHORT_ELECTRODE;
 
 TaskHandle_t STIM_TASK;
-bool STIM_TASK_STATUS; //0 IDEL; 1 WORKING
+bool STIM_STATUS; //used to delete task
+bool STIM_TASK_STATUS; //0 IDLE; 1 WORKING
 
 void STIM_START();
 void STIM_STOP();

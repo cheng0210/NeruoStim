@@ -368,27 +368,27 @@ static int ble_gap_event(struct ble_gap_event *event, void *arg)
 {
     switch (event->type)
     {
-    case BLE_GAP_EVENT_CONNECT:
-        ESP_LOGI("GAP", "BLE_GAP_EVENT_CONNECT %s", event->connect.status == 0 ? "OK" : "Failed");
-        if (event->connect.status != 0)
-        {
+        case BLE_GAP_EVENT_CONNECT:
+            ESP_LOGI("GAP", "BLE_GAP_EVENT_CONNECT %s", event->connect.status == 0 ? "OK" : "Failed");
+            if (event->connect.status != 0)
+            {
+                ble_app_advertise();
+            }
+            conn_hdl = event->connect.conn_handle;
+            break;
+        case BLE_GAP_EVENT_DISCONNECT:
+            ESP_LOGI("GAP", "BLE_GAP_EVENT_DISCONNECT");
             ble_app_advertise();
-        }
-        conn_hdl = event->connect.conn_handle;
-        break;
-    case BLE_GAP_EVENT_DISCONNECT:
-        ESP_LOGI("GAP", "BLE_GAP_EVENT_DISCONNECT");
-        ble_app_advertise();
-        break;
-    case BLE_GAP_EVENT_ADV_COMPLETE:
-        ESP_LOGI("GAP", "BLE_GAP_EVENT_ADV_COMPLETE");
-        ble_app_advertise();
-        break;
-    case BLE_GAP_EVENT_SUBSCRIBE:
-        ESP_LOGI("GAP", "BLE_GAP_EVENT_SUBSCRIBE");
-        break;
-    default:
-        break;
+            break;
+        case BLE_GAP_EVENT_ADV_COMPLETE:
+            ESP_LOGI("GAP", "BLE_GAP_EVENT_ADV_COMPLETE");
+            ble_app_advertise();
+            break;
+        case BLE_GAP_EVENT_SUBSCRIBE:
+            ESP_LOGI("GAP", "BLE_GAP_EVENT_SUBSCRIBE");
+            break;
+        default:
+            break;
     }
     return 0;
 }
