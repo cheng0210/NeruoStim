@@ -2,6 +2,7 @@
 #define battery_H
 #include "main.h"
 #include "driver/i2c.h"
+#include "freertos/timers.h"
 
 #define SDA_GPIO 21
 #define SCL_GPIO 22
