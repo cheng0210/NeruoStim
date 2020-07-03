@@ -542,3 +542,10 @@ void ble_init(void)
         battery_update_timer_handler = xTimerCreate("update_battery_timer", pdMS_TO_TICKS(BATTERY_UPDATE_TIME_INTERVAL), pdTRUE, NULL, battery_level_notify);
     } 
 }
+
+void battery_level_notify()
+{
+    battery_update();
+    struct os_mbuf *om = ble_hs_mbuf_from_flat(&BATTERY_LEVEL, sizeof(BATTERY_LEVEL));
+    ble_gattc_notify_custom(conn_hdl, batt_char_attr_hdl, om);
+}
