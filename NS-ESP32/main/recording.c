@@ -1,29 +1,40 @@
 #include "recording.h"
 static const char *TAG = "main";
+uint16_t i2s_read_buff[1024];
 void example_disp_buf(uint8_t* buf, int length);
 void recording_init(){
-    i2s_config_t i2s_config = {
-        .mode = I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_ADC_BUILT_IN,
-        .sample_rate = 16000,
-        .bits_per_sample = 16,
-        .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,                         
-        .communication_format = I2S_COMM_FORMAT_I2S_MSB,
-        .dma_buf_count = 2,
-        .dma_buf_len = 1024,
-        .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1                                //Interrupt level 1
+    i2s_config_t i2s_config = 
+    {
+      .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_ADC_BUILT_IN),  // I2S receive mode with ADC
+      .sample_rate = 44100,                                                          // set I2S ADC sample rate
+      .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,                                 // 16 bit I2S (even though ADC is 12 bit)
+      .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,                                 // handle adc data as single channel (right)
+      .communication_format = (i2s_comm_format_t)I2S_COMM_FORMAT_I2S,               // I2S format
+      .intr_alloc_flags = 0,                                                        // 
+      .dma_buf_count = 4,                                                           // number of DMA buffers >=2 for fastness
+      .dma_buf_len = 1024,                                                          // number of samples per buffer
+      .use_apll = 0,                                                                
     };
+    adc1_config_channel_atten(ADC1_CHANNEL_3, ADC_ATTEN_11db);
+    adc1_config_width(ADC_WIDTH_12Bit);
     i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
-	i2s_set_adc_mode(ADC_UNIT_1, ADC1_CHANNEL_5);
+	  i2s_set_adc_mode(ADC_UNIT_1, ADC1_CHANNEL_3);
 }
 
 void recording(){
-    esp_adc_cal_characteristics_t adc_chars;
-    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
+    size_t n;
+    //i2s_adc_enable(I2S_NUM_0);
     while(1){
-        int raw = adc1_get_raw(ADC1_CHANNEL_5);
-        ESP_LOGI(TAG, "adc sample: raw %d, voltage %d mV", raw, esp_adc_cal_raw_to_voltage(raw, &adc_chars));
-        vTaskDelay(1000/portTICK_PERIOD_MS);
+        int raw = adc1_get_raw(ADC1_CHANNEL_3);
+        printf("%d\n",raw);
+        vTaskDelay(500/portTICK_PERIOD_MS);
+        /* i2s_read(I2S_NUM_0, &i2s_read_buff, 1024*sizeof(uint16_t), &n, portMAX_DELAY);
+        for(uint32_t i = 900; i < (n / sizeof(i2s_read_buff[0])); i++)
+        { 
+          ESP_LOGI(TAG, "adc dma i2s sample %d: raw %d", i, i2s_read_buff[i]);
+        } */
     }
+    //i2s_adc_disable(I2S_NUM_0);
 }
 void example_disp_buf(uint8_t* buf, int length)
 {
