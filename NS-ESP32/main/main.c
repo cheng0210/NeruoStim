@@ -29,8 +29,7 @@ void app_main(){ // runs in cpu0
     RAMP_UP = 0;
     SHORT_ELECTRODE = 1;
 
-    i2c_connection_status = battery_init();
-    dac_output_enable(DAC_CHANNEL_1);
+    //i2c_connection_status = battery_init();
     ble_init();//ble host stack is running on cpu0 which will not affect cpu1
     //xTaskCreatePinnedToCore(delay_test, "gpio test", 2048, NULL, 2, NULL, 1);
 
@@ -44,9 +43,16 @@ void app_main(){ // runs in cpu0
         printf("ramp up : %s\n",RAMP_UP?"yes":"no");
         printf("short electrode : %s\n",SHORT_ELECTRODE?"yes":"no");
     }  */
-    /* recording_init();
-    xTaskCreate(recording,"recording",2048,NULL,2,NULL); */
-    //adc_dma_i2s_read_raw();
+
+    vTaskDelay(10000 / portTICK_PERIOD_MS);
+
+    ble_deinit();
+
+    configure_i2s();
+    recording();
+    //xTaskCreatePinnedToCore(recording, "recording", 2048, NULL, 2, NULL, 0);
+
+    
 }
 
 void STIM_START(){
@@ -69,6 +75,7 @@ void STIM_STOP(){
 
 void IRAM_ATTR biphasic_loop(void *params)//may need to change to fit elec team's circuit
 {
+    dac_output_enable(DAC_CHANNEL_1);
     STIM_STATUS = 1;//mark as stimulation begin
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);

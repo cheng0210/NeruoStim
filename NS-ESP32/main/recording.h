@@ -9,13 +9,11 @@
 #include "driver/i2s.h"
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
+#include "soc/syscon_reg.h"
+#include "soc/syscon_struct.h"
 
-#define SAMPLE_RATE 3000
-#define I2S_BUF_LEN 8192
-
-void recording_init();
-void recording();
-void adc_dma_i2s_read_raw();
+void configure_i2s(void);
+void recording(void);
 
 
 

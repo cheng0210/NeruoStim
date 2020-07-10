@@ -537,10 +537,15 @@ void ble_init(void)
 
     nimble_port_freertos_init(host_task);
 
-    if(i2c_connection_status == 0){
+    /* if(i2c_connection_status == 0){
         battery_update();
         battery_update_timer_handler = xTimerCreate("update_battery_timer", pdMS_TO_TICKS(BATTERY_UPDATE_TIME_INTERVAL), pdTRUE, NULL, battery_level_notify);
-    } 
+    }  */
+}
+
+void ble_deinit(){
+    nimble_port_freertos_deinit();
+    esp_nimble_hci_and_controller_deinit();
 }
 
 void battery_level_notify()

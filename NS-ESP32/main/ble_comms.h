@@ -91,5 +91,6 @@ uint8_t ble_addr_type;
 void battery_level_notify(); //todo 
 void ble_app_advertise(void);
 void ble_init(void);
+void ble_deinit(void);
 
 #endif
