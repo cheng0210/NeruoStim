@@ -118,3 +118,12 @@ char **split(const char *command, char splitter)
     result[count] = NULL;
     return result;
 }
+
+void clear_wifi_config(){
+    nvs_flash_init();
+    nvs_handle_t nvs;
+    nvs_open("wifiCreds", NVS_READWRITE, &nvs);
+    nvs_erase_key(nvs,"ssid");
+    nvs_erase_key(nvs,"pass");
+    nvs_close(nvs);
+}

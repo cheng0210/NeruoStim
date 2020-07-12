@@ -29,10 +29,11 @@ void app_main(){ // runs in cpu0
     RAMP_UP = 0;
     SHORT_ELECTRODE = 1;
 
-    //i2c_connection_status = battery_init();
-    ble_init();//ble host stack is running on cpu0 which will not affect cpu1
-    //xTaskCreatePinnedToCore(delay_test, "gpio test", 2048, NULL, 2, NULL, 1);
 
+    wifi_init();
+    //i2c_connection_status = battery_init();
+    //ble_init();//bluetooth disabled in this branch
+    //xTaskCreatePinnedToCore(delay_test, "gpio test", 2048, NULL, 2, NULL, 1);
     /*  while(1){
         vTaskDelay(10000 / portTICK_PERIOD_MS);
         printf("***********************************************************\n");
@@ -44,16 +45,17 @@ void app_main(){ // runs in cpu0
         printf("short electrode : %s\n",SHORT_ELECTRODE?"yes":"no");
     }  */
 
-    vTaskDelay(10000 / portTICK_PERIOD_MS);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-    ble_deinit();
+    //ble_deinit();
 
-    configure_i2s();
-    recording();
+    //configure_i2s();
+    //recording();
     //xTaskCreatePinnedToCore(recording, "recording", 2048, NULL, 2, NULL, 0);
 
     
 }
+
 
 void STIM_START(){
     STIM_TASK_STATUS = 1;
@@ -150,3 +152,4 @@ void delay_test()
         gpio_set_level(23, isOn);
     }
 }
+
