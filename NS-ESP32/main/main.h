@@ -12,6 +12,7 @@
 #include "recording.h"
 #include "battery.h"
 #include "wifi_comms.h"
+#include "utils.h"
 
 
 #define DEVICE_NAME "NeuroStimulator"

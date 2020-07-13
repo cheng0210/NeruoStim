@@ -6,7 +6,7 @@
 
 void parse_command(char *command);
 char **split(const char *command, char splitter);
-
+void clear_wifi_config();
 
 
 #endif

@@ -11,6 +11,8 @@
 */
 
 void app_main(){ // runs in cpu0
+    //clear_wifi_config();
+    SOCKET_PORT = 8888;
     BATTERY_UPDATE_TIME_INTERVAL = 10000; //10 second
     BATTERY_LEVEL = 0;
     CHANNEL_NUM = 1;

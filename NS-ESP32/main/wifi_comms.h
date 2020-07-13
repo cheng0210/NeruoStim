@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
+#include "main.h"
 #include "esp_event_loop.h"
 #include "esp_wifi.h"
 #include "esp_log.h"
@@ -15,6 +13,10 @@
 #include "esp_http_server.h"
 #include "esp_spiffs.h"
 #include "nvs.h"
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include <lwip/netdb.h>
 
 
 xSemaphoreHandle connectionSemaphore;
@@ -22,6 +24,7 @@ xSemaphoreHandle initSemaphore;
 
 uint8_t DISCONNECTED_TIMES;
 httpd_handle_t server;
+uint16_t SOCKET_PORT;
 
 void wifi_init();
 void wifi_start(void *params);
