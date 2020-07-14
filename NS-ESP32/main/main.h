@@ -40,6 +40,5 @@ bool STIM_TASK_STATUS; //0 IDLE; 1 WORKING
 
 void STIM_START();
 void STIM_STOP();
-void delay_test();
 void biphasic_loop();
 #endif

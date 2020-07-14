@@ -2,10 +2,11 @@
 void tcp_socket_server(void *pvParameters);
 void wifi_init(){
 	DISCONNECTED_TIMES = 0;
+
 	esp_log_level_set("WIFI", ESP_LOG_DEBUG);
 	//connectionSemaphore = xSemaphoreCreateBinary();
 	initSemaphore = xSemaphoreCreateBinary();
-	xTaskCreatePinnedToCore(&wifi_start, "init comms", 1024 * 3, NULL, 3, NULL,0);
+	xTaskCreatePinnedToCore(&wifi_start, "init comms", 1024 * 4, NULL, 15, NULL,0);
 	xSemaphoreGive(initSemaphore);
 	//xTaskCreate(&OnConnected, "handel comms", 1024 * 5, NULL, 5, NULL);
 	//RegisterEndPoints();
@@ -25,12 +26,13 @@ static esp_err_t event_handler(void *ctx, system_event_t *event){
 
 	case SYSTEM_EVENT_STA_GOT_IP:
 		ESP_LOGI("CONNECTION", "got ip\n");
+		xTaskCreatePinnedToCore(tcp_socket_server, "tcp_server", 4096, NULL, 10, NULL,0);
 		break;
 
 	case SYSTEM_EVENT_STA_DISCONNECTED:
 		ESP_LOGI("CONNECTION", "disconnected\n");
 		DISCONNECTED_TIMES++;
-		xTaskCreatePinnedToCore(resetWifi, "reset wifi", 2048, NULL, 5, NULL,0);
+		xTaskCreatePinnedToCore(resetWifi, "reset wifi", 2048, NULL, 15, NULL,1);
 		break;
 
 	default:
@@ -93,11 +95,14 @@ void wifi_start(void *params)
 		wifi_init_config_t wifi_init_config = WIFI_INIT_CONFIG_DEFAULT();
 		ESP_ERROR_CHECK(esp_wifi_init(&wifi_init_config));
 
+		//disable pwr save to make i2s work
+		esp_wifi_set_ps(WIFI_PS_NONE);
+
+
 		if (ssid != NULL && pass != NULL && DISCONNECTED_TIMES < 3)
 		{
 			connectSTA(ssid, pass);
 			ESP_ERROR_CHECK(esp_wifi_start());
-			xTaskCreatePinnedToCore(tcp_socket_server, "tcp_server", 4096, NULL, 2, NULL,0);
 		}
 		else
 		{
@@ -105,7 +110,10 @@ void wifi_start(void *params)
 			ESP_ERROR_CHECK(esp_wifi_start());
 		}
 		//xSemaphoreGive(connectionSemaphore);
-		RegisterEndPoints();
+		if(SERVER_ON == false){
+			RegisterEndPoints();
+			SERVER_ON = true;
+		}
 		if (ssid != NULL)
 			free(ssid);
 		if (pass != NULL)
@@ -117,7 +125,7 @@ void wifi_start(void *params)
 void resetWifi(void *params)
 {
     vTaskDelay(10000 / portTICK_PERIOD_MS);
-	httpd_stop(server);
+	//httpd_stop(server);
     esp_wifi_stop();
     xSemaphoreGive(initSemaphore);
     vTaskDelete(NULL);
@@ -201,7 +209,8 @@ static esp_err_t wificonfig_url_hit(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Location", "/done.html");
     httpd_resp_send(req, NULL, 0);
 
-    xTaskCreatePinnedToCore(resetWifi, "reset wifi", 1024 * 2, NULL, 5, NULL,0);
+    xTaskCreatePinnedToCore(resetWifi, "reset wifi", 1024 * 3, NULL, 15, NULL,1);
+
     return ESP_OK;
 }
 
@@ -249,7 +258,7 @@ void tcp_socket_server(void *pvParameters)
 	int listen_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (listen_sock < 0) {
 		ESP_LOGE("socket", "Unable to create socket: errno %d", errno);
-		vTaskDelete(NULL);;
+		vTaskDelete(NULL);
 	}
 	ESP_LOGI("socket", "Socket created");
 
@@ -267,51 +276,45 @@ void tcp_socket_server(void *pvParameters)
 	}
 	ESP_LOGI("socket", "Socket listening");
 
-	struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
-	uint addr_len = sizeof(source_addr);
-	int sock = accept(listen_sock, (struct sockaddr *)&source_addr, &addr_len);
-	if (sock < 0) {
-		ESP_LOGE("socket", "Unable to accept connection: errno %d", errno);
-		vTaskDelete(NULL);
-	}
-	ESP_LOGI("socket", "Socket accepted");
-
 	while (1) {
+
+		struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
+		uint addr_len = sizeof(source_addr);
+		int sock = accept(listen_sock, (struct sockaddr *)&source_addr, &addr_len);
+		if (sock < 0) {
+			ESP_LOGE("socket", "Unable to accept connection: errno %d", errno);
+			close(sock);
+			continue;
+		}
+		ESP_LOGI("socket", "Socket accepted");
+
 		int len = recv(sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
 		// Error occurred during receiving
 		if (len < 0) {
 			ESP_LOGE("socket", "recv failed: errno %d", errno);
-			break;
+			close(sock);
+			continue;
 		}
 		// Connection closed
 		else if (len == 0) {
 			ESP_LOGI("socket", "Connection closed");
-			break;
+			close(sock);
+			continue;
 		}
 		// Data received
 		else {
-			// Get the sender's ip address as string
-			if (source_addr.sin6_family == PF_INET) {
-				inet_ntoa_r(((struct sockaddr_in *)&source_addr)->sin_addr.s_addr, addr_str, sizeof(addr_str) - 1);
-			} else if (source_addr.sin6_family == PF_INET6) {
-				inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1);
-			}
-
 			rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string
-			ESP_LOGI("socket", "Received %d bytes from %s:", len, addr_str);
 			ESP_LOGI("socket", "%s", rx_buffer);
+
+			parse_command(rx_buffer);
 
 			int err = send(sock, rx_buffer, len, 0);
 			if (err < 0) {
 				ESP_LOGE("socket", "Error occurred during sending: errno %d", errno);
-				break;
+				close(sock);
+				continue;
 			}
 		}
-	}
-
-	if (sock != -1) {
-		ESP_LOGE("socket", "Shutting down socket");
-		shutdown(sock, 0);
 		close(sock);
 	}
     vTaskDelete(NULL);

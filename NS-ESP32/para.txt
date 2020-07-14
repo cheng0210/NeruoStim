@@ -1,6 +1,7 @@
 stimulation_commands:
     start
     stop
+    clr_wifi_cfg
     stim_amp:2000
     stim_type:0
     anodic_cathodic:1
@@ -14,5 +15,8 @@ stimulation_commands:
     inter_burst_delay:0
     ramp_up:0
     short_electrode:1
+
+    enable_record:0
+    record_offset:0
     
 

@@ -11,7 +11,14 @@
 */
 
 void app_main(){ // runs in cpu0
+    
+    
+    //comment this if you want esp32 store ssid/password
     //clear_wifi_config();
+
+
+
+    SERVER_ON = false;
     SOCKET_PORT = 8888;
     BATTERY_UPDATE_TIME_INTERVAL = 10000; //10 second
     BATTERY_LEVEL = 0;
@@ -31,6 +38,11 @@ void app_main(){ // runs in cpu0
     RAMP_UP = 0;
     SHORT_ELECTRODE = 1;
 
+    STIM_STATUS = 0;
+    STIM_TASK_STATUS = 0;
+
+    ENABLE_RECORD = false;
+    RECORD_OFFSET = 0;
 
     wifi_init();
     //i2c_connection_status = battery_init();
@@ -47,49 +59,52 @@ void app_main(){ // runs in cpu0
         printf("short electrode : %s\n",SHORT_ELECTRODE?"yes":"no");
     }  */
 
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(6000 / portTICK_PERIOD_MS);
 
     //ble_deinit();
 
     //configure_i2s();
-    //recording();
-    //xTaskCreatePinnedToCore(recording, "recording", 2048, NULL, 2, NULL, 0);
+    //xTaskCreatePinnedToCore(recording, "recording", 2048, NULL, 6, NULL, 0);
 
+    char list[512];
+    vTaskList((char *)&list);
+    printf("%s\n",list);
     
 }
 
 
 void STIM_START(){
     STIM_TASK_STATUS = 1;
-    xTaskCreatePinnedToCore(biphasic_loop, "biphasic_loop", 2048, NULL, 2, &STIM_TASK, 1);
+    xTaskCreatePinnedToCore(biphasic_loop, "biphasic_loop", 4096, NULL, 2, &STIM_TASK, 1);
     printf("started!\n");
 }
 
 void STIM_STOP(){
-    while(true){
-        if(STIM_STATUS == 0){
-            vTaskDelete(STIM_TASK);
-            dac_output_voltage(DAC_CHANNEL_1,125);//may need to change to fit elec team's circuit
-            STIM_TASK_STATUS = 0;
-            break;
-        }
-    }
+    STIM_STATUS = 0;
     printf("stopped!\n");
 }
 
 void IRAM_ATTR biphasic_loop(void *params)//may need to change to fit elec team's circuit
 {
     dac_output_enable(DAC_CHANNEL_1);
+    dac_output_enable(DAC_CHANNEL_2);
     STIM_STATUS = 1;//mark as stimulation begin
+    if(ENABLE_RECORD){
+        configure_i2s();
+        xTaskCreatePinnedToCore(recording, "recording", 1024*4, NULL, 6, NULL, 0);
+    }
+    if(RECORD_OFFSET < 0){
+        vTaskDelay( -RECORD_OFFSET / portTICK_PERIOD_MS);
+    }
+    dac_output_voltage(DAC_CHANNEL_2, 127);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
 
 
-    while(1){
+    /* while(1){
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 255, RTC_IO_PDAC1_DAC_S);
-    } 
-    /* while(STIM_TASK_STATUS){
-    
+    }  */
+    while(STIM_STATUS){
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 255, RTC_IO_PDAC1_DAC_S);
         ets_delay_us(PHASE_ONE_TIME);
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 127, RTC_IO_PDAC1_DAC_S);
@@ -98,60 +113,10 @@ void IRAM_ATTR biphasic_loop(void *params)//may need to change to fit elec team'
         ets_delay_us(PHASE_TWO_TIME);
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 127, RTC_IO_PDAC1_DAC_S);
         ets_delay_us(INTER_STIM_DELAY);
-    } */
-    STIM_STATUS = 0;//mark as stimulation finish
-}
-
-void delay_test()
-{
-    dac_output_enable(DAC_CHANNEL_1);
-    /* while (1)
-    {
-        //there is a ~16us delay in gettimeofday
-        gettimeofday(&tv1, NULL);
-        ets_delay_us(i);//this delay function is very accurate
-        gettimeofday(&tv2, NULL);
-        printf("delay %ld us\n", (tv2.tv_usec - tv1.tv_usec));//delay i+16 us
-        i++;
-        vTaskDelay(1000 / portTICK_PERIOD_MS); 
-        printf("***********************************************************\n");
-        printf("%s and %s\n", ANODIC_CATHODIC ? "CATHODIC" : "ANODIC", STIM_TYPE ? "BURST" : "UNIFORM");
-        printf("stim amp : %u   phase one time : %u    phase two time: %u\n", STIM_AMP, PHASE_ONE_TIME, PHASE_TWO_TIME);
-        printf("inter phase gap : %u   inter stim delay : %u  stim duration : %u\n", INTER_PHASE_GAP, INTER_STIM_DELAY, STIM_DURATION);
-        printf("burst time : %u    inter burst delay : %u\n", BURST_TIME, INTER_BURST_DELAY);
-        i = 0;
-        while(i<255){
-            dac_output_voltage(DAC_CHANNEL_1, i);
-            dac_output_voltage(DAC_CHANNEL_2, 0);
-            float out = ((float) i)/255 * 3.1 + 0.08;
-            printf("dac out is %f\n",out);
-            vTaskDelay(5000 / portTICK_PERIOD_MS);
-            i = i + 1;
-        }
-           
-    } */
-    /* int x = 0;
-    while(1){
-        x = !x;
-        switch(x){
-            case 1:
-                dac_output_voltage(DAC_CHANNEL_1, 255);
-                break;
-            case 0:
-                dac_output_voltage(DAC_CHANNEL_1, 0);
-                break;
-            default:
-                 break;
-        }
-        //ets_delay_us(20);
-    }  */
-    gpio_pad_select_gpio(23);
-    gpio_set_direction(23, GPIO_MODE_OUTPUT);
-    int isOn = 0;
-    while (true)
-    {
-        isOn = !isOn;
-        gpio_set_level(23, isOn);
+        //printf("stim\n");
     }
+    dac_output_voltage(DAC_CHANNEL_1,127);//may need to change to fit elec team's circuit
+    STIM_TASK_STATUS = 0;//mark as stimulation task finish
+    vTaskDelete(NULL);
 }
 

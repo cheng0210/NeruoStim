@@ -12,8 +12,11 @@
 #include "soc/syscon_reg.h"
 #include "soc/syscon_struct.h"
 
+bool ENABLE_RECORD;
+int32_t RECORD_OFFSET; //determin recording start before / atfer stimulation (ms); + :after / - : before
+
 void configure_i2s(void);
-void recording(void);
+void recording(void *params);
 
 
 

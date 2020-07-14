@@ -17,6 +17,7 @@
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
 #include <lwip/netdb.h>
+#include "utils.h"
 
 
 xSemaphoreHandle connectionSemaphore;
@@ -24,6 +25,7 @@ xSemaphoreHandle initSemaphore;
 
 uint8_t DISCONNECTED_TIMES;
 httpd_handle_t server;
+bool SERVER_ON;
 uint16_t SOCKET_PORT;
 
 void wifi_init();

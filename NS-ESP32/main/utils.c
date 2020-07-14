@@ -1,7 +1,8 @@
 #include "utils.h"
 
 void parse_command(char *command){
-    char **result = split(command,':');
+    char **pre_split = split(command, '\n'); //debug with nc command will have a '\n'; there is no need to add a '\n' in python
+    char **result = split(pre_split[0],':');
     if (strcmp(result[0], "start") == 0)
     {
         printf("start!\n");
@@ -14,6 +15,9 @@ void parse_command(char *command){
         {
             STIM_STOP();
         }
+    }else if(strcmp(result[0],"clr_wifi_cfg")==0){
+        clear_wifi_config();
+        printf("cleared\n");
     }else if(strcmp(result[0],"stim_amp")==0){
         STIM_AMP = atoi(result[1]);
     }
@@ -64,6 +68,14 @@ void parse_command(char *command){
     else if (strcmp(result[0], "pulse_num_in_one_burst") == 0)
     {
         PULSE_NUM_IN_ONE_BURST = atoi(result[1]);
+    }
+    else if (strcmp(result[0], "enable_record") == 0)
+    {
+        ENABLE_RECORD = atoi(result[1]);
+    }
+    else if (strcmp(result[0], "record_offset") == 0)
+    {
+        RECORD_OFFSET = atoi(result[1]);
     }
 
     free(result);
