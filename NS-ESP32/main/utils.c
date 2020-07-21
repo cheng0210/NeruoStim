@@ -78,6 +78,30 @@ void parse_command(char *command){
         RECORD_OFFSET = atoi(result[1]);
     }
 
+    if(DEBUG_MODE_ENABLED){
+        printf("***********************************************************\n");
+        printf("%s and %s\n", ANODIC_CATHODIC ? "CATHODIC" : "ANODIC", STIM_TYPE ? "BURST" : "UNIFORM");
+        printf("stim amp : %u   phase one time : %u    phase two time: %u\n", STIM_AMP, PHASE_ONE_TIME, PHASE_TWO_TIME);
+        printf("inter phase gap : %u   inter stim delay : %u  pulse num : %u\n", INTER_PHASE_GAP, INTER_STIM_DELAY, PULSE_NUM);
+        printf("pulse num in one burst : %u     burst num : %u    inter burst delay : %u\n", PULSE_NUM_IN_ONE_BURST,BURST_NUM, INTER_BURST_DELAY);
+        printf("ramp up : %s\n",RAMP_UP?"yes":"no");
+        printf("short electrode : %s\n",SHORT_ELECTRODE?"yes":"no");
+        printf("recording : %s      recording start offset : %d\n", ENABLE_RECORD ? "yes" : "no", RECORD_OFFSET);
+        printf("***********************************************************\n");
+    }
+
+    int x = 0;
+    while(pre_split[x] != NULL){
+        free(pre_split[x]);
+        x++;
+    }
+    free(pre_split);
+
+    x = 0;
+    while(result[x] != NULL){
+        free(result[x]);
+        x++;
+    }
     free(result);
 }
 

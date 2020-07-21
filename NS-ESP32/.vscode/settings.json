@@ -27,13 +27,14 @@
     }
   ],
   "idf.port": "/dev/cu.usbserial-144410",
-  "idf.portWin": "COM4",
+  "idf.portWin": "COM5",
   "C_Cpp.errorSquiggles": "Disabled",
   "files.associations": {
     "condition_variable": "cpp",
     "complex": "c",
     "cstdio": "cpp",
-    "queue.h": "c"
+    "queue.h": "c",
+    "functional": "c"
   },
   "git.ignoreLimitWarning": true
 }

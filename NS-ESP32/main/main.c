@@ -16,7 +16,8 @@ void app_main(){ // runs in cpu0
     //comment this if you want esp32 store ssid/password
     //clear_wifi_config();
 
-
+    //enable debug mode here
+    DEBUG_MODE_ENABLED = 1;
 
     SERVER_ON = false;
     SOCKET_PORT = 8888;
@@ -46,25 +47,9 @@ void app_main(){ // runs in cpu0
 
     wifi_init();
     //i2c_connection_status = battery_init();
-    //ble_init();//bluetooth disabled in this branch
-    //xTaskCreatePinnedToCore(delay_test, "gpio test", 2048, NULL, 2, NULL, 1);
-    /*  while(1){
-        vTaskDelay(10000 / portTICK_PERIOD_MS);
-        printf("***********************************************************\n");
-        printf("%s and %s\n", ANODIC_CATHODIC ? "CATHODIC" : "ANODIC", STIM_TYPE ? "BURST" : "UNIFORM");
-        printf("stim amp : %u   phase one time : %u    phase two time: %u\n", STIM_AMP, PHASE_ONE_TIME, PHASE_TWO_TIME);
-        printf("inter phase gap : %u   inter stim delay : %u  pulse num : %u\n", INTER_PHASE_GAP, INTER_STIM_DELAY, PULSE_NUM);
-        printf("pulse num in one burst : %u     burst num : %u    inter burst delay : %u\n", PULSE_NUM_IN_ONE_BURST,BURST_NUM, INTER_BURST_DELAY);
-        printf("ramp up : %s\n",RAMP_UP?"yes":"no");
-        printf("short electrode : %s\n",SHORT_ELECTRODE?"yes":"no");
-    }  */
 
-    vTaskDelay(6000 / portTICK_PERIOD_MS);
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
 
-    //ble_deinit();
-
-    //configure_i2s();
-    //xTaskCreatePinnedToCore(recording, "recording", 2048, NULL, 6, NULL, 0);
 
     char list[512];
     vTaskList((char *)&list);
@@ -75,6 +60,15 @@ void app_main(){ // runs in cpu0
 
 void STIM_START(){
     STIM_TASK_STATUS = 1;
+    dac_output_enable(DAC_CHANNEL_1);
+    dac_output_enable(DAC_CHANNEL_2);
+    if(ENABLE_RECORD){
+        configure_i2s();
+        xTaskCreatePinnedToCore(recording, "recording", 1024*4, NULL, 6, NULL, 0);
+    }
+    if(RECORD_OFFSET < 0){
+        vTaskDelay( -RECORD_OFFSET / portTICK_PERIOD_MS);
+    }
     xTaskCreatePinnedToCore(biphasic_loop, "biphasic_loop", 4096, NULL, 2, &STIM_TASK, 1);
     printf("started!\n");
 }
@@ -86,21 +80,10 @@ void STIM_STOP(){
 
 void IRAM_ATTR biphasic_loop(void *params)//may need to change to fit elec team's circuit
 {
-    dac_output_enable(DAC_CHANNEL_1);
-    dac_output_enable(DAC_CHANNEL_2);
     STIM_STATUS = 1;//mark as stimulation begin
-    if(ENABLE_RECORD){
-        configure_i2s();
-        xTaskCreatePinnedToCore(recording, "recording", 1024*4, NULL, 6, NULL, 0);
-    }
-    if(RECORD_OFFSET < 0){
-        vTaskDelay( -RECORD_OFFSET / portTICK_PERIOD_MS);
-    }
     dac_output_voltage(DAC_CHANNEL_2, 127);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
-
-
     /* while(1){
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 255, RTC_IO_PDAC1_DAC_S);
     }  */

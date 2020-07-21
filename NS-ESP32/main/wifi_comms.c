@@ -2,14 +2,10 @@
 void tcp_socket_server(void *pvParameters);
 void wifi_init(){
 	DISCONNECTED_TIMES = 0;
-
 	esp_log_level_set("WIFI", ESP_LOG_DEBUG);
-	//connectionSemaphore = xSemaphoreCreateBinary();
 	initSemaphore = xSemaphoreCreateBinary();
 	xTaskCreatePinnedToCore(&wifi_start, "init comms", 1024 * 4, NULL, 15, NULL,0);
 	xSemaphoreGive(initSemaphore);
-	//xTaskCreate(&OnConnected, "handel comms", 1024 * 5, NULL, 5, NULL);
-	//RegisterEndPoints();
 }
 
 static esp_err_t event_handler(void *ctx, system_event_t *event){
@@ -71,7 +67,10 @@ void wifi_start(void *params)
 	ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
 	while (true){
 		if (xSemaphoreTake(initSemaphore, portMAX_DELAY)){
+			
+			//need to change to esp_netif_init() when esp-idf update
 			tcpip_adapter_init();
+
 			nvs_handle_t nvs;
 			nvs_open("wifiCreds", NVS_READWRITE, &nvs);
 
@@ -101,6 +100,7 @@ void wifi_start(void *params)
 
 		if (ssid != NULL && pass != NULL && DISCONNECTED_TIMES < 3)
 		{
+			tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_STA, DEVICE_NAME);
 			connectSTA(ssid, pass);
 			ESP_ERROR_CHECK(esp_wifi_start());
 		}
@@ -127,7 +127,7 @@ void resetWifi(void *params)
     vTaskDelay(10000 / portTICK_PERIOD_MS);
 	//httpd_stop(server);
     esp_wifi_stop();
-    xSemaphoreGive(initSemaphore);
+	xSemaphoreGive(initSemaphore);
     vTaskDelete(NULL);
 }
 

@@ -17,6 +17,8 @@
 
 #define DEVICE_NAME "NeuroStimulator"
 
+uint8_t DEBUG_MODE_ENABLED;
+
 uint8_t CHANNEL_NUM;
 uint32_t MAX_FREQ;
 
