@@ -46,10 +46,10 @@ void app_main(){ // runs in cpu0
 
     vTaskDelay(10000 / portTICK_PERIOD_MS);
 
-    ble_deinit();
+    //ble_deinit();
 
-    configure_i2s();
-    recording();
+    //configure_i2s();
+    //recording();
     //xTaskCreatePinnedToCore(recording, "recording", 2048, NULL, 2, NULL, 0);
 
     
@@ -81,10 +81,10 @@ void IRAM_ATTR biphasic_loop(void *params)//may need to change to fit elec team'
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
 
 
-    while(1){
+    /* while(1){
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 255, RTC_IO_PDAC1_DAC_S);
-    } 
-    /* while(STIM_TASK_STATUS){
+    }  */
+    while(STIM_TASK_STATUS){
     
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 255, RTC_IO_PDAC1_DAC_S);
         ets_delay_us(PHASE_ONE_TIME);
@@ -94,7 +94,7 @@ void IRAM_ATTR biphasic_loop(void *params)//may need to change to fit elec team'
         ets_delay_us(PHASE_TWO_TIME);
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 127, RTC_IO_PDAC1_DAC_S);
         ets_delay_us(INTER_STIM_DELAY);
-    } */
+    }
     STIM_STATUS = 0;//mark as stimulation finish
 }
 
