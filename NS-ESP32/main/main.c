@@ -18,6 +18,8 @@ void app_main(){ // runs in cpu0
 
     //enable debug mode here
     DEBUG_MODE_ENABLED = 1;
+    DAC_LOW = 0;
+    DAC_HIGH = 255;
 
     SERVER_ON = false;
     SOCKET_PORT = 8888;
