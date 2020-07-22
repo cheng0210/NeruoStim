@@ -23,7 +23,7 @@ void parse_command(char *command){
     }
     else if (strcmp(result[0], "anodic_cathodic")==0)
     {
-        ANODIC_CATHODIC = atoi(result[2]);
+        ANODIC_CATHODIC = atoi(result[1]);
     }
     else if (strcmp(result[0], "phase_one_time")==0)
     {
