@@ -83,7 +83,7 @@ void STIM_STOP(){
 void IRAM_ATTR biphasic_loop(void *params)//may need to change to fit elec team's circuit
 {
     STIM_STATUS = 1;//mark as stimulation begin
-    dac_output_voltage(DAC_CHANNEL_2, 127);
+    dac_output_voltage(DAC_CHANNEL_2, 120);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
     uint32_t phase_one = PHASE_ONE_TIME;
