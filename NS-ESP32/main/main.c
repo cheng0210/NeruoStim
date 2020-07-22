@@ -84,18 +84,24 @@ void IRAM_ATTR biphasic_loop(void *params)//may need to change to fit elec team'
     dac_output_voltage(DAC_CHANNEL_2, 127);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
+    uint32_t phase_one = PHASE_ONE_TIME;
+    uint32_t phase_two = PHASE_TWO_TIME;
+    uint32_t phase_gap = INTER_PHASE_GAP;
+    uint32_t stim_delay = INTER_STIM_DELAY;
+    uint8_t dac_raw_low = DAC_LOW;
+    uint8_t dac_raw_high = DAC_HIGH;
     /* while(1){
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 255, RTC_IO_PDAC1_DAC_S);
     }  */
     while(STIM_STATUS){
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 255, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(PHASE_ONE_TIME);
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_raw_high, RTC_IO_PDAC1_DAC_S);
+        ets_delay_us(phase_one);
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 127, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(INTER_PHASE_GAP);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 0, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(PHASE_TWO_TIME);
+        ets_delay_us(phase_gap);
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_raw_low, RTC_IO_PDAC1_DAC_S);
+        ets_delay_us(phase_two);
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 127, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(INTER_STIM_DELAY);
+        ets_delay_us(stim_delay);
         //printf("stim\n");
     }
     dac_output_voltage(DAC_CHANNEL_1,127);//may need to change to fit elec team's circuit

@@ -77,6 +77,14 @@ void parse_command(char *command){
     {
         RECORD_OFFSET = atoi(result[1]);
     }
+    else if (strcmp(result[0], "dac_raw_low") == 0)
+    {
+        DAC_LOW = atoi(result[1]);
+    }
+    else if (strcmp(result[0], "dac_raw_high") == 0)
+    {
+        DAC_HIGH = atoi(result[1]);
+    }
 
     if(DEBUG_MODE_ENABLED){
         printf("***********************************************************\n");

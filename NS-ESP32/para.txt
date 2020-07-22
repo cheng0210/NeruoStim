@@ -19,4 +19,5 @@ stimulation_commands:
     enable_record:0
     record_offset:0
     
-
+    dac_raw_low:0
+    dac_raw_high:255

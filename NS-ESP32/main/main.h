@@ -36,6 +36,9 @@ uint32_t PULSE_NUM_IN_ONE_BURST;
 uint8_t RAMP_UP;
 uint8_t SHORT_ELECTRODE;
 
+uint8_t DAC_LOW;
+uint8_t DAC_HIGH;
+
 TaskHandle_t STIM_TASK;
 bool STIM_STATUS; //used to delete task
 bool STIM_TASK_STATUS; //0 IDLE; 1 WORKING
