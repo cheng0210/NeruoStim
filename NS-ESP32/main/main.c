@@ -17,9 +17,14 @@ void app_main(){ // runs in cpu0
     //clear_wifi_config();
 
     //enable debug mode here
-    DEBUG_MODE_ENABLED = 1;
-    DAC_LOW = 0;
-    DAC_HIGH = 255;
+    DEBUG_MODE_ENABLED = 0;
+    DAC_PHASE_ONE = 0;
+    DAC_PHASE_TWO = 255;
+
+
+    calibrated = 1;
+    VREF_0 = 82;
+    VREF_255 = 3180;
 
     SERVER_ON = false;
     SOCKET_PORT = 8888;
@@ -83,26 +88,45 @@ void STIM_STOP(){
 void IRAM_ATTR biphasic_loop(void *params)//may need to change to fit elec team's circuit
 {
     STIM_STATUS = 1;//mark as stimulation begin
-    dac_output_voltage(DAC_CHANNEL_2, 120);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
     uint32_t phase_one = PHASE_ONE_TIME;
     uint32_t phase_two = PHASE_TWO_TIME;
     uint32_t phase_gap = INTER_PHASE_GAP;
     uint32_t stim_delay = INTER_STIM_DELAY;
-    uint8_t dac_raw_low = DAC_LOW;
-    uint8_t dac_raw_high = DAC_HIGH;
+    uint8_t dac_phase_one, dac_phase_two;
+    uint8_t dac_gap;
+    if(DEBUG_MODE_ENABLED){
+        dac_phase_one = DAC_PHASE_ONE;
+        dac_phase_two = DAC_PHASE_TWO;
+        dac_gap = 127;
+    }else{
+        float step_voltage = (VREF_255 - VREF_0)/255;//DAC's step volatge
+        uint8_t steps = 3000/step_voltage;// how many steps from 0 to 3V (Vref_0 to 3 + Vref_0) dac is not perfect; maps to -3mA to 3mA
+        dac_gap = steps/2; // median value -> 0mA; dac steps from 0 to 3mA or 0 to -3mA
+        uint16_t amp_step = 3000/dac_gap; // uA/step
+        if(ANODIC_CATHODIC){
+            dac_phase_one = dac_gap - STIM_AMP/amp_step;
+            dac_phase_two  =dac_gap + STIM_AMP/amp_step;
+        }else{
+            dac_phase_one = dac_gap + STIM_AMP/amp_step;
+            dac_phase_two  =dac_gap - STIM_AMP/amp_step;
+        }
+    }
+    printf("dac phase 1 is %u ;phase two is %u; dac_gap is %d\n",dac_phase_one,dac_phase_two,dac_gap);
+    dac_output_voltage(DAC_CHANNEL_2, dac_gap);
+
     /* while(1){
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 255, RTC_IO_PDAC1_DAC_S);
     }  */
     while(STIM_STATUS){
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_raw_high, RTC_IO_PDAC1_DAC_S);
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_phase_one, RTC_IO_PDAC1_DAC_S);
         ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 127, RTC_IO_PDAC1_DAC_S);
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
         ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_raw_low, RTC_IO_PDAC1_DAC_S);
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_phase_two, RTC_IO_PDAC1_DAC_S);
         ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 127, RTC_IO_PDAC1_DAC_S);
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
         ets_delay_us(stim_delay);
         //printf("stim\n");
     }

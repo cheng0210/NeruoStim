@@ -100,9 +100,9 @@ void wifi_start(void *params)
 
 		if (ssid != NULL && pass != NULL && DISCONNECTED_TIMES < 3)
 		{
-			tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_STA, DEVICE_NAME);
 			connectSTA(ssid, pass);
 			ESP_ERROR_CHECK(esp_wifi_start());
+			tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_STA, DEVICE_NAME);
 		}
 		else
 		{

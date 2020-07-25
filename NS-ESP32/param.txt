@@ -1,7 +1,7 @@
 stimulation_commands:
     start
     stop
-    clr_wifi_cfg
+    clr_wifi_cfg    //clear wifi configuration
     stim_amp:2000
     stim_type:0
     anodic_cathodic:1
@@ -19,5 +19,8 @@ stimulation_commands:
     enable_record:0
     record_offset:0
     
-    dac_raw_low:0
-    dac_raw_high:255
+    debug_enable:1
+    ######valid when debug mode enabled#######
+    dac_phase_one:0
+    dac_phase_two:255
+    ##########################################

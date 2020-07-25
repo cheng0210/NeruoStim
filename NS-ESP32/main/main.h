@@ -36,8 +36,13 @@ uint32_t PULSE_NUM_IN_ONE_BURST;
 uint8_t RAMP_UP;
 uint8_t SHORT_ELECTRODE;
 
-uint8_t DAC_LOW;
-uint8_t DAC_HIGH;
+bool calibrated;
+uint32_t VREF_0; //in mV
+uint32_t VREF_255;//in mV
+
+//for debug purpose
+uint8_t DAC_PHASE_ONE;
+uint8_t DAC_PHASE_TWO;
 
 TaskHandle_t STIM_TASK;
 bool STIM_STATUS; //used to delete task
