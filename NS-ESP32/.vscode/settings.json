@@ -33,6 +33,7 @@
     "condition_variable": "cpp",
     "complex": "c",
     "cstdio": "cpp",
-    "queue.h": "c"
+    "queue.h": "c",
+    "functional": "c"
   }
 }
