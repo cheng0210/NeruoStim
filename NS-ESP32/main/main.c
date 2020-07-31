@@ -17,7 +17,7 @@ void app_main(){ // runs in cpu0
     //clear_wifi_config();
 
     //enable debug mode here
-    DEBUG_MODE_ENABLED = 0;
+    DEBUG_MODE_ENABLED = 1;
     DAC_PHASE_ONE = 0;
     DAC_PHASE_TWO = 255;
 
@@ -32,11 +32,11 @@ void app_main(){ // runs in cpu0
     BATTERY_LEVEL = 0;
     CHANNEL_NUM = 1;
     MAX_FREQ = 100000;//10KHZ
-    PHASE_ONE_TIME = 10;// default 10us
-    PHASE_TWO_TIME = 10;// default 10us
+    PHASE_ONE_TIME = 5000;// default 10us
+    PHASE_TWO_TIME = 5000;// default 10us
     STIM_AMP = 2000;// default 0uA
     INTER_PHASE_GAP = 0;//default 0us
-    INTER_STIM_DELAY = 100;//default 0us
+    INTER_STIM_DELAY = 5000;//default 0us
     ANODIC_CATHODIC = 1;//default cathodic
     STIM_TYPE = 0;//default uniform stim
     PULSE_NUM = 0;//default 0 is forever in ms
@@ -49,7 +49,7 @@ void app_main(){ // runs in cpu0
     STIM_STATUS = 0;
     STIM_TASK_STATUS = 0;
 
-    ENABLE_RECORD = false;
+    ENABLE_RECORD = true;
     RECORD_OFFSET = 0;
 
     wifi_init();
@@ -77,7 +77,6 @@ void STIM_START(){
         vTaskDelay( -RECORD_OFFSET / portTICK_PERIOD_MS);
     }
     xTaskCreatePinnedToCore(biphasic_loop, "biphasic_loop", 4096, NULL, 2, &STIM_TASK, 1);
-    printf("started!\n");
 }
 
 void STIM_STOP(){
@@ -87,7 +86,6 @@ void STIM_STOP(){
 
 void IRAM_ATTR biphasic_loop(void *params)//may need to change to fit elec team's circuit
 {
-    STIM_STATUS = 1;//mark as stimulation begin
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
     uint32_t phase_one = PHASE_ONE_TIME;
@@ -115,20 +113,21 @@ void IRAM_ATTR biphasic_loop(void *params)//may need to change to fit elec team'
     }
     printf("dac phase 1 is %u ;phase two is %u; dac_gap is %d\n",dac_phase_one,dac_phase_two,dac_gap);
     dac_output_voltage(DAC_CHANNEL_2, dac_gap);
-
     /* while(1){
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, 255, RTC_IO_PDAC1_DAC_S);
     }  */
+    STIM_STATUS = 1;//mark as stimulation begin
     while(STIM_STATUS){
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_phase_one, RTC_IO_PDAC1_DAC_S);
+        //ets_printf("%d\n", adc1_get_raw(ADC1_CHANNEL_5));
         ets_delay_us(phase_one);
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
         ets_delay_us(phase_gap);
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_phase_two, RTC_IO_PDAC1_DAC_S);
+        //ets_printf("%d\n", adc1_get_raw(ADC1_CHANNEL_5));
         ets_delay_us(phase_two);
         SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
         ets_delay_us(stim_delay);
-        //printf("stim\n");
     }
     dac_output_voltage(DAC_CHANNEL_1,127);//may need to change to fit elec team's circuit
     STIM_TASK_STATUS = 0;//mark as stimulation task finish

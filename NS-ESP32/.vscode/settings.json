@@ -27,7 +27,7 @@
     }
   ],
   "idf.port": "/dev/cu.usbserial-144430",
-  "idf.portWin": "COM4",
+  "idf.portWin": "COM6",
   "C_Cpp.errorSquiggles": "Disabled",
   "files.associations": {
     "condition_variable": "cpp",
