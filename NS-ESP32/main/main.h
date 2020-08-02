@@ -1,7 +1,6 @@
 #ifndef main_h
 #define main_h
 #include <stdio.h>
-#include "nvs_flash.h"
 #include "esp_log.h"
 #include <esp32/rom/ets_sys.h>
 #include <sys/time.h>
@@ -50,5 +49,8 @@ bool STIM_TASK_STATUS; //0 IDLE; 1 WORKING
 
 void STIM_START();
 void STIM_STOP();
-void biphasic_loop();
+void biphasic_loop_infinity();
+void biphasic_loop_count();
+void burst_biphasic_loop_infinity();
+void burst_biphasic_loop_count();
 #endif

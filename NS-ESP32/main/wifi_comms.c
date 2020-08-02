@@ -28,7 +28,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event){
 	case SYSTEM_EVENT_STA_DISCONNECTED:
 		ESP_LOGI("CONNECTION", "disconnected\n");
 		DISCONNECTED_TIMES++;
-		xTaskCreatePinnedToCore(resetWifi, "reset wifi", 2048, NULL, 15, NULL,1);
+		xTaskCreatePinnedToCore(resetWifi, "reset wifi", 2048, NULL, 8, NULL,1);
 		break;
 
 	default:
@@ -209,7 +209,7 @@ static esp_err_t wificonfig_url_hit(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Location", "/done.html");
     httpd_resp_send(req, NULL, 0);
 
-    xTaskCreatePinnedToCore(resetWifi, "reset wifi", 1024 * 3, NULL, 15, NULL,1);
+    xTaskCreatePinnedToCore(resetWifi, "reset wifi", 1024 * 3, NULL, 8, NULL,1);
 
     return ESP_OK;
 }
