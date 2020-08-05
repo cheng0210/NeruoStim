@@ -73,13 +73,17 @@ void parse_command(char *command){
     {
         RECORD_OFFSET = atoi(result[1]);
     }
-    else if (strcmp(result[0], "dac_raw_low") == 0)
+    else if (strcmp(result[0], "debug_enable") == 0)
     {
-        DAC_LOW = atoi(result[1]);
+        DEBUG_MODE_ENABLED = atoi(result[1]);
     }
-    else if (strcmp(result[0], "dac_raw_high") == 0)
+    else if (strcmp(result[0], "dac_phase_one") == 0)
     {
-        DAC_HIGH = atoi(result[1]);
+        DAC_PHASE_ONE = atoi(result[1]);
+    }
+    else if (strcmp(result[0], "dac_phase_two") == 0)
+    {
+        DAC_PHASE_TWO = atoi(result[1]);
     }
 
      if(DEBUG_MODE_ENABLED){
