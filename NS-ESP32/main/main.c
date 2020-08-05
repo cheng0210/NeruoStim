@@ -34,17 +34,17 @@ void app_main(){ // runs in cpu0
     MAX_FREQ = 100000;//10KHZ
 
 
-    PHASE_ONE_TIME = 5000;// default 10us; range [10,max_uint32]
-    PHASE_TWO_TIME = 5000;// default 10us; range [10,max_uint32]
+    PHASE_ONE_TIME = 1000;// default 10us; range [10,max_uint32]
+    PHASE_TWO_TIME = 1000;// default 10us; range [10,max_uint32]
     STIM_AMP = 2000;// default 0uA; range [0,3000]
     INTER_PHASE_GAP = 0;//default 0us;range [0,max_uint32]
-    INTER_STIM_DELAY = 5000;//default 0us;range [0,max_uint32]
+    INTER_STIM_DELAY = 500;//default 0us;range [0,max_uint32]
     ANODIC_CATHODIC = 1;//default cathodic; 0 or 1
     STIM_TYPE = 0;//default uniform stim; 0 or 1
     PULSE_NUM = 0;//default 0 is forever in ms; range [0,max_uint32]
     BURST_NUM = 0;// number of burst; range [0,max_uint32]
-    INTER_BURST_DELAY = 0;//range [0,max_uint32]
-    PULSE_NUM_IN_ONE_BURST = 0;//range [0,max_uint32]
+    INTER_BURST_DELAY = 10000;//range [0,max_uint32]
+    PULSE_NUM_IN_ONE_BURST = 100;//range [0,max_uint32]
     RAMP_UP = 0;//0 or 1
     SHORT_ELECTRODE = 1;//0 or 1
 
@@ -283,6 +283,7 @@ void IRAM_ATTR biphasic_loop_count(void *params)
     }
     dac_output_voltage(DAC_CHANNEL_1,dac_gap);//may need to change to fit elec team's circuit
     STIM_TASK_STATUS = 0;//mark as stimulation task finish
+    STIM_STATUS = 0;
     vTaskDelete(NULL);
 }
 
@@ -510,5 +511,6 @@ void IRAM_ATTR burst_biphasic_loop_count(void *params)
     }
     dac_output_voltage(DAC_CHANNEL_1,dac_gap);//may need to change to fit elec team's circuit
     STIM_TASK_STATUS = 0;//mark as stimulation task finish
+    STIM_STATUS = 0;
     vTaskDelete(NULL);
 }
