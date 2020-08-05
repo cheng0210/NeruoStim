@@ -109,6 +109,8 @@ void IRAM_ATTR biphasic_loop_infinity(void *params)
     uint32_t stim_delay = INTER_STIM_DELAY;
     uint8_t dac_phase_one, dac_phase_two;
     uint8_t dac_gap;
+    uint32_t period = PHASE_ONE_TIME + PHASE_TWO_TIME + INTER_PHASE_GAP + INTER_STIM_DELAY;
+    uint32_t cycles = 1000000 / period;//how many cycles in one seconds
     if(DEBUG_MODE_ENABLED){
         dac_phase_one = DAC_PHASE_ONE;
         dac_phase_two = DAC_PHASE_TWO;
@@ -126,55 +128,51 @@ void IRAM_ATTR biphasic_loop_infinity(void *params)
             dac_phase_two  =dac_gap - STIM_AMP/amp_step;
         }
     }
-    //printf("dac phase 1 is %u ;phase two is %u; dac_gap is %d\n",dac_phase_one,dac_phase_two,dac_gap);
+    if(stim_delay > 1)
+        stim_delay--;//little offset
+
     dac_output_voltage(DAC_CHANNEL_2, dac_gap);
     STIM_STATUS = 1;//mark as stimulation begin
-
+    uint8_t temp_dac_one = dac_gap;
+    uint8_t temp_dac_two = dac_gap;
     if(RAMP_UP){
-        uint8_t ramp1_one = dac_phase_one/5;
-        uint8_t ramp1_two = dac_phase_two/5;
-        uint8_t ramp2_one = dac_phase_one * 2/5;
-        uint8_t ramp2_two = dac_phase_two * 2/5;
-        uint8_t ramp3_one = dac_phase_one * 3/5;
-        uint8_t ramp3_two = dac_phase_two * 3/5;
-        uint8_t ramp4_one = dac_phase_one * 4/5;
-        uint8_t ramp4_two = dac_phase_two * 4/5;
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp1_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp1_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp2_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp2_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp3_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp3_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp4_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp4_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
+        if(ANODIC_CATHODIC){
+            int c = 0;
+            while(STIM_STATUS && temp_dac_two < dac_phase_two){
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_one);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_gap);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_two);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(stim_delay);
+                if(c == cycles){
+                    temp_dac_one--;
+                    temp_dac_two++;
+                    c = 0;
+                }
+                c++;
+            }
+        }else{
+            int c = 0;
+            while(STIM_STATUS && temp_dac_one < dac_phase_one){
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_one);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_gap);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_two);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(stim_delay);
+                if(c == cycles){
+                    temp_dac_one++;
+                    temp_dac_two--;
+                    c = 0;
+                }
+                c++;
+            }
+        }
     }
 
     while(STIM_STATUS){
@@ -203,6 +201,8 @@ void IRAM_ATTR biphasic_loop_count(void *params)
     uint32_t stim_delay = INTER_STIM_DELAY;
     uint8_t dac_phase_one, dac_phase_two;
     uint8_t dac_gap;
+    uint32_t period = PHASE_ONE_TIME + PHASE_TWO_TIME + INTER_PHASE_GAP + INTER_STIM_DELAY;
+    uint32_t cycles = 1000000 / period;//how many cycles in one seconds
     if(DEBUG_MODE_ENABLED){
         dac_phase_one = DAC_PHASE_ONE;
         dac_phase_two = DAC_PHASE_TWO;
@@ -223,54 +223,51 @@ void IRAM_ATTR biphasic_loop_count(void *params)
     //printf("dac phase 1 is %u ;phase two is %u; dac_gap is %d\n",dac_phase_one,dac_phase_two,dac_gap);
     dac_output_voltage(DAC_CHANNEL_2, dac_gap);
     STIM_STATUS = 1;//mark as stimulation begin
-
-    temp-=4;
+    uint8_t temp_dac_one = dac_gap;
+    uint8_t temp_dac_two = dac_gap;
+    if(stim_delay > 1)
+        stim_delay--;//little offset
 
     if(RAMP_UP){
-        uint8_t ramp1_one = dac_phase_one/5;
-        uint8_t ramp1_two = dac_phase_two/5;
-        uint8_t ramp2_one = dac_phase_one * 2/5;
-        uint8_t ramp2_two = dac_phase_two * 2/5;
-        uint8_t ramp3_one = dac_phase_one * 3/5;
-        uint8_t ramp3_two = dac_phase_two * 3/5;
-        uint8_t ramp4_one = dac_phase_one * 4/5;
-        uint8_t ramp4_two = dac_phase_two * 4/5;
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp1_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp1_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp2_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp2_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp3_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp3_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp4_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp4_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
+        if(ANODIC_CATHODIC){
+            int c = 0;
+            while(STIM_STATUS && temp_dac_two < dac_phase_two && temp > 0){
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_one);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_gap);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_two);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(stim_delay);
+                if(c == cycles){
+                    temp_dac_one--;
+                    temp_dac_two++;
+                    c = 0;
+                }
+                temp--;
+                c++;
+            }
+        }else{
+            int c = 0;
+            while(STIM_STATUS && temp_dac_one < dac_phase_one && temp > 0){
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_one);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_gap);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_two);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(stim_delay);
+                if(c == cycles){
+                    temp_dac_one++;
+                    temp_dac_two--;
+                    c = 0;
+                }
+                temp--;
+                c++;
+            }
+        }
     }
 
     while(STIM_STATUS && temp > 0){
@@ -301,6 +298,8 @@ void IRAM_ATTR burst_biphasic_loop_infinity(void *params)
     uint32_t burst_delay = INTER_BURST_DELAY;
     uint8_t dac_phase_one, dac_phase_two;
     uint8_t dac_gap;
+    uint32_t period = PHASE_ONE_TIME + PHASE_TWO_TIME + INTER_PHASE_GAP + INTER_STIM_DELAY;
+    uint32_t cycles = 1000000 / period;//how many cycles in one seconds
     if(DEBUG_MODE_ENABLED){
         dac_phase_one = DAC_PHASE_ONE;
         dac_phase_two = DAC_PHASE_TWO;
@@ -318,57 +317,67 @@ void IRAM_ATTR burst_biphasic_loop_infinity(void *params)
             dac_phase_two  =dac_gap - STIM_AMP/amp_step;
         }
     }
+
+    if(stim_delay > 1)
+        stim_delay--;//little offset
+    uint8_t temp_dac_one = dac_gap;
+    uint8_t temp_dac_two = dac_gap;
     //printf("dac phase 1 is %u ;phase two is %u; dac_gap is %d\n",dac_phase_one,dac_phase_two,dac_gap);
     dac_output_voltage(DAC_CHANNEL_2, dac_gap);
     STIM_STATUS = 1;//mark as stimulation begin
-
-    /* if(RAMP_UP){
-        uint8_t ramp1_one = dac_phase_one/5;
-        uint8_t ramp1_two = dac_phase_two/5;
-        uint8_t ramp2_one = dac_phase_one * 2/5;
-        uint8_t ramp2_two = dac_phase_two * 2/5;
-        uint8_t ramp3_one = dac_phase_one * 3/5;
-        uint8_t ramp3_two = dac_phase_two * 3/5;
-        uint8_t ramp4_one = dac_phase_one * 4/5;
-        uint8_t ramp4_two = dac_phase_two * 4/5;
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp1_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp1_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp2_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp2_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp3_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp3_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp4_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp4_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
-    } */
     uint32_t temp_pulse = PULSE_NUM_IN_ONE_BURST;
+
+    if(RAMP_UP){
+        int c = 0;
+        if(ANODIC_CATHODIC){
+            while(STIM_STATUS && temp_dac_two < dac_phase_two){
+                temp_pulse = PULSE_NUM_IN_ONE_BURST;
+                while(STIM_STATUS && temp_pulse > 0){
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_one);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_gap);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_two);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(stim_delay);
+                    if(c == cycles && temp_dac_two < dac_phase_two){
+                        c = 0;
+                        temp_dac_one--;
+                        temp_dac_two++;
+                    }
+                    temp_pulse--;
+                    c++;
+                }
+                ets_delay_us(burst_delay);
+            }
+        }else{
+            while(STIM_STATUS && temp_dac_one < dac_phase_one){
+                temp_pulse = PULSE_NUM_IN_ONE_BURST;
+                while(STIM_STATUS && temp_pulse > 0){
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_one);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_gap);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_two);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(stim_delay);
+                    if(c == cycles && temp_dac_one < dac_phase_one){
+                        c = 0;
+                        temp_dac_one++;
+                        temp_dac_two--;
+                    }
+                    temp_pulse--;
+                    c++;
+                }
+                ets_delay_us(burst_delay);
+            }
+        }  
+    }
+
+
+
     while(STIM_STATUS){
         temp_pulse = PULSE_NUM_IN_ONE_BURST;
         while(STIM_STATUS && temp_pulse > 0){
@@ -400,6 +409,8 @@ void IRAM_ATTR burst_biphasic_loop_count(void *params)
     uint32_t burst_delay = INTER_BURST_DELAY;
     uint8_t dac_phase_one, dac_phase_two;
     uint8_t dac_gap;
+    uint32_t period = PHASE_ONE_TIME + PHASE_TWO_TIME + INTER_PHASE_GAP + INTER_STIM_DELAY;
+    uint32_t cycles = 1000000 / period;//how many cycles in one seconds
     if(DEBUG_MODE_ENABLED){
         dac_phase_one = DAC_PHASE_ONE;
         dac_phase_two = DAC_PHASE_TWO;
@@ -417,58 +428,70 @@ void IRAM_ATTR burst_biphasic_loop_count(void *params)
             dac_phase_two  =dac_gap - STIM_AMP/amp_step;
         }
     }
+    if(stim_delay > 1)
+        stim_delay--;//little offset
+    uint8_t temp_dac_one = dac_gap;
+    uint8_t temp_dac_two = dac_gap;
     //printf("dac phase 1 is %u ;phase two is %u; dac_gap is %d\n",dac_phase_one,dac_phase_two,dac_gap);
     dac_output_voltage(DAC_CHANNEL_2, dac_gap);
-    STIM_STATUS = 1;//mark as stimulation begin
-
-    /* if(RAMP_UP){
-        uint8_t ramp1_one = dac_phase_one/5;
-        uint8_t ramp1_two = dac_phase_two/5;
-        uint8_t ramp2_one = dac_phase_one * 2/5;
-        uint8_t ramp2_two = dac_phase_two * 2/5;
-        uint8_t ramp3_one = dac_phase_one * 3/5;
-        uint8_t ramp3_two = dac_phase_two * 3/5;
-        uint8_t ramp4_one = dac_phase_one * 4/5;
-        uint8_t ramp4_two = dac_phase_two * 4/5;
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp1_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp1_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp2_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp2_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp3_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp3_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
-
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp4_one, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_one);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_gap);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, ramp4_two, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(phase_two);
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
-        ets_delay_us(stim_delay);
-    } */
     uint32_t temp_burst = BURST_NUM;
     uint32_t temp_pulse = PULSE_NUM_IN_ONE_BURST;
+    STIM_STATUS = 1;//mark as stimulation begin
+
+    if(RAMP_UP){
+        int c = 0;
+        if(ANODIC_CATHODIC){
+            while(STIM_STATUS && temp_dac_two < dac_phase_two &&temp_burst > 0){
+                temp_pulse = PULSE_NUM_IN_ONE_BURST;
+                while(STIM_STATUS && temp_pulse > 0){
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_one);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_gap);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_two);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(stim_delay);
+                    if(c == cycles && temp_dac_two < dac_phase_two){
+                        c = 0;
+                        temp_dac_one--;
+                        temp_dac_two++;
+                    }
+                    temp_pulse--;
+                    c++;
+                }
+                ets_delay_us(burst_delay);
+                temp_burst--;
+            }
+        }else{
+            while(STIM_STATUS && temp_dac_one < dac_phase_one && temp_burst > 0){
+                temp_pulse = PULSE_NUM_IN_ONE_BURST;
+                while(STIM_STATUS && temp_pulse > 0){
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_one);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_gap);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_two);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(stim_delay);
+                    if(c == cycles && temp_dac_one < dac_phase_one){
+                        c = 0;
+                        temp_dac_one++;
+                        temp_dac_two--;
+                    }
+                    temp_pulse--;
+                    c++;
+                }
+                ets_delay_us(burst_delay);
+                temp_burst--;
+            }
+        }  
+    }
+
+
+
+
     while(STIM_STATUS && temp_burst > 0){
         temp_pulse = PULSE_NUM_IN_ONE_BURST;
         while(STIM_STATUS && temp_pulse > 0){
