@@ -46,6 +46,13 @@ void app_main(){ // runs in cpu0
     RECORD_OFFSET = 0;
 
     ble_init();
+    gpio_set_direction(GPIO_NUM_5,GPIO_MODE_OUTPUT);
+    while(1){
+        gpio_set_level(GPIO_NUM_5,1);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+        gpio_set_level(GPIO_NUM_5,0);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
     
 }
 
