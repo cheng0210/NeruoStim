@@ -63,6 +63,14 @@ void app_main(){ // runs in cpu0
     char list[512];
     vTaskList((char *)&list);
     printf("%s\n",list);
+
+    gpio_set_direction(GPIO_NUM_5,GPIO_MODE_OUTPUT);
+    while(1){
+        gpio_set_level(GPIO_NUM_5,1);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+        gpio_set_level(GPIO_NUM_5,0);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
     
 }
 
