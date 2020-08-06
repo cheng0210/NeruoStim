@@ -121,6 +121,7 @@ void STIM_STOP(){
 
 void IRAM_ATTR biphasic_loop_infinity(void *params)
 {
+    portDISABLE_INTERRUPTS();
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
     uint32_t phase_one = PHASE_ONE_TIME;
@@ -207,11 +208,13 @@ void IRAM_ATTR biphasic_loop_infinity(void *params)
     }
     dac_output_voltage(DAC_CHANNEL_1,dac_gap);//may need to change to fit elec team's circuit
     STIM_TASK_STATUS = 0;//mark as stimulation task finish
+    portENABLE_INTERRUPTS();
     vTaskDelete(NULL);
 }
 
 void IRAM_ATTR biphasic_loop_count(void *params)
 {
+    portDISABLE_INTERRUPTS();
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
     uint32_t temp = PULSE_NUM;
@@ -304,12 +307,14 @@ void IRAM_ATTR biphasic_loop_count(void *params)
     dac_output_voltage(DAC_CHANNEL_1,dac_gap);//may need to change to fit elec team's circuit
     STIM_TASK_STATUS = 0;//mark as stimulation task finish
     STIM_STATUS = 0;
+    portENABLE_INTERRUPTS();
     vTaskDelete(NULL);
 }
 
 
 void IRAM_ATTR burst_biphasic_loop_infinity(void *params)
 {
+    portDISABLE_INTERRUPTS();
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
     uint32_t phase_one = PHASE_ONE_TIME;
@@ -416,11 +421,13 @@ void IRAM_ATTR burst_biphasic_loop_infinity(void *params)
     }
     dac_output_voltage(DAC_CHANNEL_1,dac_gap);//may need to change to fit elec team's circuit
     STIM_TASK_STATUS = 0;//mark as stimulation task finish
+    portENABLE_INTERRUPTS();
     vTaskDelete(NULL);
 }
 
 void IRAM_ATTR burst_biphasic_loop_count(void *params)
 {
+    portDISABLE_INTERRUPTS();
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
     CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
     uint32_t phase_one = PHASE_ONE_TIME;
@@ -532,5 +539,6 @@ void IRAM_ATTR burst_biphasic_loop_count(void *params)
     dac_output_voltage(DAC_CHANNEL_1,dac_gap);//may need to change to fit elec team's circuit
     STIM_TASK_STATUS = 0;//mark as stimulation task finish
     STIM_STATUS = 0;
+    portENABLE_INTERRUPTS();
     vTaskDelete(NULL);
 }

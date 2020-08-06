@@ -1,10 +1,12 @@
 #include "utils.h"
 
-int64_t parse_command(char *command){
+int64_t IRAM_ATTR parse_command(char *command){
+    int64_t res = -1; // -1 means invalid commands
+    if(command == NULL) return res;
     char **pre_split = split(command, '\n'); //debug with nc command will have a '\n'; there is no need to add a '\n' in python
     char **result = split(pre_split[0],':');
+    if(result[0] == NULL) return res;
 
-    int64_t res = -1; // -1 means invalid commands
     if (strcmp(result[0], "start") == 0)
     {
         //printf("start!\n");
@@ -30,7 +32,7 @@ int64_t parse_command(char *command){
     }
     else if (strcmp(result[0], "stim_type")==0)
     {
-        if(result[1] == NULL){
+        if(result[1] != NULL){
             STIM_TYPE = atoi(result[1]);
         }
         res = STIM_TYPE;
@@ -123,7 +125,7 @@ int64_t parse_command(char *command){
     }
     else if (strcmp(result[0], "record_offset") == 0)
     {
-        if(result[1] == NULL){
+        if(result[1] != NULL){
             RECORD_OFFSET = atoi(result[1]);
         }
         res = RECORD_OFFSET;
@@ -171,7 +173,7 @@ int64_t parse_command(char *command){
 
 
 
-char **split(const char *command, char splitter)
+char IRAM_ATTR **split(const char *command, char splitter)
 {
     char **result;
     int j, n = 0;

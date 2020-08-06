@@ -64,7 +64,7 @@ void connectAP()
 	esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config);
 }
 
-void wifi_start(void *params)
+void IRAM_ATTR wifi_start(void *params)
 {
 	ESP_ERROR_CHECK(nvs_flash_init());
 	ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
@@ -245,9 +245,8 @@ void RegisterEndPoints(void)
  * socket comms modified from example project 'tcp_server' provided by espressif
 */
 
-void tcp_socket_server(void *pvParameters)
+void IRAM_ATTR tcp_socket_server(void *pvParameters)
 {
-    char rx_buffer[128];
     char addr_str[128];
 
 
@@ -280,6 +279,8 @@ void tcp_socket_server(void *pvParameters)
 	ESP_LOGI("socket", "Socket listening");
 
 	while (1) {
+
+		char rx_buffer[128] = {0};
 
 		struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
 		uint addr_len = sizeof(source_addr);
