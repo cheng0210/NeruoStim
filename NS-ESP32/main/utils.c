@@ -7,13 +7,13 @@ int64_t parse_command(char *command){
     int64_t res = -1; // -1 means invalid commands
     if (strcmp(result[0], "start") == 0)
     {
-        printf("start!\n");
+        //printf("start!\n");
         STIM_START();
         res = -2; // -2 means start
     }
     else if (strcmp(result[0], "stop") == 0)
     {
-        printf("stop!\n");
+        //printf("stop!\n");
         if (STIM_TASK_STATUS == 1)
         {
             STIM_STOP();
@@ -21,7 +21,7 @@ int64_t parse_command(char *command){
         res = -3; // -3 means stop
     }else if(strcmp(result[0],"clr_wifi_cfg")==0){
         clear_wifi_config();
-        printf("cleared\n");
+        //printf("cleared\n");
     }else if(strcmp(result[0],"stim_amp")==0){
         if(result[1] != NULL){
             STIM_AMP = atoi(result[1]);

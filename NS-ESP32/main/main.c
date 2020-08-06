@@ -53,7 +53,7 @@ void app_main(){ // runs in cpu0
     STIM_STATUS = 0;
     STIM_TASK_STATUS = 0;
 
-    ENABLE_RECORD = true;
+    ENABLE_RECORD = false;
     RECORD_OFFSET = 0;
 
     wifi_init();
