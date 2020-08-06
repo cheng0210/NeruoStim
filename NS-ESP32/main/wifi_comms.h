@@ -27,6 +27,7 @@ uint8_t DISCONNECTED_TIMES;
 httpd_handle_t server;
 bool SERVER_ON;
 uint16_t SOCKET_PORT;
+uint8_t WIFI_FLAG;
 
 void wifi_init();
 void wifi_start(void *params);

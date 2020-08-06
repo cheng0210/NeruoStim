@@ -28,6 +28,8 @@ void app_main(){ // runs in cpu0
 
     SERVER_ON = false;
     SOCKET_PORT = 8888;
+    WIFI_FLAG = 0;
+
     BATTERY_UPDATE_TIME_INTERVAL = 10000; //10 second
     BATTERY_LEVEL = 0;
     CHANNEL_NUM = 1;
@@ -60,16 +62,26 @@ void app_main(){ // runs in cpu0
     vTaskDelay(2000 / portTICK_PERIOD_MS);
 
 
-    char list[512];
+/*     char list[512];
     vTaskList((char *)&list);
-    printf("%s\n",list);
+    printf("%s\n",list); */
 
     gpio_set_direction(GPIO_NUM_5,GPIO_MODE_OUTPUT);
+    uint16_t led_interval = 200;
     while(1){
-        gpio_set_level(GPIO_NUM_5,1);
-        vTaskDelay(500 / portTICK_PERIOD_MS);
-        gpio_set_level(GPIO_NUM_5,0);
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        if(STIM_STATUS){
+            gpio_set_level(GPIO_NUM_5,0);
+        }else{
+            if(WIFI_FLAG){
+                led_interval = 2000;
+            }else{
+                led_interval = 200;
+            }
+            gpio_set_level(GPIO_NUM_5,1);
+            vTaskDelay(led_interval / portTICK_PERIOD_MS);
+            gpio_set_level(GPIO_NUM_5,0);
+            vTaskDelay(led_interval / portTICK_PERIOD_MS);
+        }
     }
     
 }
@@ -104,7 +116,7 @@ void STIM_START(){
 
 void STIM_STOP(){
     STIM_STATUS = 0;
-    printf("stopped!\n");
+    //printf("stopped!\n");
 }
 
 void IRAM_ATTR biphasic_loop_infinity(void *params)

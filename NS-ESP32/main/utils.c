@@ -1,12 +1,15 @@
 #include "utils.h"
 
-int parse_command(char *command){
+int64_t parse_command(char *command){
     char **pre_split = split(command, '\n'); //debug with nc command will have a '\n'; there is no need to add a '\n' in python
     char **result = split(pre_split[0],':');
+
+    int64_t res = -1; // -1 means invalid commands
     if (strcmp(result[0], "start") == 0)
     {
         printf("start!\n");
         STIM_START();
+        res = -2; // -2 means start
     }
     else if (strcmp(result[0], "stop") == 0)
     {
@@ -15,127 +18,115 @@ int parse_command(char *command){
         {
             STIM_STOP();
         }
+        res = -3; // -3 means stop
     }else if(strcmp(result[0],"clr_wifi_cfg")==0){
         clear_wifi_config();
         printf("cleared\n");
     }else if(strcmp(result[0],"stim_amp")==0){
-        if(result[1] == NULL){
-            return STIM_AMP;
+        if(result[1] != NULL){
+            STIM_AMP = atoi(result[1]);
         }
-        STIM_AMP = atoi(result[1]);
-        return STIM_AMP;
+        res =  STIM_AMP;
     }
     else if (strcmp(result[0], "stim_type")==0)
     {
         if(result[1] == NULL){
-            return STIM_TYPE;
+            STIM_TYPE = atoi(result[1]);
         }
-        STIM_TYPE = atoi(result[1]);
-        return STIM_TYPE;
+        res = STIM_TYPE;
     }
     else if (strcmp(result[0], "anodic_cathodic")==0)
     {
-        if(result[1] == NULL){
-            return ANODIC_CATHODIC;
+        if(result[1] != NULL){
+            ANODIC_CATHODIC = atoi(result[1]);
         }
-        ANODIC_CATHODIC = atoi(result[1]);
-        return ANODIC_CATHODIC;
+        res = ANODIC_CATHODIC;
     }
     else if (strcmp(result[0], "phase_one_time")==0)
     {
-        if(result[1] == NULL){
-            return PHASE_ONE_TIME;
+        if(result[1] != NULL){
+            PHASE_ONE_TIME = atoi(result[1]);
         }
-        PHASE_ONE_TIME = atoi(result[1]);
-        return PHASE_ONE_TIME;
+        res = PHASE_ONE_TIME;
     }
     else if (strcmp(result[0], "inter_phase_gap")==0)
     {
-        if(result[1] == NULL){
-            return INTER_PHASE_GAP;
+        if(result[1] != NULL){
+            INTER_PHASE_GAP = atoi(result[1]);
         }
-        INTER_PHASE_GAP = atoi(result[1]);
-        return INTER_PHASE_GAP;
+        
+        res = INTER_PHASE_GAP;
     }
     else if (strcmp(result[0], "phase_two_time")==0)
     {
-        if(result[1] == NULL){
-            return PHASE_TWO_TIME;
+        if(result[1] != NULL){
+            PHASE_TWO_TIME = atoi(result[1]);
         }
         PHASE_TWO_TIME = atoi(result[1]);
-        return PHASE_TWO_TIME;
+        res = PHASE_TWO_TIME;
     }
     else if (strcmp(result[0], "inter_stim_delay")==0)
     {
-        if(result[1] == NULL){
-            return INTER_STIM_DELAY;
+        if(result[1] != NULL){
+            INTER_STIM_DELAY = atoi(result[1]);
         }
-        INTER_STIM_DELAY = atoi(result[1]);
-        return INTER_STIM_DELAY;
+        res =  INTER_STIM_DELAY;
     }
     else if (strcmp(result[0], "pulse_num")==0)
     {
-        if(result[1] == NULL){
-            return PULSE_NUM;
+        if(result[1] != NULL){
+            PULSE_NUM = atoi(result[1]);
         }
-        PULSE_NUM = atoi(result[1]);
-        return PULSE_NUM;
+        res =  PULSE_NUM;
     }
     else if (strcmp(result[0], "burst_num")==0)
     {
-        if(result[1] == NULL){
-            return BURST_NUM;
+        if(result[1] != NULL){
+            BURST_NUM = atoi(result[1]);
         }
-        BURST_NUM = atoi(result[1]);
-        return BURST_NUM;
+        res = BURST_NUM;
     }
     else if (strcmp(result[0], "inter_burst_delay")==0)
     {
-        if(result[1] == NULL){
-            return INTER_BURST_DELAY;
+        if(result[1] != NULL){
+            INTER_BURST_DELAY = atoi(result[1]);
         }
-        INTER_BURST_DELAY = atoi(result[1]);
-        return INTER_BURST_DELAY;
+        res = INTER_BURST_DELAY;
     }
     else if (strcmp(result[0], "ramp_up") == 0)
     {
-        if(result[1] == NULL){
-            return RAMP_UP;
+        if(result[1] != NULL){
+            RAMP_UP = atoi(result[1]);
         }
-        RAMP_UP = atoi(result[1]);
-        return RAMP_UP;
+        res = RAMP_UP;
     }
     else if (strcmp(result[0], "short_electrode") == 0)
     {
-        if(result[1] == NULL){
-            return SHORT_ELECTRODE;
+        if(result[1] != NULL){
+            SHORT_ELECTRODE = atoi(result[1]);
         }
-        SHORT_ELECTRODE = atoi(result[1]);
-        return SHORT_ELECTRODE;
+        res = SHORT_ELECTRODE;
     }
     else if (strcmp(result[0], "pulse_num_in_one_burst") == 0)
     {
-        if(result[1] == NULL){
-            return PULSE_NUM_IN_ONE_BURST;
+        if(result[1] != NULL){
+            PULSE_NUM_IN_ONE_BURST = atoi(result[1]);
         }
-        PULSE_NUM_IN_ONE_BURST = atoi(result[1]);
-        return PULSE_NUM_IN_ONE_BURST;
+        res = PULSE_NUM_IN_ONE_BURST;
     }
     else if (strcmp(result[0], "enable_record") == 0)
     {
-        if(result[1] == NULL){
-            return ENABLE_RECORD;
+        if(result[1] != NULL){
+            ENABLE_RECORD = atoi(result[1]);;
         }
-        ENABLE_RECORD = atoi(result[1]);
-        return ENABLE_RECORD;
+        res = ENABLE_RECORD;
     }
     else if (strcmp(result[0], "record_offset") == 0)
     {
         if(result[1] == NULL){
-            return RECORD_OFFSET;
+            RECORD_OFFSET = atoi(result[1]);
         }
-        RECORD_OFFSET = atoi(result[1]);
-        return RECORD_OFFSET;
+        res = RECORD_OFFSET;
     }
     else if (strcmp(result[0], "debug_enable") == 0)
     {
@@ -175,7 +166,7 @@ int parse_command(char *command){
         x++;
     }
     free(result);
-    return -1;
+    return res;
 }
 
 

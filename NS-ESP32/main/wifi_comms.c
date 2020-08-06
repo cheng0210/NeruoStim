@@ -23,12 +23,15 @@ static esp_err_t event_handler(void *ctx, system_event_t *event){
 	case SYSTEM_EVENT_STA_GOT_IP:
 		ESP_LOGI("CONNECTION", "got ip\n");
 		xTaskCreatePinnedToCore(tcp_socket_server, "tcp_server", 4096, NULL, 10, NULL,0);
+		WIFI_FLAG = 1;
 		break;
 
 	case SYSTEM_EVENT_STA_DISCONNECTED:
 		ESP_LOGI("CONNECTION", "disconnected\n");
 		DISCONNECTED_TIMES++;
-		xTaskCreatePinnedToCore(resetWifi, "reset wifi", 2048, NULL, 8, NULL,1);
+		WIFI_FLAG = 0;
+		//printf("restart wifi\n");
+		xTaskCreatePinnedToCore(resetWifi, "reset wifi", 2048, NULL, 15, NULL,0);
 		break;
 
 	default:
@@ -310,8 +313,21 @@ void tcp_socket_server(void *pvParameters)
 			if(res >= 0){
 				char tx_buffer[64] = {0};
 				len = sprintf(tx_buffer,"%lld",res);
-				printf("%s\n",tx_buffer);
 				int err = send(sock, tx_buffer, len, 0);
+				if (err < 0) {
+					ESP_LOGE("socket", "Error occurred during sending: errno %d", errno);
+					close(sock);
+					continue;
+				}
+			}else if(res == -2){
+				int err = send(sock, "start", 5, 0);
+				if (err < 0) {
+					ESP_LOGE("socket", "Error occurred during sending: errno %d", errno);
+					close(sock);
+					continue;
+				}
+			}else if(res == -3){
+				int err = send(sock, "stop", 4, 0);
 				if (err < 0) {
 					ESP_LOGE("socket", "Error occurred during sending: errno %d", errno);
 					close(sock);

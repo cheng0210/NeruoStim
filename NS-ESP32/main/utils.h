@@ -4,7 +4,7 @@
 #include "nvs_flash.h"
 #include "nvs.h"
 
-int parse_command(char *command);
+int64_t parse_command(char *command);
 char **split(const char *command, char splitter);
 void clear_wifi_config();
 
