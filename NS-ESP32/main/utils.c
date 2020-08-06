@@ -23,6 +23,7 @@ int parse_command(char *command){
             return STIM_AMP;
         }
         STIM_AMP = atoi(result[1]);
+        return STIM_AMP;
     }
     else if (strcmp(result[0], "stim_type")==0)
     {
@@ -30,6 +31,7 @@ int parse_command(char *command){
             return STIM_TYPE;
         }
         STIM_TYPE = atoi(result[1]);
+        return STIM_TYPE;
     }
     else if (strcmp(result[0], "anodic_cathodic")==0)
     {
@@ -37,6 +39,7 @@ int parse_command(char *command){
             return ANODIC_CATHODIC;
         }
         ANODIC_CATHODIC = atoi(result[1]);
+        return ANODIC_CATHODIC;
     }
     else if (strcmp(result[0], "phase_one_time")==0)
     {
@@ -44,6 +47,7 @@ int parse_command(char *command){
             return PHASE_ONE_TIME;
         }
         PHASE_ONE_TIME = atoi(result[1]);
+        return PHASE_ONE_TIME;
     }
     else if (strcmp(result[0], "inter_phase_gap")==0)
     {
@@ -51,6 +55,7 @@ int parse_command(char *command){
             return INTER_PHASE_GAP;
         }
         INTER_PHASE_GAP = atoi(result[1]);
+        return INTER_PHASE_GAP;
     }
     else if (strcmp(result[0], "phase_two_time")==0)
     {
@@ -58,6 +63,7 @@ int parse_command(char *command){
             return PHASE_TWO_TIME;
         }
         PHASE_TWO_TIME = atoi(result[1]);
+        return PHASE_TWO_TIME;
     }
     else if (strcmp(result[0], "inter_stim_delay")==0)
     {
@@ -65,6 +71,7 @@ int parse_command(char *command){
             return INTER_STIM_DELAY;
         }
         INTER_STIM_DELAY = atoi(result[1]);
+        return INTER_STIM_DELAY;
     }
     else if (strcmp(result[0], "pulse_num")==0)
     {
@@ -72,6 +79,7 @@ int parse_command(char *command){
             return PULSE_NUM;
         }
         PULSE_NUM = atoi(result[1]);
+        return PULSE_NUM;
     }
     else if (strcmp(result[0], "burst_num")==0)
     {
@@ -79,6 +87,7 @@ int parse_command(char *command){
             return BURST_NUM;
         }
         BURST_NUM = atoi(result[1]);
+        return BURST_NUM;
     }
     else if (strcmp(result[0], "inter_burst_delay")==0)
     {
@@ -86,6 +95,7 @@ int parse_command(char *command){
             return INTER_BURST_DELAY;
         }
         INTER_BURST_DELAY = atoi(result[1]);
+        return INTER_BURST_DELAY;
     }
     else if (strcmp(result[0], "ramp_up") == 0)
     {
@@ -93,6 +103,7 @@ int parse_command(char *command){
             return RAMP_UP;
         }
         RAMP_UP = atoi(result[1]);
+        return RAMP_UP;
     }
     else if (strcmp(result[0], "short_electrode") == 0)
     {
@@ -100,6 +111,7 @@ int parse_command(char *command){
             return SHORT_ELECTRODE;
         }
         SHORT_ELECTRODE = atoi(result[1]);
+        return SHORT_ELECTRODE;
     }
     else if (strcmp(result[0], "pulse_num_in_one_burst") == 0)
     {
@@ -107,6 +119,7 @@ int parse_command(char *command){
             return PULSE_NUM_IN_ONE_BURST;
         }
         PULSE_NUM_IN_ONE_BURST = atoi(result[1]);
+        return PULSE_NUM_IN_ONE_BURST;
     }
     else if (strcmp(result[0], "enable_record") == 0)
     {
@@ -114,6 +127,7 @@ int parse_command(char *command){
             return ENABLE_RECORD;
         }
         ENABLE_RECORD = atoi(result[1]);
+        return ENABLE_RECORD;
     }
     else if (strcmp(result[0], "record_offset") == 0)
     {
@@ -121,6 +135,7 @@ int parse_command(char *command){
             return RECORD_OFFSET;
         }
         RECORD_OFFSET = atoi(result[1]);
+        return RECORD_OFFSET;
     }
     else if (strcmp(result[0], "debug_enable") == 0)
     {
