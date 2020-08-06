@@ -306,13 +306,17 @@ void tcp_socket_server(void *pvParameters)
 			rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string
 			ESP_LOGI("socket", "%s", rx_buffer);
 
-			parse_command(rx_buffer);
-
-			int err = send(sock, rx_buffer, len, 0);
-			if (err < 0) {
-				ESP_LOGE("socket", "Error occurred during sending: errno %d", errno);
-				close(sock);
-				continue;
+			int64_t res = parse_command(rx_buffer);
+			if(res >= 0){
+				char tx_buffer[64] = {0};
+				len = sprintf(tx_buffer,"%lld",res);
+				printf("%s\n",tx_buffer);
+				int err = send(sock, tx_buffer, len, 0);
+				if (err < 0) {
+					ESP_LOGE("socket", "Error occurred during sending: errno %d", errno);
+					close(sock);
+					continue;
+				}
 			}
 		}
 		close(sock);

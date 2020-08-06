@@ -17,7 +17,7 @@ void app_main(){ // runs in cpu0
     //clear_wifi_config();
 
     //enable debug mode here
-    DEBUG_MODE_ENABLED = 1;
+    DEBUG_MODE_ENABLED = 0;
     DAC_PHASE_ONE = 0;
     DAC_PHASE_TWO = 255;
 

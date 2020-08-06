@@ -1,6 +1,6 @@
 #include "utils.h"
 
-void parse_command(char *command){
+int parse_command(char *command){
     char **pre_split = split(command, '\n'); //debug with nc command will have a '\n'; there is no need to add a '\n' in python
     char **result = split(pre_split[0],':');
     if (strcmp(result[0], "start") == 0)
@@ -19,62 +19,107 @@ void parse_command(char *command){
         clear_wifi_config();
         printf("cleared\n");
     }else if(strcmp(result[0],"stim_amp")==0){
+        if(result[1] == NULL){
+            return STIM_AMP;
+        }
         STIM_AMP = atoi(result[1]);
     }
     else if (strcmp(result[0], "stim_type")==0)
     {
+        if(result[1] == NULL){
+            return STIM_TYPE;
+        }
         STIM_TYPE = atoi(result[1]);
     }
     else if (strcmp(result[0], "anodic_cathodic")==0)
     {
+        if(result[1] == NULL){
+            return ANODIC_CATHODIC;
+        }
         ANODIC_CATHODIC = atoi(result[1]);
     }
     else if (strcmp(result[0], "phase_one_time")==0)
     {
+        if(result[1] == NULL){
+            return PHASE_ONE_TIME;
+        }
         PHASE_ONE_TIME = atoi(result[1]);
     }
     else if (strcmp(result[0], "inter_phase_gap")==0)
     {
+        if(result[1] == NULL){
+            return INTER_PHASE_GAP;
+        }
         INTER_PHASE_GAP = atoi(result[1]);
     }
     else if (strcmp(result[0], "phase_two_time")==0)
     {
+        if(result[1] == NULL){
+            return PHASE_TWO_TIME;
+        }
         PHASE_TWO_TIME = atoi(result[1]);
     }
     else if (strcmp(result[0], "inter_stim_delay")==0)
     {
+        if(result[1] == NULL){
+            return INTER_STIM_DELAY;
+        }
         INTER_STIM_DELAY = atoi(result[1]);
     }
     else if (strcmp(result[0], "pulse_num")==0)
     {
+        if(result[1] == NULL){
+            return PULSE_NUM;
+        }
         PULSE_NUM = atoi(result[1]);
     }
     else if (strcmp(result[0], "burst_num")==0)
     {
+        if(result[1] == NULL){
+            return BURST_NUM;
+        }
         BURST_NUM = atoi(result[1]);
     }
     else if (strcmp(result[0], "inter_burst_delay")==0)
     {
+        if(result[1] == NULL){
+            return INTER_BURST_DELAY;
+        }
         INTER_BURST_DELAY = atoi(result[1]);
     }
     else if (strcmp(result[0], "ramp_up") == 0)
     {
+        if(result[1] == NULL){
+            return RAMP_UP;
+        }
         RAMP_UP = atoi(result[1]);
     }
     else if (strcmp(result[0], "short_electrode") == 0)
     {
+        if(result[1] == NULL){
+            return SHORT_ELECTRODE;
+        }
         SHORT_ELECTRODE = atoi(result[1]);
     }
     else if (strcmp(result[0], "pulse_num_in_one_burst") == 0)
     {
+        if(result[1] == NULL){
+            return PULSE_NUM_IN_ONE_BURST;
+        }
         PULSE_NUM_IN_ONE_BURST = atoi(result[1]);
     }
     else if (strcmp(result[0], "enable_record") == 0)
     {
+        if(result[1] == NULL){
+            return ENABLE_RECORD;
+        }
         ENABLE_RECORD = atoi(result[1]);
     }
     else if (strcmp(result[0], "record_offset") == 0)
     {
+        if(result[1] == NULL){
+            return RECORD_OFFSET;
+        }
         RECORD_OFFSET = atoi(result[1]);
     }
     else if (strcmp(result[0], "debug_enable") == 0)
@@ -115,6 +160,7 @@ void parse_command(char *command){
         x++;
     }
     free(result);
+    return -1;
 }
 
 
