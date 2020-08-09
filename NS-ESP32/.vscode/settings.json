@@ -26,7 +26,14 @@
       "priority": 4
     }
   ],
-  "idf.port": "/dev/cu.usbserial-141430",
+  "idf.port": "/dev/cu.usbserial-141410",
   "idf.portWin": "COM4",
-  "C_Cpp.errorSquiggles": "Disabled"
+  "C_Cpp.errorSquiggles": "Disabled",
+  "files.associations": {
+    "condition_variable": "cpp",
+    "complex": "c",
+    "cstdio": "cpp",
+    "queue.h": "c",
+    "functional": "c"
+  }
 }

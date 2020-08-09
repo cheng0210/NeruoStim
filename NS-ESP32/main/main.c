@@ -1,122 +1,510 @@
-#include <stdio.h>
-#include "nvs_flash.h"
-#include "esp_log.h"
-#include "esp_nimble_hci.h"
-#include "nimble/nimble_port.h"
-#include "nimble/nimble_port_freertos.h"
-#include "host/ble_hs.h"
-#include "services/gap/ble_svc_gap.h"
-#include "services/gatt/ble_svc_gatt.h"
+#include "main.h"
+#include "sys/queue.h"
+#include "soc/sens_reg.h"
+#include "soc/rtc_io_reg.h"
 
-#define DEVICE_NAME "ESP32"
-uint8_t ble_addr_type;
-void ble_app_advertise(void);
+/**
+ * GPIO 5,18,19,23 will be used to SPI comms; 5:cs;18:sck;19:miso;23:mosi
+ * GPIO 21,22 will be used as I2C to read battery lvl
+ * GPIO 25,26 will be used as DACs
+ * GPIO 2,4,16,17 will be used as switches
+*/
 
-#define DEVICE_INFO_SERVICE 0x180A
-#define MANUFACTURER_NAME 0x2A29
+void app_main(){ // runs in cpu0
+    
+    
+    //comment this if you want esp32 store ssid/password
+    //clear_wifi_config();
 
-static int device_write(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
-{
-    printf("incoming message: %.*s\n", ctxt->om->om_len, ctxt->om->om_data);
-    return 0;
-}
+    //enable debug mode here
+    DEBUG_MODE_ENABLED = 1;
+    DAC_PHASE_ONE = 0;
+    DAC_PHASE_TWO = 255;
 
-static int device_info(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
-{
-    os_mbuf_append(ctxt->om, "manufacturer name", strlen("manufacturer name"));
-    return 0;
-}
+    calibrated = 1;
+    VREF_0 = 82; 
+    VREF_255 = 3180;
 
-static const struct ble_gatt_svc_def gat_svcs[] = {
-    {.type = BLE_GATT_SVC_TYPE_PRIMARY,
-     .uuid = BLE_UUID16_DECLARE(DEVICE_INFO_SERVICE),
-     .characteristics = (struct ble_gatt_chr_def[]){
-         {.uuid = BLE_UUID16_DECLARE(MANUFACTURER_NAME),
-          .flags = BLE_GATT_CHR_F_READ,
-          .access_cb = device_info},
-         {.uuid = BLE_UUID128_DECLARE(0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff),
-          .flags = BLE_GATT_CHR_F_WRITE,
-          .access_cb = device_write},
-         {0}}},
-    {0}};
+    BATTERY_UPDATE_TIME_INTERVAL = 10000; //10 second
+    BATTERY_LEVEL = 0;
+    CHANNEL_NUM = 1;
+    MAX_FREQ = 100000;//10KHZ
+    PHASE_ONE_TIME = 10;// default 10us
+    PHASE_TWO_TIME = 10;// default 10us
+    STIM_AMP = 2000;// default 0uA
+    INTER_PHASE_GAP = 0;//default 0us
+    INTER_STIM_DELAY = 100;//default 0us
+    ANODIC_CATHODIC = 1;//default cathodic
+    STIM_TYPE = 0;//default uniform stim
+    PULSE_NUM = 0;//default 0 is forever in ms
+    BURST_NUM = 0;// number of burst
+    INTER_BURST_DELAY = 0;
+    PULSE_NUM_IN_ONE_BURST = 0;
+    RAMP_UP = 0;
+    SHORT_ELECTRODE = 1;
 
-static int ble_gap_event(struct ble_gap_event *event, void *arg)
-{
-    switch (event->type)
-    {
-    case BLE_GAP_EVENT_CONNECT:
-        ESP_LOGI("GAP", "BLE_GAP_EVENT_CONNECT %s", event->connect.status == 0 ? "OK" : "Failed");
-        if (event->connect.status != 0)
-        {
-            ble_app_advertise();
-        }
-        break;
-    case BLE_GAP_EVENT_DISCONNECT:
-        ESP_LOGI("GAP", "BLE_GAP_EVENT_DISCONNECT");
-        ble_app_advertise();
-        break;
-    case BLE_GAP_EVENT_ADV_COMPLETE:
-        ESP_LOGI("GAP", "BLE_GAP_EVENT_ADV_COMPLETE");
-        ble_app_advertise();
-        break;
-    case BLE_GAP_EVENT_SUBSCRIBE:
-        ESP_LOGI("GAP", "BLE_GAP_EVENT_SUBSCRIBE");
-        break;
-    default:
-        break;
+    STIM_STATUS = 0;
+    STIM_TASK_STATUS = 0;
+
+    ENABLE_RECORD = false;
+    RECORD_OFFSET = 0;
+
+    ble_init();
+    gpio_set_direction(GPIO_NUM_5,GPIO_MODE_OUTPUT);
+    while(1){
+        gpio_set_level(GPIO_NUM_5,1);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+        gpio_set_level(GPIO_NUM_5,0);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
     }
-    return 0;
+    
 }
 
-void ble_app_advertise(void)
-{
-    struct ble_hs_adv_fields fields;
-    memset(&fields, 0, sizeof(fields));
 
-    fields.flags = BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_DISC_LTD;
-    fields.tx_pwr_lvl_is_present = 1;
-    fields.tx_pwr_lvl = BLE_HS_ADV_TX_PWR_LVL_AUTO;
+void STIM_START(){
+    STIM_TASK_STATUS = 1;
+    dac_output_enable(DAC_CHANNEL_1);
+    dac_output_enable(DAC_CHANNEL_2);
+    if(ENABLE_RECORD){
+        configure_i2s();
+        xTaskCreatePinnedToCore(recording, "recording", 1024*4, NULL, 6, NULL, 0);
+    }
+    if(RECORD_OFFSET < 0){
+        vTaskDelay( -RECORD_OFFSET / portTICK_PERIOD_MS);
+    }
 
-    fields.name = (uint8_t *)ble_svc_gap_device_name();
-    fields.name_len = strlen(ble_svc_gap_device_name());
-    fields.name_is_complete = 1;
-
-    ble_gap_adv_set_fields(&fields);
-
-    struct ble_gap_adv_params adv_params;
-    memset(&adv_params, 0, sizeof(adv_params));
-    adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
-    adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
-
-    ble_gap_adv_start(ble_addr_type, NULL, BLE_HS_FOREVER, &adv_params, ble_gap_event, NULL);
+    if(STIM_TYPE){
+        if(BURST_NUM){
+            xTaskCreatePinnedToCore(burst_biphasic_loop_count, "burst count biphasic", 2048, NULL, 10, &STIM_TASK, 1);
+        }else{
+            xTaskCreatePinnedToCore(burst_biphasic_loop_infinity, "burst infinity biphasic", 2048, NULL, 10, &STIM_TASK, 1);
+        }
+    }else{
+        if(PULSE_NUM){
+            xTaskCreatePinnedToCore(biphasic_loop_count, "biphasic loop count", 2048, NULL, 10, &STIM_TASK, 1);
+        }else{
+            xTaskCreatePinnedToCore(biphasic_loop_infinity, "biphasic loop", 2048, NULL, 10, &STIM_TASK, 1);
+        }
+    }
 }
 
-void ble_app_on_sync(void)
-{
-    ble_hs_id_infer_auto(0, &ble_addr_type);
-    ble_app_advertise();
+void STIM_STOP(){
+    STIM_STATUS = 0;
+    printf("stopped!\n");
 }
 
-void host_task(void *param)
+void IRAM_ATTR biphasic_loop_infinity(void *params)
 {
-    nimble_port_run();
+    CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
+    CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
+    uint32_t phase_one = PHASE_ONE_TIME;
+    uint32_t phase_two = PHASE_TWO_TIME;
+    uint32_t phase_gap = INTER_PHASE_GAP;
+    uint32_t stim_delay = INTER_STIM_DELAY;
+    uint8_t dac_phase_one, dac_phase_two;
+    uint8_t dac_gap;
+    uint32_t period = PHASE_ONE_TIME + PHASE_TWO_TIME + INTER_PHASE_GAP + INTER_STIM_DELAY;
+    uint32_t cycles = 1000000 / period;//how many cycles in one seconds
+    if(DEBUG_MODE_ENABLED){
+        dac_phase_one = DAC_PHASE_ONE;
+        dac_phase_two = DAC_PHASE_TWO;
+        dac_gap = 127;
+    }else{
+        float step_voltage = (VREF_255 - VREF_0)/255;//DAC's step volatge
+        uint8_t steps = 3000/step_voltage;// how many steps from 0 to 3V (Vref_0 to 3 + Vref_0) dac is not perfect; maps to -3mA to 3mA
+        dac_gap = steps/2; // median value -> 0mA; dac steps from 0 to 3mA or 0 to -3mA
+        uint16_t amp_step = 3000/dac_gap; // uA/step
+        if(ANODIC_CATHODIC){
+            dac_phase_one = dac_gap - STIM_AMP/amp_step;
+            dac_phase_two  =dac_gap + STIM_AMP/amp_step;
+        }else{
+            dac_phase_one = dac_gap + STIM_AMP/amp_step;
+            dac_phase_two  =dac_gap - STIM_AMP/amp_step;
+        }
+    }
+    if(stim_delay > 1)
+        stim_delay--;//little offset
+
+    dac_output_voltage(DAC_CHANNEL_2, dac_gap);
+    STIM_STATUS = 1;//mark as stimulation begin
+    uint8_t temp_dac_one = dac_gap;
+    uint8_t temp_dac_two = dac_gap;
+    if(RAMP_UP){
+        if(ANODIC_CATHODIC){
+            int c = 0;
+            while(STIM_STATUS && temp_dac_two < dac_phase_two){
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_one);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_gap);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_two);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(stim_delay);
+                if(c == cycles){
+                    temp_dac_one--;
+                    temp_dac_two++;
+                    c = 0;
+                }
+                c++;
+            }
+        }else{
+            int c = 0;
+            while(STIM_STATUS && temp_dac_one < dac_phase_one){
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_one);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_gap);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_two);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(stim_delay);
+                if(c == cycles){
+                    temp_dac_one++;
+                    temp_dac_two--;
+                    c = 0;
+                }
+                c++;
+            }
+        }
+    }
+
+    while(STIM_STATUS){
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_phase_one, RTC_IO_PDAC1_DAC_S);
+        ets_delay_us(phase_one);
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+        ets_delay_us(phase_gap);
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_phase_two, RTC_IO_PDAC1_DAC_S);
+        ets_delay_us(phase_two);
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+        ets_delay_us(stim_delay);
+    }
+    dac_output_voltage(DAC_CHANNEL_1,dac_gap);//may need to change to fit elec team's circuit
+    STIM_TASK_STATUS = 0;//mark as stimulation task finish
+    vTaskDelete(NULL);
 }
 
-void app_main(void)
+void IRAM_ATTR biphasic_loop_count(void *params)
 {
-    nvs_flash_init();
+    CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
+    CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
+    uint32_t temp = PULSE_NUM;
+    uint32_t phase_one = PHASE_ONE_TIME;
+    uint32_t phase_two = PHASE_TWO_TIME;
+    uint32_t phase_gap = INTER_PHASE_GAP;
+    uint32_t stim_delay = INTER_STIM_DELAY;
+    uint8_t dac_phase_one, dac_phase_two;
+    uint8_t dac_gap;
+    uint32_t period = PHASE_ONE_TIME + PHASE_TWO_TIME + INTER_PHASE_GAP + INTER_STIM_DELAY;
+    uint32_t cycles = 1000000 / period;//how many cycles in one seconds
+    if(DEBUG_MODE_ENABLED){
+        dac_phase_one = DAC_PHASE_ONE;
+        dac_phase_two = DAC_PHASE_TWO;
+        dac_gap = 127;
+    }else{
+        float step_voltage = (VREF_255 - VREF_0)/255;//DAC's step volatge
+        uint8_t steps = 3000/step_voltage;// how many steps from 0 to 3V (Vref_0 to 3 + Vref_0) dac is not perfect; maps to -3mA to 3mA
+        dac_gap = steps/2; // median value -> 0mA; dac steps from 0 to 3mA or 0 to -3mA
+        uint16_t amp_step = 3000/dac_gap; // uA/step
+        if(ANODIC_CATHODIC){
+            dac_phase_one = dac_gap - STIM_AMP/amp_step;
+            dac_phase_two  =dac_gap + STIM_AMP/amp_step;
+        }else{
+            dac_phase_one = dac_gap + STIM_AMP/amp_step;
+            dac_phase_two  =dac_gap - STIM_AMP/amp_step;
+        }
+    }
+    //printf("dac phase 1 is %u ;phase two is %u; dac_gap is %d\n",dac_phase_one,dac_phase_two,dac_gap);
+    dac_output_voltage(DAC_CHANNEL_2, dac_gap);
+    STIM_STATUS = 1;//mark as stimulation begin
+    uint8_t temp_dac_one = dac_gap;
+    uint8_t temp_dac_two = dac_gap;
+    if(stim_delay > 1)
+        stim_delay--;//little offset
 
-    esp_nimble_hci_and_controller_init();
-    nimble_port_init();
+    if(RAMP_UP){
+        if(ANODIC_CATHODIC){
+            int c = 0;
+            while(STIM_STATUS && temp_dac_two < dac_phase_two && temp > 0){
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_one);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_gap);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_two);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(stim_delay);
+                if(c == cycles){
+                    temp_dac_one--;
+                    temp_dac_two++;
+                    c = 0;
+                }
+                temp--;
+                c++;
+            }
+        }else{
+            int c = 0;
+            while(STIM_STATUS && temp_dac_one < dac_phase_one && temp > 0){
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_one);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_gap);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(phase_two);
+                SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                ets_delay_us(stim_delay);
+                if(c == cycles){
+                    temp_dac_one++;
+                    temp_dac_two--;
+                    c = 0;
+                }
+                temp--;
+                c++;
+            }
+        }
+    }
 
-    ble_svc_gap_device_name_set(DEVICE_NAME);
-    ble_svc_gap_init();
-    ble_svc_gatt_init();
+    while(STIM_STATUS && temp > 0){
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_phase_one, RTC_IO_PDAC1_DAC_S);
+        ets_delay_us(phase_one);
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+        ets_delay_us(phase_gap);
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_phase_two, RTC_IO_PDAC1_DAC_S);
+        ets_delay_us(phase_two);
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+        ets_delay_us(stim_delay);
+        temp--;
+    }
+    dac_output_voltage(DAC_CHANNEL_1,dac_gap);//may need to change to fit elec team's circuit
+    STIM_TASK_STATUS = 0;//mark as stimulation task finish
+    STIM_STATUS = 0;
+    vTaskDelete(NULL);
+}
 
-    ble_gatts_add_svcs(gat_svcs);
-    ble_gatts_count_cfg(gat_svcs);
+
+void IRAM_ATTR burst_biphasic_loop_infinity(void *params)
+{
+    CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
+    CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
+    uint32_t phase_one = PHASE_ONE_TIME;
+    uint32_t phase_two = PHASE_TWO_TIME;
+    uint32_t phase_gap = INTER_PHASE_GAP;
+    uint32_t stim_delay = INTER_STIM_DELAY;
+    uint32_t burst_delay = INTER_BURST_DELAY;
+    uint8_t dac_phase_one, dac_phase_two;
+    uint8_t dac_gap;
+    uint32_t period = PHASE_ONE_TIME + PHASE_TWO_TIME + INTER_PHASE_GAP + INTER_STIM_DELAY;
+    uint32_t cycles = 1000000 / period;//how many cycles in one seconds
+    if(DEBUG_MODE_ENABLED){
+        dac_phase_one = DAC_PHASE_ONE;
+        dac_phase_two = DAC_PHASE_TWO;
+        dac_gap = 127;
+    }else{
+        float step_voltage = (VREF_255 - VREF_0)/255;//DAC's step volatge
+        uint8_t steps = 3000/step_voltage;// how many steps from 0 to 3V (Vref_0 to 3 + Vref_0) dac is not perfect; maps to -3mA to 3mA
+        dac_gap = steps/2; // median value -> 0mA; dac steps from 0 to 3mA or 0 to -3mA
+        uint16_t amp_step = 3000/dac_gap; // uA/step
+        if(ANODIC_CATHODIC){
+            dac_phase_one = dac_gap - STIM_AMP/amp_step;
+            dac_phase_two  =dac_gap + STIM_AMP/amp_step;
+        }else{
+            dac_phase_one = dac_gap + STIM_AMP/amp_step;
+            dac_phase_two  =dac_gap - STIM_AMP/amp_step;
+        }
+    }
+
+    if(stim_delay > 1)
+        stim_delay--;//little offset
+    uint8_t temp_dac_one = dac_gap;
+    uint8_t temp_dac_two = dac_gap;
+    //printf("dac phase 1 is %u ;phase two is %u; dac_gap is %d\n",dac_phase_one,dac_phase_two,dac_gap);
+    dac_output_voltage(DAC_CHANNEL_2, dac_gap);
+    STIM_STATUS = 1;//mark as stimulation begin
+    uint32_t temp_pulse = PULSE_NUM_IN_ONE_BURST;
+
+    if(RAMP_UP){
+        int c = 0;
+        if(ANODIC_CATHODIC){
+            while(STIM_STATUS && temp_dac_two < dac_phase_two){
+                temp_pulse = PULSE_NUM_IN_ONE_BURST;
+                while(STIM_STATUS && temp_pulse > 0){
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_one);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_gap);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_two);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(stim_delay);
+                    if(c == cycles && temp_dac_two < dac_phase_two){
+                        c = 0;
+                        temp_dac_one--;
+                        temp_dac_two++;
+                    }
+                    temp_pulse--;
+                    c++;
+                }
+                ets_delay_us(burst_delay);
+            }
+        }else{
+            while(STIM_STATUS && temp_dac_one < dac_phase_one){
+                temp_pulse = PULSE_NUM_IN_ONE_BURST;
+                while(STIM_STATUS && temp_pulse > 0){
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_one);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_gap);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_two);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(stim_delay);
+                    if(c == cycles && temp_dac_one < dac_phase_one){
+                        c = 0;
+                        temp_dac_one++;
+                        temp_dac_two--;
+                    }
+                    temp_pulse--;
+                    c++;
+                }
+                ets_delay_us(burst_delay);
+            }
+        }  
+    }
 
 
-    ble_hs_cfg.sync_cb = ble_app_on_sync;
-    nimble_port_freertos_init(host_task);
+
+    while(STIM_STATUS){
+        temp_pulse = PULSE_NUM_IN_ONE_BURST;
+        while(STIM_STATUS && temp_pulse > 0){
+            SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_phase_one, RTC_IO_PDAC1_DAC_S);
+            ets_delay_us(phase_one);
+            SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+            ets_delay_us(phase_gap);
+            SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_phase_two, RTC_IO_PDAC1_DAC_S);
+            ets_delay_us(phase_two);
+            SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+            ets_delay_us(stim_delay);
+            temp_pulse--;
+        }
+        ets_delay_us(burst_delay);
+    }
+    dac_output_voltage(DAC_CHANNEL_1,dac_gap);//may need to change to fit elec team's circuit
+    STIM_TASK_STATUS = 0;//mark as stimulation task finish
+    vTaskDelete(NULL);
+}
+
+void IRAM_ATTR burst_biphasic_loop_count(void *params)
+{
+    CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
+    CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
+    uint32_t phase_one = PHASE_ONE_TIME;
+    uint32_t phase_two = PHASE_TWO_TIME;
+    uint32_t phase_gap = INTER_PHASE_GAP;
+    uint32_t stim_delay = INTER_STIM_DELAY;
+    uint32_t burst_delay = INTER_BURST_DELAY;
+    uint8_t dac_phase_one, dac_phase_two;
+    uint8_t dac_gap;
+    uint32_t period = PHASE_ONE_TIME + PHASE_TWO_TIME + INTER_PHASE_GAP + INTER_STIM_DELAY;
+    uint32_t cycles = 1000000 / period;//how many cycles in one seconds
+    if(DEBUG_MODE_ENABLED){
+        dac_phase_one = DAC_PHASE_ONE;
+        dac_phase_two = DAC_PHASE_TWO;
+        dac_gap = 127;
+    }else{
+        float step_voltage = (VREF_255 - VREF_0)/255;//DAC's step volatge
+        uint8_t steps = 3000/step_voltage;// how many steps from 0 to 3V (Vref_0 to 3 + Vref_0) dac is not perfect; maps to -3mA to 3mA
+        dac_gap = steps/2; // median value -> 0mA; dac steps from 0 to 3mA or 0 to -3mA
+        uint16_t amp_step = 3000/dac_gap; // uA/step
+        if(ANODIC_CATHODIC){
+            dac_phase_one = dac_gap - STIM_AMP/amp_step;
+            dac_phase_two  =dac_gap + STIM_AMP/amp_step;
+        }else{
+            dac_phase_one = dac_gap + STIM_AMP/amp_step;
+            dac_phase_two  =dac_gap - STIM_AMP/amp_step;
+        }
+    }
+    if(stim_delay > 1)
+        stim_delay--;//little offset
+    uint8_t temp_dac_one = dac_gap;
+    uint8_t temp_dac_two = dac_gap;
+    //printf("dac phase 1 is %u ;phase two is %u; dac_gap is %d\n",dac_phase_one,dac_phase_two,dac_gap);
+    dac_output_voltage(DAC_CHANNEL_2, dac_gap);
+    uint32_t temp_burst = BURST_NUM;
+    uint32_t temp_pulse = PULSE_NUM_IN_ONE_BURST;
+    STIM_STATUS = 1;//mark as stimulation begin
+
+    if(RAMP_UP){
+        int c = 0;
+        if(ANODIC_CATHODIC){
+            while(STIM_STATUS && temp_dac_two < dac_phase_two &&temp_burst > 0){
+                temp_pulse = PULSE_NUM_IN_ONE_BURST;
+                while(STIM_STATUS && temp_pulse > 0){
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_one);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_gap);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_two);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(stim_delay);
+                    if(c == cycles && temp_dac_two < dac_phase_two){
+                        c = 0;
+                        temp_dac_one--;
+                        temp_dac_two++;
+                    }
+                    temp_pulse--;
+                    c++;
+                }
+                ets_delay_us(burst_delay);
+                temp_burst--;
+            }
+        }else{
+            while(STIM_STATUS && temp_dac_one < dac_phase_one && temp_burst > 0){
+                temp_pulse = PULSE_NUM_IN_ONE_BURST;
+                while(STIM_STATUS && temp_pulse > 0){
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_one, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_one);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_gap);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, temp_dac_two, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(phase_two);
+                    SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+                    ets_delay_us(stim_delay);
+                    if(c == cycles && temp_dac_one < dac_phase_one){
+                        c = 0;
+                        temp_dac_one++;
+                        temp_dac_two--;
+                    }
+                    temp_pulse--;
+                    c++;
+                }
+                ets_delay_us(burst_delay);
+                temp_burst--;
+            }
+        }  
+    }
+
+
+
+
+    while(STIM_STATUS && temp_burst > 0){
+        temp_pulse = PULSE_NUM_IN_ONE_BURST;
+        while(STIM_STATUS && temp_pulse > 0){
+            SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_phase_one, RTC_IO_PDAC1_DAC_S);
+            ets_delay_us(phase_one);
+            SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+            ets_delay_us(phase_gap);
+            SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_phase_two, RTC_IO_PDAC1_DAC_S);
+            ets_delay_us(phase_two);
+            SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, dac_gap, RTC_IO_PDAC1_DAC_S);
+            ets_delay_us(stim_delay);
+            temp_pulse--;
+        }
+        temp_burst--;
+        ets_delay_us(burst_delay);
+    }
+    dac_output_voltage(DAC_CHANNEL_1,dac_gap);//may need to change to fit elec team's circuit
+    STIM_TASK_STATUS = 0;//mark as stimulation task finish
+    STIM_STATUS = 0;
+    vTaskDelete(NULL);
 }
