@@ -42,7 +42,25 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+uint16_t STIM_AMP;
+uint32_t PHASE_ONE_TIME;
+uint32_t PHASE_TWO_TIME;
+uint32_t INTER_PHASE_GAP;
+uint32_t INTER_STIM_DELAY;
+uint32_t PULSE_NUM;
+uint8_t ANODIC_CATHODIC;
+uint8_t STIM_TYPE;
+uint32_t BURST_NUM;
+uint32_t INTER_BURST_DELAY;
+uint32_t PULSE_NUM_IN_ONE_BURST;
+uint8_t RAMP_UP;
+uint8_t SHORT_ELECTRODE;
+uint8_t ENABLE_RECORD;
+int32_t RECORD_OFFSET;
 
+uint8_t DEBUG_MODE_ENABLED;
+uint16_t DAC_PHASE_ONE;
+uint16_t DAC_PHASE_TWO;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

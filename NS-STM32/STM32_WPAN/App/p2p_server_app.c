@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "command_parse.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -82,7 +82,13 @@ void P2PS_STM_App_Notification(P2PS_STM_App_Notification_evt_t *pNotification)
 
     case P2PS_STM_WRITE_EVT:
 /* USER CODE BEGIN P2PS_STM_WRITE_EVT */
-
+    {
+      char *buffer = calloc(256,sizeof(char));
+      memcpy(buffer,pNotification->DataTransfered.pPayload,pNotification->DataTransfered.Length);
+      if(pNotification->DataTransfered.Length != 0){
+    	  parse_command(buffer);
+      }
+    }
 /* USER CODE END P2PS_STM_WRITE_EVT */
       break;
 
