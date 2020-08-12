@@ -278,7 +278,7 @@ tBleStatus P2PS_STM_App_Update_Char(uint16_t UUID, uint8_t *pPayload)
      result = aci_gatt_update_char_value(aPeerToPeerContext.PeerToPeerSvcHdle,
                              aPeerToPeerContext.P2PNotifyServerToClientCharHdle,
                               0, /* charValOffset */
-                             2, /* charValueLen */
+                             127, /* charValueLen */
                              (uint8_t *)  pPayload);
     
       break;

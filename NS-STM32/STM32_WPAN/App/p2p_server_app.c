@@ -87,6 +87,7 @@ void P2PS_STM_App_Notification(P2PS_STM_App_Notification_evt_t *pNotification)
       memcpy(buffer,pNotification->DataTransfered.pPayload,pNotification->DataTransfered.Length);
       if(pNotification->DataTransfered.Length != 0){
     	  parse_command(buffer);
+    	  P2PS_STM_App_Update_Char(P2P_NOTIFY_CHAR_UUID, (uint8_t *)buffer);
       }
     }
 /* USER CODE END P2PS_STM_WRITE_EVT */
