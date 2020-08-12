@@ -47,6 +47,16 @@
 			<locationURI>$%7BPARENT-4-PROJECT_LOC%7D/STM32Cube/Repository/STM32Cube_FW_WB_V1.8.0/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32WBxx_HAL_Driver/stm32wbxx_hal_adc.c</name>
+			<type>1</type>
+			<locationURI>$%7BPARENT-4-PROJECT_LOC%7D/STM32Cube/Repository/STM32Cube_FW_WB_V1.8.0/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_adc.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32WBxx_HAL_Driver/stm32wbxx_hal_adc_ex.c</name>
+			<type>1</type>
+			<locationURI>$%7BPARENT-4-PROJECT_LOC%7D/STM32Cube/Repository/STM32Cube_FW_WB_V1.8.0/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_adc_ex.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32WBxx_HAL_Driver/stm32wbxx_hal_cortex.c</name>
 			<type>1</type>
 			<locationURI>$%7BPARENT-4-PROJECT_LOC%7D/STM32Cube/Repository/STM32Cube_FW_WB_V1.8.0/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_cortex.c</locationURI>
@@ -125,6 +135,11 @@
 			<name>Drivers/STM32WBxx_HAL_Driver/stm32wbxx_hal_tim_ex.c</name>
 			<type>1</type>
 			<locationURI>$%7BPARENT-4-PROJECT_LOC%7D/STM32Cube/Repository/STM32Cube_FW_WB_V1.8.0/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_tim_ex.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32WBxx_HAL_Driver/stm32wbxx_ll_adc.c</name>
+			<type>1</type>
+			<locationURI>$%7BPARENT-4-PROJECT_LOC%7D/STM32Cube/Repository/STM32Cube_FW_WB_V1.8.0/Drivers/STM32WBxx_HAL_Driver/Src/stm32wbxx_ll_adc.c</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/STM32_WPAN/ble_gap_aci.c</name>

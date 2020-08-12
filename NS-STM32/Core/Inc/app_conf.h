@@ -35,7 +35,7 @@
 /**
  * Define Tx Power
  */
-#define CFG_TX_POWER                      (0x18) /* -0.15dBm */
+#define CFG_TX_POWER                      (0x1B) /* 2dBm */
 
 /**
  * Define Advertising parameters
