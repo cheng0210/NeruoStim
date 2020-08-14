@@ -220,7 +220,7 @@ void P2PS_STM_Init(void)
     COPY_P2P_WRITE_CHAR_UUID(uuid16.Char_UUID_128);
     aci_gatt_add_char(aPeerToPeerContext.PeerToPeerSvcHdle,
                       UUID_TYPE_128, &uuid16,
-                      256,
+                      2,                                   
                       CHAR_PROP_WRITE_WITHOUT_RESP|CHAR_PROP_READ,
                       ATTR_PERMISSION_NONE,
                       GATT_NOTIFY_ATTRIBUTE_WRITE, /* gattEvtMask */
@@ -234,7 +234,7 @@ void P2PS_STM_Init(void)
     COPY_P2P_NOTIFY_UUID(uuid16.Char_UUID_128);
     aci_gatt_add_char(aPeerToPeerContext.PeerToPeerSvcHdle,
                       UUID_TYPE_128, &uuid16,
-                      256,
+                      2,
                       CHAR_PROP_NOTIFY,
                       ATTR_PERMISSION_NONE,
                       GATT_NOTIFY_ATTRIBUTE_WRITE, /* gattEvtMask */
@@ -278,7 +278,7 @@ tBleStatus P2PS_STM_App_Update_Char(uint16_t UUID, uint8_t *pPayload)
      result = aci_gatt_update_char_value(aPeerToPeerContext.PeerToPeerSvcHdle,
                              aPeerToPeerContext.P2PNotifyServerToClientCharHdle,
                               0, /* charValOffset */
-                             127, /* charValueLen */
+                             2, /* charValueLen */
                              (uint8_t *)  pPayload);
     
       break;
