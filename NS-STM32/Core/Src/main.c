@@ -135,6 +135,8 @@ int main(void)
   DEBUG_MODE_ENABLED = 1;
   DAC_PHASE_ONE = 0;
   DAC_PHASE_TWO = 65535; // 16 bits DAC8831
+
+  TIM2->ARR = 64000000;
   /* USER CODE END 2 */
 
   /* Init code for STM32_WPAN */
@@ -142,9 +144,15 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   HAL_TIM_Base_Start_IT(&htim2);
+  half_word[0] = 0x00;
   while (1)
   {
 	  UTIL_SEQ_Run( UTIL_SEQ_DEFAULT );
+	  if(half_word[0] < 64000){
+	  		half_word[0]+=100;
+	  	}
+	  HAL_SPI_Transmit(&hspi1, (uint8_t *)half_word, 2, HAL_MAX_DELAY);
+	  //printf("%d\n",half_word[0]);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

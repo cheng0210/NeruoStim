@@ -60,7 +60,7 @@
 extern DMA_HandleTypeDef hdma_tim2_up;
 extern TIM_HandleTypeDef htim2;
 /* USER CODE BEGIN EV */
-
+extern SPI_HandleTypeDef hspi1;
 /* USER CODE END EV */
 
 /******************************************************************************/

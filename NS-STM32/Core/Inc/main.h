@@ -61,6 +61,7 @@ int32_t RECORD_OFFSET;
 uint8_t DEBUG_MODE_ENABLED;
 uint16_t DAC_PHASE_ONE;
 uint16_t DAC_PHASE_TWO;
+uint16_t half_word[1];
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
