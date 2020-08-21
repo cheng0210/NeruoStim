@@ -1,18 +1,21 @@
 #include "command_parse.h"
+extern TIM_HandleTypeDef htim2;
 void parse_command(char *command){
     char **result = split(command,':');
     if (strcmp(result[0], "start") == 0)
     {
         //STIM_START();
+    	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+    	STIM_STATUS = 0;
+    	TIM2->CNT = 0;
+    	HAL_TIM_Base_Start_IT(&htim2);
     }
     else if (strcmp(result[0], "stop") == 0)
     {
-        /*
-        if (STIM_TASK_STATUS == 1)
-        {
-            STIM_STOP();
-        }
-        */
+    	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+        while(PULSE_PROBE != 0);
+        HAL_TIM_Base_Stop_IT(&htim2);
+        TIM2->CNT = 0;
     }else if(strcmp(result[0],"stim_amp")==0){
         STIM_AMP = atoi(result[1]);
     }

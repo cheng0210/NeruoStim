@@ -29,6 +29,17 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32wbxx_hal.h"
+#include "stm32wbxx_ll_spi.h"
+#include "stm32wbxx_ll_bus.h"
+#include "stm32wbxx_ll_cortex.h"
+#include "stm32wbxx_ll_rcc.h"
+#include "stm32wbxx_ll_system.h"
+#include "stm32wbxx_ll_utils.h"
+#include "stm32wbxx_ll_pwr.h"
+#include "stm32wbxx_ll_gpio.h"
+#include "stm32wbxx_ll_dma.h"
+
+#include "stm32wbxx_ll_exti.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -37,6 +48,12 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+#define STIM_STATUS_STOP 0
+#define STIM_STATUS_PHASE_ONE 1
+#define STIM_STATUS_INTER_PHASE_GAP 2
+#define STIM_STATUS_PHASE_TWO 3
+#define STIM_STATUS_INTER_STIM_DEALY 4
+#define STIM_STATUS_INTER_BURST_GAP 5
 
 /* USER CODE END ET */
 
@@ -61,7 +78,11 @@ int32_t RECORD_OFFSET;
 uint8_t DEBUG_MODE_ENABLED;
 uint16_t DAC_PHASE_ONE;
 uint16_t DAC_PHASE_TWO;
-uint16_t half_word[1];
+uint16_t DAC_GAP;
+
+uint8_t STIM_STATUS;
+uint8_t PULSE_PROBE;
+
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

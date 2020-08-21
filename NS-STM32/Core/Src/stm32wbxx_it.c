@@ -60,7 +60,7 @@
 extern DMA_HandleTypeDef hdma_tim2_up;
 extern TIM_HandleTypeDef htim2;
 /* USER CODE BEGIN EV */
-extern SPI_HandleTypeDef hspi1;
+
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -219,7 +219,50 @@ void DMA1_Channel1_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
-	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+	switch(STIM_STATUS){
+		case STIM_STATUS_STOP:
+			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
+			SPI1->DR = DAC_GAP;
+			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
+			PULSE_PROBE = 0;
+			STIM_STATUS = 1;
+			break;
+		case STIM_STATUS_PHASE_ONE:
+			PULSE_PROBE = 1;
+			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
+			SPI1->DR = DAC_PHASE_ONE;
+			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
+			TIM2->ARR = PHASE_ONE_TIME * 64;
+			STIM_STATUS = 2;
+			break;
+		case STIM_STATUS_INTER_PHASE_GAP:
+			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
+			SPI1->DR = DAC_GAP;
+			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
+			TIM2->ARR = INTER_PHASE_GAP * 64;
+			STIM_STATUS = 3;
+			break;
+		case STIM_STATUS_PHASE_TWO:
+			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
+			SPI1->DR = DAC_PHASE_TWO;
+			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
+			TIM2->ARR = PHASE_TWO_TIME * 64;
+			STIM_STATUS = 4;
+			break;
+		case STIM_STATUS_INTER_STIM_DEALY:
+			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
+			SPI1->DR = DAC_GAP;
+			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
+			TIM2->ARR = INTER_STIM_DELAY * 64;
+			STIM_STATUS = 1; // need to change in the future
+			PULSE_PROBE = 0;
+			break;
+		case STIM_STATUS_INTER_BURST_GAP:
+			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
+			SPI1->DR = DAC_GAP;
+			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
+			break;
+	}
   /* USER CODE END TIM2_IRQn 0 */
   HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */
