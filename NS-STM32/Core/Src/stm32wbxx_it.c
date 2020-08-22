@@ -219,6 +219,9 @@ void DMA1_Channel1_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
+	printf("arr is %ld cnt is %ld ",TIM2->ARR,TIM2->CNT);
+	TIM2->CR1 &= 0;
+	TIM2->CNT = 0;
 	switch(STIM_STATUS){
 		case STIM_STATUS_STOP:
 			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
@@ -234,6 +237,7 @@ void TIM2_IRQHandler(void)
 			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
 			TIM2->ARR = PHASE_ONE_TIME * 64;
 			STIM_STATUS = 2;
+			printf("phase one\n");
 			break;
 		case STIM_STATUS_INTER_PHASE_GAP:
 			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
@@ -241,6 +245,7 @@ void TIM2_IRQHandler(void)
 			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
 			TIM2->ARR = INTER_PHASE_GAP * 64;
 			STIM_STATUS = 3;
+			printf("phase gap\n");
 			break;
 		case STIM_STATUS_PHASE_TWO:
 			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
@@ -248,6 +253,7 @@ void TIM2_IRQHandler(void)
 			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
 			TIM2->ARR = PHASE_TWO_TIME * 64;
 			STIM_STATUS = 4;
+			printf("phase two\n");
 			break;
 		case STIM_STATUS_INTER_STIM_DEALY:
 			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
@@ -256,6 +262,7 @@ void TIM2_IRQHandler(void)
 			TIM2->ARR = INTER_STIM_DELAY * 64;
 			STIM_STATUS = 1; // need to change in the future
 			PULSE_PROBE = 0;
+			printf("stim delay\n");
 			break;
 		case STIM_STATUS_INTER_BURST_GAP:
 			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
@@ -263,6 +270,7 @@ void TIM2_IRQHandler(void)
 			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
 			break;
 	}
+	TIM2->CR1 |= 1;
   /* USER CODE END TIM2_IRQn 0 */
   HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */
