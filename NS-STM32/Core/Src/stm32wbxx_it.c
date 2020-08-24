@@ -219,56 +219,56 @@ void DMA1_Channel1_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
-	//printf("arr is %ld cnt is %ld ",TIM2->ARR,TIM2->CNT);
 	TIM2->CR1 &= 0;
 	TIM2->CNT = 0;
 	switch(STIM_STATUS){
 		case STIM_STATUS_STOP:
-			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
+			while((SPI1->SR & 1<<1) == 0);
 			SPI1->DR = DAC_GAP;
-			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
+			while((SPI1->SR & 1<<0) == 0);
 			PULSE_PROBE = 0;
-			STIM_STATUS = 1;
+			STIM_STATUS = STIM_STATUS_PHASE_ONE;
 			break;
 		case STIM_STATUS_PHASE_ONE:
 			PULSE_PROBE = 1;
-			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
+			while((SPI1->SR & 1<<1) == 0);
 			SPI1->DR = DAC_PHASE_ONE;
-			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
-			TIM2->ARR = PHASE_ONE_TIME * 64;
-			STIM_STATUS = 2;
-			//printf("phase one\n");
+			while((SPI1->SR & 1<<0) == 0);
+			TIM2->ARR = PHASE_ONE_TIMER;
+			if(INTER_PHASE_GAP != 0){
+				STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
+			}else{
+				STIM_STATUS = STIM_STATUS_PHASE_TWO;
+			}
 			break;
 		case STIM_STATUS_INTER_PHASE_GAP:
-			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
+			while((SPI1->SR & 1<<1) == 0);
 			SPI1->DR = DAC_GAP;
-			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
-			TIM2->ARR = INTER_PHASE_GAP * 64;
-			STIM_STATUS = 3;
-			//printf("phase gap\n");
+			while((SPI1->SR & 1<<0) == 0);
+			TIM2->ARR = PHASE_GAP_TIMER;
+			STIM_STATUS = STIM_STATUS_PHASE_TWO;
 			break;
 		case STIM_STATUS_PHASE_TWO:
-			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
+			while((SPI1->SR & 1<<1) == 0);
 			SPI1->DR = DAC_PHASE_TWO;
-			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
-			TIM2->ARR = PHASE_TWO_TIME * 64;
-			STIM_STATUS = 4;
-			//printf("phase two\n");
+			while((SPI1->SR & 1<<0) == 0);
+			TIM2->ARR = PHASE_TWO_TIMER;
+			if(INTER_STIM_DELAY != 0){
+				STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
+			}else{
+				STIM_STATUS = STIM_STATUS_PHASE_ONE; // need to change in the future
+				PULSE_PROBE = 0;
+			}
 			break;
 		case STIM_STATUS_INTER_STIM_DEALY:
-			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
+			while((SPI1->SR & 1<<1) == 0);
 			SPI1->DR = DAC_GAP;
-			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
-			TIM2->ARR = INTER_STIM_DELAY * 64;
-			STIM_STATUS = 1; // need to change in the future
+			while((SPI1->SR & 1<<0) == 0);
+			TIM2->ARR = STIM_DELAY_TIMER;
+			STIM_STATUS = STIM_STATUS_PHASE_ONE; // need to change in the future
 			PULSE_PROBE = 0;
-			//printf("stim delay\n");
 			break;
-		case STIM_STATUS_INTER_BURST_GAP:
-			while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
-			SPI1->DR = DAC_GAP;
-			while((SPI1->SR & 1<<0) == 0);//wait for recv complete
-			break;
+		default: break;
 	}
 	TIM2->CR1 |= 1;
   /* USER CODE END TIM2_IRQn 0 */

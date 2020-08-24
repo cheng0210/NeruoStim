@@ -83,6 +83,12 @@ uint16_t DAC_GAP;
 uint8_t STIM_STATUS;
 uint8_t PULSE_PROBE;
 
+uint32_t PHASE_ONE_TIMER;
+uint32_t PHASE_TWO_TIMER;
+uint32_t PHASE_GAP_TIMER;
+uint32_t STIM_DELAY_TIMER;
+uint32_t BURST_DELAY_TIMER;
+
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

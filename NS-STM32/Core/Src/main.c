@@ -142,8 +142,17 @@ int main(void)
   STIM_STATUS = 0;
   PULSE_PROBE = 0;
 
+  // init timer value
+  PHASE_ONE_TIME = 64 * PHASE_ONE_TIME;
+  PHASE_TWO_TIMER = 64 * PHASE_TWO_TIMER;
+  PHASE_GAP_TIMER = 64 * INTER_PHASE_GAP;
+  STIM_DELAY_TIMER = 64 * INTER_STIM_DELAY;
+  BURST_DELAY_TIMER = 64 * INTER_BURST_DELAY;
+
+  //timer2 can be paused when hit breakpoints in debugging mode
   __HAL_DBGMCU_FREEZE_TIM2();
 
+  //enable spi
   LL_SPI_Enable(SPI1);
 
   TIM2->ARR = 10000;
