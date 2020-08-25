@@ -120,8 +120,8 @@ int main(void)
   PHASE_ONE_TIME = 10;// default 10us
   PHASE_TWO_TIME = 10;// default 10us
   STIM_AMP = 2000;// default 0uA
-  INTER_PHASE_GAP = 10;//default 0us
-  INTER_STIM_DELAY = 10;//default 0us
+  INTER_PHASE_GAP = 0;//default 0us
+  INTER_STIM_DELAY = 0;//default 0us
   ANODIC_CATHODIC = 1;//default cathodic
   STIM_TYPE = 0;//default uniform stim
   PULSE_NUM = 0;//default 0 is forever in ms
@@ -143,8 +143,8 @@ int main(void)
   PULSE_PROBE = 0;
 
   // init timer value
-  PHASE_ONE_TIME = 64 * PHASE_ONE_TIME;
-  PHASE_TWO_TIMER = 64 * PHASE_TWO_TIMER;
+  PHASE_ONE_TIMER = 64 * PHASE_ONE_TIME;
+  PHASE_TWO_TIMER = 64 * PHASE_TWO_TIME;
   PHASE_GAP_TIMER = 64 * INTER_PHASE_GAP;
   STIM_DELAY_TIMER = 64 * INTER_STIM_DELAY;
   BURST_DELAY_TIMER = 64 * INTER_BURST_DELAY;
@@ -154,15 +154,14 @@ int main(void)
 
   //enable spi
   LL_SPI_Enable(SPI1);
-
-  TIM2->ARR = 10000;
-  HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE END 2 */
 
   /* Init code for STM32_WPAN */
   APPE_Init();
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  TIM2->ARR = 10000;
+  HAL_TIM_Base_Start_IT(&htim2);
   while (1)
   {
 	  UTIL_SEQ_Run( UTIL_SEQ_DEFAULT );

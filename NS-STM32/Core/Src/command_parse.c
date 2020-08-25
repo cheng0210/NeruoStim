@@ -4,8 +4,8 @@ void parse_command(char *command){
     char **result = split(command,':');
     if (strcmp(result[0], "start") == 0)
     {
-        PHASE_ONE_TIME = 64 * PHASE_ONE_TIME;
-        PHASE_TWO_TIMER = 64 * PHASE_TWO_TIMER;
+        PHASE_ONE_TIMER = 64 * PHASE_ONE_TIME;
+        PHASE_TWO_TIMER = 64 * PHASE_TWO_TIME;
         PHASE_GAP_TIMER = 64 * INTER_PHASE_GAP;
         STIM_DELAY_TIMER = 64 * INTER_STIM_DELAY;
         BURST_DELAY_TIMER = 64 * INTER_BURST_DELAY;
