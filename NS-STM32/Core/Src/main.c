@@ -293,7 +293,7 @@ static void MX_LPTIM2_Init(void)
   /* USER CODE END LPTIM2_Init 1 */
   hlptim2.Instance = LPTIM2;
   hlptim2.Init.Clock.Source = LPTIM_CLOCKSOURCE_APBCLOCK_LPOSC;
-  hlptim2.Init.Clock.Prescaler = LPTIM_PRESCALER_DIV1;
+  hlptim2.Init.Clock.Prescaler = LPTIM_PRESCALER_DIV128;
   hlptim2.Init.Trigger.Source = LPTIM_TRIGSOURCE_SOFTWARE;
   hlptim2.Init.OutputPolarity = LPTIM_OUTPUTPOLARITY_HIGH;
   hlptim2.Init.UpdateMode = LPTIM_UPDATE_IMMEDIATE;
