@@ -10,17 +10,34 @@ void parse_command(char *command){
         STIM_DELAY_TIMER = 64 * INTER_STIM_DELAY;
         BURST_DELAY_TIMER = 64 * INTER_BURST_DELAY;
 
-    	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-    	STIM_STATUS = 0;
+        TEMP_PULSE_NUM = PULSE_NUM;
+        TEMP_PULSE_NUM_IN_BURST = PULSE_NUM_IN_ONE_BURST;
+        TEMP_BURST_NUM = BURST_NUM;
+
+        if(STIM_TYPE == 0){
+        	if(PULSE_NUM == 0){
+        		STIM_MODE = STIM_MODE_UNI_CONT;
+        	}else{
+        		STIM_MODE = STIM_MODE_UNI_NUM;
+        	}
+        }else{
+        	if(BURST_NUM == 0){
+        		STIM_MODE = STIM_MODE_BURST_CONT;
+        	}else{
+        		STIM_MODE = STIM_MODE_BURST_NUM;
+        	}
+        }
+
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, SET);
+    	STIM_STATUS = STIM_STATUS_PHASE_ONE;
     	TIM2->CNT = 0;
     	HAL_TIM_Base_Start_IT(&htim2);
     }
     else if (strcmp(result[0], "stop") == 0)
     {
-    	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+    	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);
         while(PULSE_PROBE != 0);
-        HAL_TIM_Base_Stop_IT(&htim2);
-        TIM2->CNT = 0;
+        STIM_STATUS = STIM_STATUS_STOP;
     }else if(strcmp(result[0],"stim_amp")==0){
         STIM_AMP = atoi(result[1]);
     }
@@ -80,10 +97,6 @@ void parse_command(char *command){
     {
         RECORD_OFFSET = atoi(result[1]);
     }
-    else if (strcmp(result[0], "debug_enable") == 0)
-    {
-        DEBUG_MODE_ENABLED = atoi(result[1]);
-    }
     else if (strcmp(result[0], "dac_phase_one") == 0)
     {
         DAC_PHASE_ONE = atoi(result[1]);
@@ -91,6 +104,10 @@ void parse_command(char *command){
     else if (strcmp(result[0], "dac_phase_two") == 0)
     {
         DAC_PHASE_TWO = atoi(result[1]);
+    }
+    else if (strcmp(result[0], "dac_gap") == 0)
+    {
+            DAC_GAP = atoi(result[1]);
     }
 
     int x = 0;

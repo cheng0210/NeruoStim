@@ -221,60 +221,124 @@ void TIM2_IRQHandler(void)
   /* USER CODE BEGIN TIM2_IRQn 0 */
 	TIM2->CR1 &= 0;
 	TIM2->CNT = 0;
-	switch(STIM_STATUS){
-		case STIM_STATUS_STOP:
-			while((SPI1->SR & 1<<1) == 0);
-			SPI1->DR = DAC_GAP;
-			//while((SPI1->SR & 1<<0) == 0);
-			TIM2->CR1 |= 1;
-			PULSE_PROBE = 0;
-			STIM_STATUS = STIM_STATUS_PHASE_ONE;
-			break;
-		case STIM_STATUS_PHASE_ONE:
-			PULSE_PROBE = 1;
-			while((SPI1->SR & 1<<1) == 0);
-			SPI1->DR = DAC_PHASE_ONE;
-			//while((SPI1->SR & 1<<0) == 0);
-			TIM2->ARR = PHASE_ONE_TIMER;
-			TIM2->CR1 |= 1;
-			if(INTER_PHASE_GAP >= 1){
-				STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
-			}else{
-				STIM_STATUS = STIM_STATUS_PHASE_TWO;
+
+	switch(STIM_MODE){
+		case STIM_MODE_UNI_CONT:
+			switch(STIM_STATUS){
+				case STIM_STATUS_STOP:
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_GAP;
+					HAL_TIM_Base_Stop_IT(&htim2);
+					break;
+				case STIM_STATUS_PHASE_ONE:
+					PULSE_PROBE = 1;
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_PHASE_ONE;
+					TIM2->ARR = PHASE_ONE_TIMER;
+					TIM2->CR1 |= 1;
+					if(INTER_PHASE_GAP >= 1){
+						STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
+					}else{
+						STIM_STATUS = STIM_STATUS_PHASE_TWO;
+					}
+					break;
+				case STIM_STATUS_INTER_PHASE_GAP:
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_GAP;
+					TIM2->ARR = PHASE_GAP_TIMER;
+					TIM2->CR1 |= 1;
+					STIM_STATUS = STIM_STATUS_PHASE_TWO;
+					break;
+				case STIM_STATUS_PHASE_TWO:
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_PHASE_TWO;
+					TIM2->ARR = PHASE_TWO_TIMER;
+					TIM2->CR1 |= 1;
+					if(INTER_STIM_DELAY >= 1){
+						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
+					}else{
+						STIM_STATUS = STIM_STATUS_PHASE_ONE;
+						PULSE_PROBE = 0;
+					}
+					break;
+				case STIM_STATUS_INTER_STIM_DEALY:
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_GAP;
+					TIM2->ARR = STIM_DELAY_TIMER;
+					TIM2->CR1 |= 1;
+					STIM_STATUS = STIM_STATUS_PHASE_ONE;
+					PULSE_PROBE = 0;
+					break;
+				default: break;
 			}
 			break;
-		case STIM_STATUS_INTER_PHASE_GAP:
-			while((SPI1->SR & 1<<1) == 0);
-			SPI1->DR = DAC_GAP;
-			//while((SPI1->SR & 1<<0) == 0);
-			TIM2->ARR = PHASE_GAP_TIMER;
-			TIM2->CR1 |= 1;
-			STIM_STATUS = STIM_STATUS_PHASE_TWO;
-			break;
-		case STIM_STATUS_PHASE_TWO:
-			while((SPI1->SR & 1<<1) == 0);
-			SPI1->DR = DAC_PHASE_TWO;
-			//while((SPI1->SR & 1<<0) == 0);
-			TIM2->ARR = PHASE_TWO_TIMER;
-			TIM2->CR1 |= 1;
-			if(INTER_STIM_DELAY >= 1){
-				STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
-			}else{
-				STIM_STATUS = STIM_STATUS_PHASE_ONE; // need to change in the future
-				PULSE_PROBE = 0;
+		case STIM_MODE_UNI_NUM:
+			switch(STIM_STATUS){
+				case STIM_STATUS_STOP:
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_GAP;
+					HAL_TIM_Base_Stop_IT(&htim2);
+					break;
+				case STIM_STATUS_PHASE_ONE:
+					PULSE_PROBE = 1;
+					if(TEMP_PULSE_NUM > 0){
+						while((SPI1->SR & 1<<1) == 0);
+						SPI1->DR = DAC_PHASE_ONE;
+						TIM2->ARR = PHASE_ONE_TIMER;
+						TIM2->CR1 |= 1;
+						if(INTER_PHASE_GAP >= 1){
+							STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
+						}else{
+							STIM_STATUS = STIM_STATUS_PHASE_TWO;
+						}
+					}else{
+						while((SPI1->SR & 1<<1) == 0);
+						SPI1->DR = DAC_GAP;
+						HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);
+						HAL_TIM_Base_Stop_IT(&htim2);
+					}
+					break;
+				case STIM_STATUS_INTER_PHASE_GAP:
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_GAP;
+					TIM2->ARR = PHASE_GAP_TIMER;
+					TIM2->CR1 |= 1;
+					STIM_STATUS = STIM_STATUS_PHASE_TWO;
+					break;
+				case STIM_STATUS_PHASE_TWO:
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_PHASE_TWO;
+					TIM2->ARR = PHASE_TWO_TIMER;
+					TIM2->CR1 |= 1;
+					if(INTER_STIM_DELAY >= 1){
+						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
+					}else{
+						STIM_STATUS = STIM_STATUS_PHASE_ONE;
+						TEMP_PULSE_NUM--;
+						PULSE_PROBE = 0;
+					}
+					break;
+				case STIM_STATUS_INTER_STIM_DEALY:
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_GAP;
+					TIM2->ARR = STIM_DELAY_TIMER;
+					TIM2->CR1 |= 1;
+					STIM_STATUS = STIM_STATUS_PHASE_ONE;
+					TEMP_PULSE_NUM--;
+					PULSE_PROBE = 0;
+					break;
+				default: break;
 			}
 			break;
-		case STIM_STATUS_INTER_STIM_DEALY:
-			while((SPI1->SR & 1<<1) == 0);
-			SPI1->DR = DAC_GAP;
-			//while((SPI1->SR & 1<<0) == 0);
-			TIM2->ARR = STIM_DELAY_TIMER;
-			TIM2->CR1 |= 1;
-			STIM_STATUS = STIM_STATUS_PHASE_ONE; // need to change in the future
-			PULSE_PROBE = 0;
+		case STIM_MODE_BURST_CONT:
+			break;
+		case STIM_MODE_BURST_NUM:
 			break;
 		default: break;
 	}
+
+
+
   /* USER CODE END TIM2_IRQn 0 */
   HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */

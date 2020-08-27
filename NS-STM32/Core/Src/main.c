@@ -124,7 +124,7 @@ int main(void)
   INTER_STIM_DELAY = 0;//default 0us
   ANODIC_CATHODIC = 1;//default cathodic
   STIM_TYPE = 0;//default uniform stim
-  PULSE_NUM = 0;//default 0 is forever in ms
+  PULSE_NUM = 100000;//default 0 is forever in ms
   BURST_NUM = 0;// number of burst
   INTER_BURST_DELAY = 0;
   PULSE_NUM_IN_ONE_BURST = 0;
@@ -134,7 +134,13 @@ int main(void)
   ENABLE_RECORD = 0;
   RECORD_OFFSET = 0;
 
-  DEBUG_MODE_ENABLED = 1;
+
+  STIM_MODE = STIM_MODE_UNI_CONT;
+
+  TEMP_PULSE_NUM = PULSE_NUM;
+  TEMP_PULSE_NUM_IN_BURST = PULSE_NUM_IN_ONE_BURST;
+  TEMP_BURST_NUM = BURST_NUM;
+
   DAC_PHASE_ONE = 0;
   DAC_PHASE_TWO = 65535; // 16 bits DAC8831
   DAC_GAP = 32767;
