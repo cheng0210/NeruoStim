@@ -117,17 +117,17 @@ int main(void)
   MX_USART1_UART_Init();
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
-  PHASE_ONE_TIME = 10;// default 10us
-  PHASE_TWO_TIME = 10;// default 10us
+  PHASE_ONE_TIME = 1000000;// default 10us
+  PHASE_TWO_TIME = 1000000;// default 10us
   STIM_AMP = 2000;// default 0uA
-  INTER_PHASE_GAP = 0;//default 0us
-  INTER_STIM_DELAY = 0;//default 0us
+  INTER_PHASE_GAP = 1000000;//default 0us
+  INTER_STIM_DELAY = 1000000;//default 0us
   ANODIC_CATHODIC = 1;//default cathodic
-  STIM_TYPE = 0;//default uniform stim
-  PULSE_NUM = 100000;//default 0 is forever in ms
-  BURST_NUM = 0;// number of burst
-  INTER_BURST_DELAY = 0;
-  PULSE_NUM_IN_ONE_BURST = 0;
+  STIM_TYPE = 1;//default uniform stim
+  PULSE_NUM = 10;//default 0 is forever in ms
+  BURST_NUM = 2;// number of burst
+  INTER_BURST_DELAY = 1000000;
+  PULSE_NUM_IN_ONE_BURST = 5;
   RAMP_UP = 0;
   SHORT_ELECTRODE = 1;
 

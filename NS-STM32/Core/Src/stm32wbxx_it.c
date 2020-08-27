@@ -223,17 +223,23 @@ void TIM2_IRQHandler(void)
 	TIM2->CNT = 0;
 
 	switch(STIM_MODE){
+		// UNIFORM CONTINUOUS STIMULATION
 		case STIM_MODE_UNI_CONT:
 			switch(STIM_STATUS){
+				// STOP STATUS
 				case STIM_STATUS_STOP:
 					while((SPI1->SR & 1<<1) == 0);
 					SPI1->DR = DAC_GAP;
 					HAL_TIM_Base_Stop_IT(&htim2);
 					break;
+				// PHASE ONE STATUS
 				case STIM_STATUS_PHASE_ONE:
-					PULSE_PROBE = 1;
+					PULSE_PROBE = 1;	// MARK AS STIMULATION BEGIN SO THE STIM_STATUS CAN NOT BE CHANGED TO STOP STATUS
+
+					//WRITE DATA TO DAC
 					while((SPI1->SR & 1<<1) == 0);
 					SPI1->DR = DAC_PHASE_ONE;
+
 					TIM2->ARR = PHASE_ONE_TIMER;
 					TIM2->CR1 |= 1;
 					if(INTER_PHASE_GAP >= 1){
@@ -242,36 +248,49 @@ void TIM2_IRQHandler(void)
 						STIM_STATUS = STIM_STATUS_PHASE_TWO;
 					}
 					break;
+				// INTER PHASE GAP STATUS
 				case STIM_STATUS_INTER_PHASE_GAP:
+
+					//WRITE DATA TO DAC
 					while((SPI1->SR & 1<<1) == 0);
 					SPI1->DR = DAC_GAP;
+
 					TIM2->ARR = PHASE_GAP_TIMER;
 					TIM2->CR1 |= 1;
 					STIM_STATUS = STIM_STATUS_PHASE_TWO;
 					break;
+				// PHASE TWO STATUS
 				case STIM_STATUS_PHASE_TWO:
+
+					//WRITE DATA TO DAC
 					while((SPI1->SR & 1<<1) == 0);
 					SPI1->DR = DAC_PHASE_TWO;
+
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
 					if(INTER_STIM_DELAY >= 1){
 						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
 					}else{
 						STIM_STATUS = STIM_STATUS_PHASE_ONE;
-						PULSE_PROBE = 0;
+						PULSE_PROBE = 0;	// MARK AS STIMULATION END SO THE STIM_STATUS CAN BE CHANGED TO STOP STATUS
 					}
 					break;
+				// INTER STIM DELAY STATUS
 				case STIM_STATUS_INTER_STIM_DEALY:
+
+					//WRITE DATA TO DAC
 					while((SPI1->SR & 1<<1) == 0);
 					SPI1->DR = DAC_GAP;
+
 					TIM2->ARR = STIM_DELAY_TIMER;
 					TIM2->CR1 |= 1;
 					STIM_STATUS = STIM_STATUS_PHASE_ONE;
-					PULSE_PROBE = 0;
+					PULSE_PROBE = 0;	// MARK AS STIMULATION END SO THE STIM_STATUS CAN BE CHANGED TO STOP STATUS
 					break;
 				default: break;
 			}
 			break;
+		// UNIFORM STIMULATION WITH PULSE NUM
 		case STIM_MODE_UNI_NUM:
 			switch(STIM_STATUS){
 				case STIM_STATUS_STOP:
@@ -331,8 +350,189 @@ void TIM2_IRQHandler(void)
 			}
 			break;
 		case STIM_MODE_BURST_CONT:
+			switch(STIM_STATUS){
+				// STOP STATUS
+				case STIM_STATUS_STOP:
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_GAP;
+					HAL_TIM_Base_Stop_IT(&htim2);
+					break;
+				// PHASE ONE STATUS
+				case STIM_STATUS_PHASE_ONE:
+					PULSE_PROBE = 1;	// MARK AS STIMULATION BEGIN SO THE STIM_STATUS CAN NOT BE CHANGED TO STOP STATUS
+
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_PHASE_ONE;
+
+					TIM2->ARR = PHASE_ONE_TIMER;
+					TIM2->CR1 |= 1;
+					if(INTER_PHASE_GAP >= 1){
+						STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
+					}else{
+						STIM_STATUS = STIM_STATUS_PHASE_TWO;
+					}
+					break;
+				// INTER PHASE GAP STATUS
+				case STIM_STATUS_INTER_PHASE_GAP:
+
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_GAP;
+
+					TIM2->ARR = PHASE_GAP_TIMER;
+					TIM2->CR1 |= 1;
+					STIM_STATUS = STIM_STATUS_PHASE_TWO;
+					break;
+				// PHASE TWO STATUS
+				case STIM_STATUS_PHASE_TWO:
+
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_PHASE_TWO;
+
+					TIM2->ARR = PHASE_TWO_TIMER;
+					TIM2->CR1 |= 1;
+					if(INTER_STIM_DELAY > 1){
+						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
+					}else{
+						if(TEMP_PULSE_NUM_IN_BURST > 1){
+							STIM_STATUS = STIM_STATUS_PHASE_ONE;
+							TEMP_PULSE_NUM_IN_BURST--;
+						}else{
+							STIM_STATUS = STIM_STATUS_INTER_BURST_DELAY;
+						}
+						PULSE_PROBE = 0;	// MARK AS STIMULATION END SO THE STIM_STATUS CAN BE CHANGED TO STOP STATUS
+					}
+					break;
+				// INTER STIM DELAY STATUS
+				case STIM_STATUS_INTER_STIM_DEALY:
+
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_GAP;
+
+					TIM2->ARR = STIM_DELAY_TIMER;
+					TIM2->CR1 |= 1;
+					if(TEMP_PULSE_NUM_IN_BURST > 1){
+						STIM_STATUS = STIM_STATUS_PHASE_ONE;
+						TEMP_PULSE_NUM_IN_BURST--;
+					}else{
+						STIM_STATUS = STIM_STATUS_INTER_BURST_DELAY;
+					}
+					PULSE_PROBE = 0;	// MARK AS STIMULATION END SO THE STIM_STATUS CAN BE CHANGED TO STOP STATUS
+					break;
+
+				case STIM_STATUS_INTER_BURST_DELAY:
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_GAP;
+
+					TIM2->ARR = BURST_DELAY_TIMER;
+					TIM2->CR1 |= 1;
+
+					TEMP_PULSE_NUM_IN_BURST = PULSE_NUM_IN_ONE_BURST;
+					STIM_STATUS = STIM_STATUS_PHASE_ONE;
+
+					break;
+				default: break;
+			}
 			break;
 		case STIM_MODE_BURST_NUM:
+			switch(STIM_STATUS){
+				// STOP STATUS
+				case STIM_STATUS_STOP:
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_GAP;
+					HAL_TIM_Base_Stop_IT(&htim2);
+					break;
+				// PHASE ONE STATUS
+				case STIM_STATUS_PHASE_ONE:
+					if(TEMP_BURST_NUM > 0){
+						PULSE_PROBE = 1;	// MARK AS STIMULATION BEGIN SO THE STIM_STATUS CAN NOT BE CHANGED TO STOP STATUS
+
+						//WRITE DATA TO DAC
+						while((SPI1->SR & 1<<1) == 0);
+						SPI1->DR = DAC_PHASE_ONE;
+
+						TIM2->ARR = PHASE_ONE_TIMER;
+						TIM2->CR1 |= 1;
+						if(INTER_PHASE_GAP >= 1){
+							STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
+						}else{
+							STIM_STATUS = STIM_STATUS_PHASE_TWO;
+						}
+					}else{
+						while((SPI1->SR & 1<<1) == 0);
+						SPI1->DR = DAC_GAP;
+						HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);
+						HAL_TIM_Base_Stop_IT(&htim2);
+					}
+					break;
+				// INTER PHASE GAP STATUS
+				case STIM_STATUS_INTER_PHASE_GAP:
+
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_GAP;
+
+					TIM2->ARR = PHASE_GAP_TIMER;
+					TIM2->CR1 |= 1;
+					STIM_STATUS = STIM_STATUS_PHASE_TWO;
+					break;
+				// PHASE TWO STATUS
+				case STIM_STATUS_PHASE_TWO:
+
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_PHASE_TWO;
+
+					TIM2->ARR = PHASE_TWO_TIMER;
+					TIM2->CR1 |= 1;
+					if(INTER_STIM_DELAY > 1){
+						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
+					}else{
+						if(TEMP_PULSE_NUM_IN_BURST > 1){
+							STIM_STATUS = STIM_STATUS_PHASE_ONE;
+							TEMP_PULSE_NUM_IN_BURST--;
+						}else{
+							STIM_STATUS = STIM_STATUS_INTER_BURST_DELAY;
+						}
+						PULSE_PROBE = 0;	// MARK AS STIMULATION END SO THE STIM_STATUS CAN BE CHANGED TO STOP STATUS
+					}
+					break;
+				// INTER STIM DELAY STATUS
+				case STIM_STATUS_INTER_STIM_DEALY:
+
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_GAP;
+
+					TIM2->ARR = STIM_DELAY_TIMER;
+					TIM2->CR1 |= 1;
+					if(TEMP_PULSE_NUM_IN_BURST > 1){
+						STIM_STATUS = STIM_STATUS_PHASE_ONE;
+						TEMP_PULSE_NUM_IN_BURST--;
+					}else{
+						STIM_STATUS = STIM_STATUS_INTER_BURST_DELAY;
+					}
+					PULSE_PROBE = 0;	// MARK AS STIMULATION END SO THE STIM_STATUS CAN BE CHANGED TO STOP STATUS
+					break;
+
+				case STIM_STATUS_INTER_BURST_DELAY:
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 1<<1) == 0);
+					SPI1->DR = DAC_GAP;
+
+					TIM2->ARR = BURST_DELAY_TIMER;
+					TIM2->CR1 |= 1;
+
+					TEMP_PULSE_NUM_IN_BURST = PULSE_NUM_IN_ONE_BURST;
+					TEMP_BURST_NUM--;
+					STIM_STATUS = STIM_STATUS_PHASE_ONE;
+					break;
+				default: break;
+			}
 			break;
 		default: break;
 	}
