@@ -57,6 +57,7 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern LPTIM_HandleTypeDef hlptim2;
 extern DMA_HandleTypeDef hdma_tim2_up;
 extern TIM_HandleTypeDef htim2;
 /* USER CODE BEGIN EV */
@@ -558,6 +559,20 @@ void HSEM_IRQHandler(void)
   /* USER CODE BEGIN HSEM_IRQn 1 */
 
   /* USER CODE END HSEM_IRQn 1 */
+}
+
+/**
+  * @brief This function handles LPTIM2 global interrupt.
+  */
+void LPTIM2_IRQHandler(void)
+{
+  /* USER CODE BEGIN LPTIM2_IRQn 0 */
+
+  /* USER CODE END LPTIM2_IRQn 0 */
+  HAL_LPTIM_IRQHandler(&hlptim2);
+  /* USER CODE BEGIN LPTIM2_IRQn 1 */
+
+  /* USER CODE END LPTIM2_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

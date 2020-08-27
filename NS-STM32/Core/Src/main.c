@@ -46,6 +46,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+LPTIM_HandleTypeDef hlptim2;
 
 RTC_HandleTypeDef hrtc;
 
@@ -69,6 +70,7 @@ static void MX_SPI1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_SPI2_Init(void);
+static void MX_LPTIM2_Init(void);
 /* USER CODE BEGIN PFP */
 static void Reset_Device( void );
 static void Reset_IPCC( void );
@@ -116,6 +118,7 @@ int main(void)
   MX_TIM2_Init();
   MX_USART1_UART_Init();
   MX_SPI2_Init();
+  MX_LPTIM2_Init();
   /* USER CODE BEGIN 2 */
   PHASE_ONE_TIME = 1000000;// default 10us
   PHASE_TWO_TIME = 1000000;// default 10us
@@ -256,8 +259,10 @@ void SystemClock_Config(void)
   /** Initializes the peripherals clocks
   */
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SMPS|RCC_PERIPHCLK_RFWAKEUP
-                              |RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART1;
+                              |RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART1
+                              |RCC_PERIPHCLK_LPTIM2;
   PeriphClkInitStruct.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
+  PeriphClkInitStruct.Lptim2ClockSelection = RCC_LPTIM2CLKSOURCE_PCLK;
   PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
   PeriphClkInitStruct.RFWakeUpClockSelection = RCC_RFWKPCLKSOURCE_LSE;
   PeriphClkInitStruct.SmpsClockSelection = RCC_SMPSCLKSOURCE_HSI;
@@ -269,6 +274,40 @@ void SystemClock_Config(void)
   /* USER CODE BEGIN Smps */
 
   /* USER CODE END Smps */
+}
+
+/**
+  * @brief LPTIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_LPTIM2_Init(void)
+{
+
+  /* USER CODE BEGIN LPTIM2_Init 0 */
+
+  /* USER CODE END LPTIM2_Init 0 */
+
+  /* USER CODE BEGIN LPTIM2_Init 1 */
+
+  /* USER CODE END LPTIM2_Init 1 */
+  hlptim2.Instance = LPTIM2;
+  hlptim2.Init.Clock.Source = LPTIM_CLOCKSOURCE_APBCLOCK_LPOSC;
+  hlptim2.Init.Clock.Prescaler = LPTIM_PRESCALER_DIV1;
+  hlptim2.Init.Trigger.Source = LPTIM_TRIGSOURCE_SOFTWARE;
+  hlptim2.Init.OutputPolarity = LPTIM_OUTPUTPOLARITY_HIGH;
+  hlptim2.Init.UpdateMode = LPTIM_UPDATE_IMMEDIATE;
+  hlptim2.Init.CounterSource = LPTIM_COUNTERSOURCE_INTERNAL;
+  hlptim2.Init.Input1Source = LPTIM_INPUT1SOURCE_GPIO;
+  hlptim2.Init.Input2Source = LPTIM_INPUT2SOURCE_GPIO;
+  if (HAL_LPTIM_Init(&hlptim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN LPTIM2_Init 2 */
+
+  /* USER CODE END LPTIM2_Init 2 */
+
 }
 
 /**
