@@ -98,7 +98,7 @@ void HAL_LPTIM_MspInit(LPTIM_HandleTypeDef* hlptim)
     /* Peripheral clock enable */
     __HAL_RCC_LPTIM2_CLK_ENABLE();
     /* LPTIM2 interrupt Init */
-    HAL_NVIC_SetPriority(LPTIM2_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(LPTIM2_IRQn, 1, 0);
     HAL_NVIC_EnableIRQ(LPTIM2_IRQn);
   /* USER CODE BEGIN LPTIM2_MspInit 1 */
 

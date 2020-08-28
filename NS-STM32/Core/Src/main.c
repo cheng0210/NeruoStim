@@ -120,34 +120,37 @@ int main(void)
   MX_SPI2_Init();
   MX_LPTIM2_Init();
   /* USER CODE BEGIN 2 */
-  PHASE_ONE_TIME = 1000000;// default 10us
-  PHASE_TWO_TIME = 1000000;// default 10us
+  PHASE_ONE_TIME = 50;// default 10us
+  PHASE_TWO_TIME = 50;// default 10us
   STIM_AMP = 2000;// default 0uA
-  INTER_PHASE_GAP = 1000000;//default 0us
-  INTER_STIM_DELAY = 1000000;//default 0us
+  INTER_PHASE_GAP = 50;//default 0us
+  INTER_STIM_DELAY = 50;//default 0us
   ANODIC_CATHODIC = 1;//default cathodic
-  STIM_TYPE = 1;//default uniform stim
-  PULSE_NUM = 10;//default 0 is forever in ms
-  BURST_NUM = 2;// number of burst
-  INTER_BURST_DELAY = 1000000;
-  PULSE_NUM_IN_ONE_BURST = 5;
+  STIM_TYPE = 0;//default uniform stim
+  PULSE_NUM = 0;//default 0 is forever in ms
+  BURST_NUM = 0;// number of burst
+  INTER_BURST_DELAY = 100;
+  PULSE_NUM_IN_ONE_BURST = 10;
   RAMP_UP = 0;
   SHORT_ELECTRODE = 1;
 
   ENABLE_RECORD = 0;
   RECORD_OFFSET = 0;
 
+  DAC_PHASE_ONE = 22767;
+  DAC_PHASE_TWO = 42767; // 16 bits DAC8831
+  DAC_GAP = 32767;
 
-  STIM_MODE = STIM_MODE_UNI_CONT;
-
+  DAC_PHASE_ONE_COMP = DAC_PHASE_ONE + 110;
+  DAC_PHASE_TWO_COMP = DAC_PHASE_TWO - 110;
+  TEMP_DAC_PHASE_ONE = DAC_PHASE_ONE;
+  TEMP_DAC_PHASE_TWO = DAC_PHASE_TWO;
+  TEMP_DAC_GAP = DAC_GAP;
   TEMP_PULSE_NUM = PULSE_NUM;
   TEMP_PULSE_NUM_IN_BURST = PULSE_NUM_IN_ONE_BURST;
   TEMP_BURST_NUM = BURST_NUM;
 
-  DAC_PHASE_ONE = 0;
-  DAC_PHASE_TWO = 65535; // 16 bits DAC8831
-  DAC_GAP = 32767;
-
+  STIM_MODE = STIM_MODE_UNI_CONT;
   STIM_STATUS = 0;
   PULSE_PROBE = 0;
 
@@ -177,16 +180,25 @@ int main(void)
 	  //HAL_SPI_TransmitReceive(&hspi1, (uint8_t *)& DAC_PHASE_TWO, &h, 1, HAL_MAX_DELAY);
 	  //while( hspi1.State == HAL_SPI_STATE_BUSY );
 
-	  /*while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
-	  SPI1->DR = DAC_PHASE_ONE;
-	  while((SPI1->SR & 1<<0) == 0);//wait for recv complete
-
-	  for(int i=0;i<640000;i++);
-
-	  while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
-	  SPI1->DR = DAC_PHASE_TWO;
-	  while((SPI1->SR & 1<<0) == 0);//wait for recv complete
-	  for(int i=0;i<640000;i++);*/
+//	  while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
+//	  SPI1->DR = DAC_PHASE_ONE;
+//	  while((SPI1->SR & 1<<0) == 0);//wait for recv complete
+//	  for(int i=0;i<3200;i++);
+//
+//	  while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
+//	  SPI1->DR = DAC_GAP;
+//	  while((SPI1->SR & 1<<0) == 0);//wait for recv complete
+//	  for(int i=0;i<3200;i++);
+//
+//	  while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
+//	  SPI1->DR = DAC_PHASE_TWO;
+//	  while((SPI1->SR & 1<<0) == 0);//wait for recv complete
+//	  for(int i=0;i<3200;i++);
+//
+//	  while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
+//	  SPI1->DR = DAC_GAP;
+//	  while((SPI1->SR & 1<<0) == 0);//wait for recv complete
+//	  for(int i=0;i<3200;i++);
 
 
 	  //HAL_SPI_TransmitReceive(&hspi1, (uint8_t *)& DAC_PHASE_ONE, &h, 1, HAL_MAX_DELAY);

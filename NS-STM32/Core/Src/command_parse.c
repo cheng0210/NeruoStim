@@ -1,5 +1,6 @@
 #include "command_parse.h"
 extern TIM_HandleTypeDef htim2;
+extern LPTIM_HandleTypeDef hlptim2;
 void parse_command(char *command){
     char **result = split(command,':');
     if (strcmp(result[0], "start") == 0)
@@ -29,8 +30,18 @@ void parse_command(char *command){
         }
 
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, SET);
-    	STIM_STATUS = STIM_STATUS_PHASE_ONE;
-    	TIM2->CNT = 0;
+		STIM_STATUS = STIM_STATUS_PHASE_ONE;
+		TIM2->CNT = 0;
+        if(RAMP_UP){
+        	TEMP_DAC_PHASE_ONE = DAC_GAP;
+        	TEMP_DAC_PHASE_TWO = DAC_GAP;
+        	TEMP_DAC_GAP = DAC_GAP;
+        	HAL_LPTIM_Counter_Start_IT(&hlptim2, 50000);
+        }else{
+        	TEMP_DAC_PHASE_ONE = DAC_PHASE_ONE;
+			TEMP_DAC_PHASE_TWO = DAC_PHASE_TWO;
+			TEMP_DAC_GAP = DAC_GAP;
+        }
     	HAL_TIM_Base_Start_IT(&htim2);
     }
     else if (strcmp(result[0], "stop") == 0)
