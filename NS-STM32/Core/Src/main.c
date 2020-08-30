@@ -46,14 +46,15 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef hdma_adc1;
+
 LPTIM_HandleTypeDef hlptim2;
 
 RTC_HandleTypeDef hrtc;
 
-SPI_HandleTypeDef hspi2;
-
+TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
-DMA_HandleTypeDef hdma_tim2_up;
 
 UART_HandleTypeDef huart1;
 
@@ -69,13 +70,15 @@ static void MX_RTC_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_USART1_UART_Init(void);
-static void MX_SPI2_Init(void);
 static void MX_LPTIM2_Init(void);
+static void MX_ADC1_Init(void);
+static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
-static void Reset_Device( void );
-static void Reset_IPCC( void );
-static void Reset_BackupDomain( void );
-static void Init_Exti( void );
+static void Reset_Device(void);
+static void Reset_IPCC(void);
+static void Reset_BackupDomain(void);
+static void Init_Exti(void);
+static void Param_Init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -117,61 +120,28 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM2_Init();
   MX_USART1_UART_Init();
-  MX_SPI2_Init();
   MX_LPTIM2_Init();
+  MX_ADC1_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-  PHASE_ONE_TIME = 50;// default 10us
-  PHASE_TWO_TIME = 50;// default 10us
-  STIM_AMP = 2000;// default 0uA
-  INTER_PHASE_GAP = 50;//default 0us
-  INTER_STIM_DELAY = 50;//default 0us
-  ANODIC_CATHODIC = 1;//default cathodic
-  STIM_TYPE = 0;//default uniform stim
-  PULSE_NUM = 0;//default 0 is forever in ms
-  BURST_NUM = 0;// number of burst
-  INTER_BURST_DELAY = 100;
-  PULSE_NUM_IN_ONE_BURST = 10;
-  RAMP_UP = 0;
-  SHORT_ELECTRODE = 1;
-
-  ENABLE_RECORD = 0;
-  RECORD_OFFSET = 0;
-
-  DAC_PHASE_ONE = 22767;
-  DAC_PHASE_TWO = 42767; // 16 bits DAC8831
-  DAC_GAP = 32767;
-
-  DAC_PHASE_ONE_COMP = DAC_PHASE_ONE + 110;
-  DAC_PHASE_TWO_COMP = DAC_PHASE_TWO - 110;
-  TEMP_DAC_PHASE_ONE = DAC_PHASE_ONE;
-  TEMP_DAC_PHASE_TWO = DAC_PHASE_TWO;
-  TEMP_DAC_GAP = DAC_GAP;
-  TEMP_PULSE_NUM = PULSE_NUM;
-  TEMP_PULSE_NUM_IN_BURST = PULSE_NUM_IN_ONE_BURST;
-  TEMP_BURST_NUM = BURST_NUM;
-
-  STIM_MODE = STIM_MODE_UNI_CONT;
-  STIM_STATUS = 0;
-  PULSE_PROBE = 0;
-
-  // init timer value
-  PHASE_ONE_TIMER = 64 * PHASE_ONE_TIME;
-  PHASE_TWO_TIMER = 64 * PHASE_TWO_TIME;
-  PHASE_GAP_TIMER = 64 * INTER_PHASE_GAP;
-  STIM_DELAY_TIMER = 64 * INTER_STIM_DELAY;
-  BURST_DELAY_TIMER = 64 * INTER_BURST_DELAY;
+  Param_Init();
 
   //timer2 can be paused when hit breakpoints in debugging mode
   __HAL_DBGMCU_FREEZE_TIM2();
 
   //enable spi
   LL_SPI_Enable(SPI1);
+
+  //calibrate adc1
+  HAL_ADCEx_Calibration_Start(&hadc1,ADC_SINGLE_ENDED);
+
   /* USER CODE END 2 */
 
   /* Init code for STM32_WPAN */
   APPE_Init();
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  HAL_TIM_Base_Start(&htim1);
   TIM2->ARR = 10000;
   HAL_TIM_Base_Start_IT(&htim2);
   while (1)
@@ -272,9 +242,15 @@ void SystemClock_Config(void)
   */
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SMPS|RCC_PERIPHCLK_RFWAKEUP
                               |RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART1
-                              |RCC_PERIPHCLK_LPTIM2;
+                              |RCC_PERIPHCLK_LPTIM2|RCC_PERIPHCLK_ADC;
+  PeriphClkInitStruct.PLLSAI1.PLLN = 24;
+  PeriphClkInitStruct.PLLSAI1.PLLP = RCC_PLLP_DIV2;
+  PeriphClkInitStruct.PLLSAI1.PLLQ = RCC_PLLQ_DIV2;
+  PeriphClkInitStruct.PLLSAI1.PLLR = RCC_PLLR_DIV2;
+  PeriphClkInitStruct.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_ADCCLK;
   PeriphClkInitStruct.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
   PeriphClkInitStruct.Lptim2ClockSelection = RCC_LPTIM2CLKSOURCE_PCLK;
+  PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_PLLSAI1;
   PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
   PeriphClkInitStruct.RFWakeUpClockSelection = RCC_RFWKPCLKSOURCE_LSE;
   PeriphClkInitStruct.SmpsClockSelection = RCC_SMPSCLKSOURCE_HSI;
@@ -286,6 +262,85 @@ void SystemClock_Config(void)
   /* USER CODE BEGIN Smps */
 
   /* USER CODE END Smps */
+}
+
+/**
+  * @brief ADC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC1_Init(void)
+{
+
+  /* USER CODE BEGIN ADC1_Init 0 */
+
+  /* USER CODE END ADC1_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+  ADC_InjectionConfTypeDef sConfigInjected = {0};
+
+  /* USER CODE BEGIN ADC1_Init 1 */
+
+  /* USER CODE END ADC1_Init 1 */
+  /** Common config
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc1.Init.LowPowerAutoWait = DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIG_T1_TRGO;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
+  hadc1.Init.DMAContinuousRequests = ENABLE;
+  hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
+  hadc1.Init.OversamplingMode = DISABLE;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Disable Injected Queue
+  */
+  HAL_ADCEx_DisableInjectedQueue(&hadc1);
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_10;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfig.SingleDiff = ADC_SINGLE_ENDED;
+  sConfig.OffsetNumber = ADC_OFFSET_NONE;
+  sConfig.Offset = 0;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Injected Channel
+  */
+  sConfigInjected.InjectedChannel = ADC_CHANNEL_11;
+  sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1;
+  sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfigInjected.InjectedSingleDiff = ADC_SINGLE_ENDED;
+  sConfigInjected.InjectedOffsetNumber = ADC_OFFSET_NONE;
+  sConfigInjected.InjectedOffset = 0;
+  sConfigInjected.InjectedNbrOfConversion = 1;
+  sConfigInjected.InjectedDiscontinuousConvMode = DISABLE;
+  sConfigInjected.AutoInjectedConv = DISABLE;
+  sConfigInjected.QueueInjectedContext = DISABLE;
+  sConfigInjected.ExternalTrigInjecConv = ADC_EXTERNALTRIGINJEC_T2_TRGO;
+  sConfigInjected.ExternalTrigInjecConvEdge = ADC_EXTERNALTRIGINJECCONV_EDGE_RISING;
+  sConfigInjected.InjecOversamplingMode = DISABLE;
+  if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)ADC_DATA, 100);
+  /* USER CODE END ADC1_Init 2 */
+
 }
 
 /**
@@ -443,41 +498,56 @@ static void MX_SPI1_Init(void)
 }
 
 /**
-  * @brief SPI2 Initialization Function
+  * @brief TIM1 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_SPI2_Init(void)
+static void MX_TIM1_Init(void)
 {
 
-  /* USER CODE BEGIN SPI2_Init 0 */
+  /* USER CODE BEGIN TIM1_Init 0 */
 
-  /* USER CODE END SPI2_Init 0 */
+  /* USER CODE END TIM1_Init 0 */
 
-  /* USER CODE BEGIN SPI2_Init 1 */
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
-  /* USER CODE END SPI2_Init 1 */
-  /* SPI2 parameter configuration*/
-  hspi2.Instance = SPI2;
-  hspi2.Init.Mode = SPI_MODE_SLAVE;
-  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi2.Init.DataSize = SPI_DATASIZE_4BIT;
-  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi2.Init.CLKPhase = SPI_PHASE_2EDGE;
-  hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi2.Init.CRCPolynomial = 7;
-  hspi2.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-  hspi2.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
-  if (HAL_SPI_Init(&hspi2) != HAL_OK)
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
+  htim1.Instance = TIM1;
+  htim1.Init.Prescaler = 639;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 50;
+  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim1.Init.RepetitionCounter = 0;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN SPI2_Init 2 */
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sBreakDeadTimeConfig.BreakAFMode = TIM_BREAK_AFMODE_INPUT;
+  sBreakDeadTimeConfig.Break2AFMode = TIM_BREAK_AFMODE_INPUT;
+  if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM1_Init 2 */
 
-  /* USER CODE END SPI2_Init 2 */
+  /* USER CODE END TIM1_Init 2 */
 
 }
 
@@ -500,7 +570,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
+  htim2.Init.Prescaler = 15;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 0xffffff;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -514,7 +584,7 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
   {
@@ -585,9 +655,9 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
-  /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+  /* DMA1_Channel2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 2, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
 
 }
 
@@ -646,6 +716,60 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static void Param_Init(void){
+	PHASE_ONE_TIME = 50;// default 10us
+	PHASE_TWO_TIME = 50;// default 10us
+	STIM_AMP = 2000;// default 0uA
+	INTER_PHASE_GAP = 50;//default 0us
+	INTER_STIM_DELAY = 50;//default 0us
+	ANODIC_CATHODIC = 1;//default cathodic
+	STIM_TYPE = 0;//default uniform stim
+	PULSE_NUM = 0;//default 0 is forever in ms
+	BURST_NUM = 0;// number of burst
+	INTER_BURST_DELAY = 100;
+	PULSE_NUM_IN_ONE_BURST = 10;
+	RAMP_UP = 0;
+	SHORT_ELECTRODE = 1;
+
+	for(int i = 0; i < 100; i++){
+		ADC_DATA[i] = 0;
+	}
+
+	ENABLE_RECORD = 0;
+	RECORD_FREQ = 2000;
+	RECORD_START_OFFSET = 0;
+	RECORD_END_OFFSET = 0;
+
+	DAC_PHASE_ONE = 22767;
+	DAC_PHASE_TWO = 42767; // 16 bits DAC8831
+	DAC_GAP = 32767;
+
+	if(ANODIC_CATHODIC){
+		DAC_PHASE_ONE_COMP = DAC_PHASE_ONE + 110;
+		DAC_PHASE_TWO_COMP = DAC_PHASE_TWO - 110;
+	}else{
+		DAC_PHASE_ONE_COMP = DAC_PHASE_ONE - 110;
+		DAC_PHASE_TWO_COMP = DAC_PHASE_TWO + 110;
+	}
+	TEMP_DAC_PHASE_ONE = DAC_PHASE_ONE;
+	TEMP_DAC_PHASE_TWO = DAC_PHASE_TWO;
+	TEMP_DAC_GAP = DAC_GAP;
+	TEMP_PULSE_NUM = PULSE_NUM;
+	TEMP_PULSE_NUM_IN_BURST = PULSE_NUM_IN_ONE_BURST;
+	TEMP_BURST_NUM = BURST_NUM;
+
+	STIM_MODE = STIM_MODE_UNI_CONT;
+	STIM_STATUS = 0;
+	PULSE_PROBE = 0;
+
+	// init timer value
+	PHASE_ONE_TIMER = 4 * PHASE_ONE_TIME;
+	PHASE_TWO_TIMER = 4 * PHASE_TWO_TIME;
+	PHASE_GAP_TIMER = 4 * INTER_PHASE_GAP;
+	STIM_DELAY_TIMER = 4 * INTER_STIM_DELAY;
+	BURST_DELAY_TIMER = 4 * INTER_BURST_DELAY;
+}
+
 static void Reset_Device( void )
 {
 #if ( CFG_HW_RESET_BY_FW == 1 )

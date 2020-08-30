@@ -5,15 +5,17 @@ void parse_command(char *command){
     char **result = split(command,':');
     if (strcmp(result[0], "start") == 0)
     {
-        PHASE_ONE_TIMER = 64 * PHASE_ONE_TIME;
-        PHASE_TWO_TIMER = 64 * PHASE_TWO_TIME;
-        PHASE_GAP_TIMER = 64 * INTER_PHASE_GAP;
-        STIM_DELAY_TIMER = 64 * INTER_STIM_DELAY;
-        BURST_DELAY_TIMER = 64 * INTER_BURST_DELAY;
+        PHASE_ONE_TIMER = 4 * PHASE_ONE_TIME;
+        PHASE_TWO_TIMER = 4 * PHASE_TWO_TIME;
+        PHASE_GAP_TIMER = 4 * INTER_PHASE_GAP;
+        STIM_DELAY_TIMER = 4 * INTER_STIM_DELAY;
+        BURST_DELAY_TIMER = 4 * INTER_BURST_DELAY;
 
         TEMP_PULSE_NUM = PULSE_NUM;
         TEMP_PULSE_NUM_IN_BURST = PULSE_NUM_IN_ONE_BURST;
         TEMP_BURST_NUM = BURST_NUM;
+
+        TIM1->ARR = 100000 / RECORD_FREQ;
 
         if(STIM_TYPE == 0){
         	if(PULSE_NUM == 0){
@@ -33,6 +35,20 @@ void parse_command(char *command){
 		STIM_STATUS = STIM_STATUS_PHASE_ONE;
 		TIM2->CNT = 0;
         if(RAMP_UP){
+        	//bug free even if algorithm is broken on software
+        	if(DAC_PHASE_ONE < DAC_PHASE_TWO){
+        		ANODIC_CATHODIC = 1;
+        	}else{
+        		ANODIC_CATHODIC = 0;
+        	}
+
+        	if(ANODIC_CATHODIC){
+				DAC_PHASE_ONE_COMP = DAC_PHASE_ONE + 110;
+				DAC_PHASE_TWO_COMP = DAC_PHASE_TWO - 110;
+			}else{
+				DAC_PHASE_ONE_COMP = DAC_PHASE_ONE - 110;
+				DAC_PHASE_TWO_COMP = DAC_PHASE_TWO + 110;
+			}
         	TEMP_DAC_PHASE_ONE = DAC_GAP;
         	TEMP_DAC_PHASE_TWO = DAC_GAP;
         	TEMP_DAC_GAP = DAC_GAP;
@@ -104,10 +120,18 @@ void parse_command(char *command){
     {
         ENABLE_RECORD = atoi(result[1]);
     }
-    else if (strcmp(result[0], "record_offset") == 0)
+    else if (strcmp(result[0], "record_freq") == 0)
+	{
+		RECORD_FREQ = atoi(result[1]);
+	}
+    else if (strcmp(result[0], "record_start_offset") == 0)
     {
-        RECORD_OFFSET = atoi(result[1]);
+        RECORD_START_OFFSET = atoi(result[1]);
     }
+    else if (strcmp(result[0], "record_end_offset") == 0)
+	{
+		RECORD_END_OFFSET = atoi(result[1]);
+	}
     else if (strcmp(result[0], "dac_phase_one") == 0)
     {
         DAC_PHASE_ONE = atoi(result[1]);

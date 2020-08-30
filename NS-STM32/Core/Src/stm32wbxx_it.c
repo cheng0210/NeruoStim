@@ -57,8 +57,8 @@ uint16_t SECOND_COUNTER = 0;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern DMA_HandleTypeDef hdma_adc1;
 extern LPTIM_HandleTypeDef hlptim2;
-extern DMA_HandleTypeDef hdma_tim2_up;
 extern TIM_HandleTypeDef htim2;
 /* USER CODE BEGIN EV */
 
@@ -201,17 +201,17 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles DMA1 channel1 global interrupt.
+  * @brief This function handles DMA1 channel2 global interrupt.
   */
-void DMA1_Channel1_IRQHandler(void)
+void DMA1_Channel2_IRQHandler(void)
 {
-  /* USER CODE BEGIN DMA1_Channel1_IRQn 0 */
+  /* USER CODE BEGIN DMA1_Channel2_IRQn 0 */
+	printf("send %ld\n",(200-__HAL_DMA_GET_COUNTER(&hdma_adc1)));
+  /* USER CODE END DMA1_Channel2_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_adc1);
+  /* USER CODE BEGIN DMA1_Channel2_IRQn 1 */
 
-  /* USER CODE END DMA1_Channel1_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_tim2_up);
-  /* USER CODE BEGIN DMA1_Channel1_IRQn 1 */
-
-  /* USER CODE END DMA1_Channel1_IRQn 1 */
+  /* USER CODE END DMA1_Channel2_IRQn 1 */
 }
 
 /**
@@ -220,9 +220,8 @@ void DMA1_Channel1_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
+	//pause timer2
 	TIM2->CR1 &= 0;
-	TIM2->CNT = 0;
-
 	switch(STIM_MODE){
 		// UNIFORM CONTINUOUS STIMULATION
 		case STIM_MODE_UNI_CONT:
@@ -557,9 +556,9 @@ void TIM2_IRQHandler(void)
 
 
   /* USER CODE END TIM2_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */
-
+	//clear UIF
+	TIM2->SR &= 0;
   /* USER CODE END TIM2_IRQn 1 */
 }
 
@@ -587,45 +586,76 @@ void LPTIM2_IRQHandler(void)
 		SECOND_COUNTER = 0;
 
 		//do something here
-		if(TEMP_DAC_PHASE_ONE > DAC_PHASE_ONE_COMP){
-			if(TEMP_DAC_PHASE_TWO < DAC_PHASE_TWO_COMP){
-				while(PULSE_PROBE != 0);
-				__disable_irq();
-				TEMP_DAC_PHASE_ONE -= 110;
-				TEMP_DAC_PHASE_TWO += 110;
-				__enable_irq();
+		if(ANODIC_CATHODIC){
+			if(TEMP_DAC_PHASE_ONE > DAC_PHASE_ONE_COMP){
+				if(TEMP_DAC_PHASE_TWO < DAC_PHASE_TWO_COMP){
+					while(PULSE_PROBE != 0);
+					__disable_irq();
+					TEMP_DAC_PHASE_ONE -= 110;
+					TEMP_DAC_PHASE_TWO += 110;
+					__enable_irq();
+				}else{
+					while(PULSE_PROBE != 0);
+					__disable_irq();
+					TEMP_DAC_PHASE_ONE -= 110;
+					TEMP_DAC_PHASE_TWO = DAC_PHASE_TWO;
+					__enable_irq();
+				}
 			}else{
-				while(PULSE_PROBE != 0);
-				__disable_irq();
-				TEMP_DAC_PHASE_ONE -= 110;
-				TEMP_DAC_PHASE_TWO = DAC_PHASE_TWO;
-				__enable_irq();
+				if(TEMP_DAC_PHASE_TWO < DAC_PHASE_TWO_COMP){
+					while(PULSE_PROBE != 0);
+					__disable_irq();
+					TEMP_DAC_PHASE_ONE = DAC_PHASE_ONE;
+					TEMP_DAC_PHASE_TWO += 110;
+					__enable_irq();
+				}else{
+					while(PULSE_PROBE != 0);
+					__disable_irq();
+					TEMP_DAC_PHASE_ONE = DAC_PHASE_ONE;
+					TEMP_DAC_PHASE_TWO = DAC_PHASE_TWO;
+					__enable_irq();
+					HAL_LPTIM_Counter_Stop_IT(&hlptim2);
+				}
 			}
 		}else{
-			if(TEMP_DAC_PHASE_TWO < DAC_PHASE_TWO_COMP){
-				while(PULSE_PROBE != 0);
-				__disable_irq();
-				TEMP_DAC_PHASE_ONE = DAC_PHASE_ONE;
-				TEMP_DAC_PHASE_TWO += 110;
-				__enable_irq();
+			if(TEMP_DAC_PHASE_ONE < DAC_PHASE_ONE_COMP){
+				if(TEMP_DAC_PHASE_TWO > DAC_PHASE_TWO_COMP){
+					while(PULSE_PROBE != 0);
+					__disable_irq();
+					TEMP_DAC_PHASE_ONE += 110;
+					TEMP_DAC_PHASE_TWO -= 110;
+					__enable_irq();
+				}else{
+					while(PULSE_PROBE != 0);
+					__disable_irq();
+					TEMP_DAC_PHASE_ONE += 110;
+					TEMP_DAC_PHASE_TWO = DAC_PHASE_TWO;
+					__enable_irq();
+				}
 			}else{
-				while(PULSE_PROBE != 0);
-				__disable_irq();
-				TEMP_DAC_PHASE_ONE = DAC_PHASE_ONE;
-				TEMP_DAC_PHASE_TWO = DAC_PHASE_TWO;
-				__enable_irq();
-				HAL_LPTIM_Counter_Stop_IT(&hlptim2);
+				if(TEMP_DAC_PHASE_TWO > DAC_PHASE_TWO_COMP){
+					while(PULSE_PROBE != 0);
+					__disable_irq();
+					TEMP_DAC_PHASE_ONE = DAC_PHASE_ONE;
+					TEMP_DAC_PHASE_TWO -= 110;
+					__enable_irq();
+				}else{
+					while(PULSE_PROBE != 0);
+					__disable_irq();
+					TEMP_DAC_PHASE_ONE = DAC_PHASE_ONE;
+					TEMP_DAC_PHASE_TWO = DAC_PHASE_TWO;
+					__enable_irq();
+					HAL_LPTIM_Counter_Stop_IT(&hlptim2);
+				}
 			}
 		}
 		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
-
 	}else{
 		SECOND_COUNTER++;
 	}
   /* USER CODE END LPTIM2_IRQn 0 */
-  HAL_LPTIM_IRQHandler(&hlptim2);
   /* USER CODE BEGIN LPTIM2_IRQn 1 */
-
+	__HAL_LPTIM_CLEAR_FLAG(&hlptim2, LPTIM_FLAG_ARRM);
   /* USER CODE END LPTIM2_IRQn 1 */
 }
 
