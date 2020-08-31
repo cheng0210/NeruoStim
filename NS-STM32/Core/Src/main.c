@@ -128,6 +128,7 @@ int main(void)
 
   //timer2 can be paused when hit breakpoints in debugging mode
   __HAL_DBGMCU_FREEZE_TIM2();
+  __HAL_DBGMCU_FREEZE_TIM1();
 
   //enable spi
   LL_SPI_Enable(SPI1);
@@ -338,7 +339,7 @@ static void MX_ADC1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN ADC1_Init 2 */
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)ADC_DATA, 100);
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)ADC_BUFFER, 200);
   /* USER CODE END ADC1_Init 2 */
 
 }
@@ -732,7 +733,8 @@ static void Param_Init(void){
 	SHORT_ELECTRODE = 1;
 
 	for(int i = 0; i < 100; i++){
-		ADC_DATA[i] = 0;
+		ADC_BUFFER[0].data[i] = 0;
+		ADC_BUFFER[1].data[i] = 0;
 	}
 
 	ENABLE_RECORD = 0;

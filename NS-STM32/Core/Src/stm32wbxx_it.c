@@ -24,6 +24,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_common.h"
+#include "ble_types.h"
+#include "custom_stm.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -206,7 +208,11 @@ void SysTick_Handler(void)
 void DMA1_Channel2_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel2_IRQn 0 */
-	printf("send %ld\n",(100-__HAL_DMA_GET_COUNTER(&hdma_adc1)));
+	if(DMA1->ISR & DMA_FLAG_HT2){
+		Custom_STM_App_Update_Char(CUSTOM_STM_CMD_FB_CHAR,(uint8_t *)ADC_BUFFER[0].data);
+	}else if(DMA1->ISR & DMA_FLAG_TC2){
+		Custom_STM_App_Update_Char(CUSTOM_STM_CMD_FB_CHAR,(uint8_t *)ADC_BUFFER[1].data);
+	}
   /* USER CODE END DMA1_Channel2_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_adc1);
   /* USER CODE BEGIN DMA1_Channel2_IRQn 1 */

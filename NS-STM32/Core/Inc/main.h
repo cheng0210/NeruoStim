@@ -80,7 +80,10 @@ uint32_t PULSE_NUM_IN_ONE_BURST;
 uint8_t RAMP_UP;
 uint8_t SHORT_ELECTRODE;
 
-uint16_t ADC_DATA[100];
+typedef struct ADC_DATA{
+	uint16_t data[100];
+}ADC_DATA;
+ADC_DATA ADC_BUFFER[2];
 uint8_t ENABLE_RECORD;
 uint16_t RECORD_FREQ;
 int32_t RECORD_START_OFFSET;
