@@ -206,7 +206,7 @@ void SysTick_Handler(void)
 void DMA1_Channel2_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel2_IRQn 0 */
-	printf("send %ld\n",(200-__HAL_DMA_GET_COUNTER(&hdma_adc1)));
+	printf("send %ld\n",(100-__HAL_DMA_GET_COUNTER(&hdma_adc1)));
   /* USER CODE END DMA1_Channel2_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_adc1);
   /* USER CODE BEGIN DMA1_Channel2_IRQn 1 */

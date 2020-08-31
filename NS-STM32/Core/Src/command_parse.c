@@ -35,7 +35,6 @@ void parse_command(char *command){
 		STIM_STATUS = STIM_STATUS_PHASE_ONE;
 		TIM2->CNT = 0;
         if(RAMP_UP){
-        	//bug free even if algorithm is broken on software
         	if(DAC_PHASE_ONE < DAC_PHASE_TWO){
         		ANODIC_CATHODIC = 1;
         	}else{
