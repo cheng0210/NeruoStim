@@ -37,6 +37,8 @@ typedef struct
 {
   /* STIMULATION_COMMAND_SERVICE */
   uint8_t               Cmd_fb_char_Notification_Status;
+  /* RECORDING_STREAM_SERVICE */
+  uint8_t               Rec_stream_char_Notification_Status;
 /* USER CODE BEGIN CUSTOM_APP_Context_t */
 
 /* USER CODE END CUSTOM_APP_Context_t */
@@ -81,6 +83,9 @@ uint8_t SecureReadData;
   /* STIMULATION_COMMAND_SERVICE */
 static void Custom_Cmd_fb_char_Update_Char(void);
 static void Custom_Cmd_fb_char_Send_Notification(void);
+  /* RECORDING_STREAM_SERVICE */
+static void Custom_Rec_stream_char_Update_Char(void);
+static void Custom_Rec_stream_char_Send_Notification(void);
 
 /* USER CODE BEGIN PFP */
 
@@ -108,10 +113,14 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
     case CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT:
 /* USER CODE BEGIN CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT */
     {
-          char *buffer = calloc(256,sizeof(char));
+          char buffer[256] = {0};
           memcpy(buffer,pNotification->DataTransfered.pPayload,pNotification->DataTransfered.Length);
           if(pNotification->DataTransfered.Length != 0){
-        	  parse_command(buffer);
+        	  if(strcmp(buffer,"electrode_voltage")==0){
+        		  sprintf(buffer,"electrode_voltage:%d",(uint16_t)ADC1->JDR1);
+        	  }else{
+        		  parse_command(buffer);
+        	  }
         	  Custom_STM_App_Update_Char(CUSTOM_STM_CMD_FB_CHAR, (uint8_t *)buffer);
           }
 	}
@@ -134,6 +143,25 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
 /* USER CODE BEGIN CUSTOM_STM_CMD_FB_CHAR_NOTIFY_DISABLED_EVT */
 
 /* USER CODE END CUSTOM_STM_CMD_FB_CHAR_NOTIFY_DISABLED_EVT */
+      break;
+
+  /* RECORDING_STREAM_SERVICE */
+    case CUSTOM_STM_REC_STREAM_CHAR_READ_EVT:
+/* USER CODE BEGIN CUSTOM_STM_REC_STREAM_CHAR_READ_EVT */
+
+/* USER CODE END CUSTOM_STM_REC_STREAM_CHAR_READ_EVT */
+      break;
+
+    case CUSTOM_STM_REC_STREAM_CHAR_NOTIFY_ENABLED_EVT:
+/* USER CODE BEGIN CUSTOM_STM_REC_STREAM_CHAR_NOTIFY_ENABLED_EVT */
+
+/* USER CODE END CUSTOM_STM_REC_STREAM_CHAR_NOTIFY_ENABLED_EVT */
+      break;
+
+    case CUSTOM_STM_REC_STREAM_CHAR_NOTIFY_DISABLED_EVT:
+/* USER CODE BEGIN CUSTOM_STM_REC_STREAM_CHAR_NOTIFY_DISABLED_EVT */
+
+/* USER CODE END CUSTOM_STM_REC_STREAM_CHAR_NOTIFY_DISABLED_EVT */
       break;
 
     default:
@@ -221,6 +249,32 @@ void Custom_Cmd_fb_char_Send_Notification(void) /* Property Notification */
     /* USER CODE BEGIN Cmd_fb_char_NS*/
 
     /* USER CODE END Cmd_fb_char_NS*/
+  }
+  else
+  {
+    APP_DBG_MSG("-- CUSTOM APPLICATION : CAN'T INFORM CLIENT -  NOTIFICATION DISABLED\n ");
+  }
+  return;
+}
+
+  /* RECORDING_STREAM_SERVICE */
+void Custom_Rec_stream_char_Update_Char(void) /* Property Read */
+{
+  Custom_STM_App_Update_Char(CUSTOM_STM_REC_STREAM_CHAR, (uint8_t *)UpdateCharData);
+  /* USER CODE BEGIN Rec_stream_char_UC*/
+
+  /* USER CODE END Rec_stream_char_UC*/
+  return;
+}
+
+void Custom_Rec_stream_char_Send_Notification(void) /* Property Notification */
+ {
+  if(Custom_App_Context.Rec_stream_char_Notification_Status)
+  {
+    Custom_STM_App_Update_Char(CUSTOM_STM_REC_STREAM_CHAR, (uint8_t *)NotifyCharData);
+    /* USER CODE BEGIN Rec_stream_char_NS*/
+
+    /* USER CODE END Rec_stream_char_NS*/
   }
   else
   {

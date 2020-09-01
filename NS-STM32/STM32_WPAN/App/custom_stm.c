@@ -32,6 +32,8 @@ typedef struct{
   uint16_t  CustomStim_Cmd_SvcsHdle;                   /**< STIMULATION_COMMAND_SERVICE handle */
   uint16_t  CustomSerial_Cmd_CharHdle;                   /**< SERIAL_COMMAND_INPUT_CHAR handle */
   uint16_t  CustomCmd_Fb_CharHdle;                   /**< COMMAND_FEEDBACK_CHAR handle */
+  uint16_t  CustomRec_Stream_SvcsHdle;                   /**< RECORDING_STREAM_SERVICE handle */
+  uint16_t  CustomRec_Stream_CharHdle;                   /**< RECORDING_STREAM_CHAR handle */
 }CustomContext_t;
 
 /* USER CODE BEGIN PTD */
@@ -61,6 +63,7 @@ typedef struct{
 /* Private variables ---------------------------------------------------------*/
 static const uint8_t SizeSerial_Cmd_Char=247;
 static const uint8_t SizeCmd_Fb_Char=247;
+static const uint8_t SizeRec_Stream_Char=240;
 /**
  * START of Section BLE_DRIVER_CONTEXT
  */
@@ -107,6 +110,8 @@ do {\
 #define COPY_STIMULATION_COMMAND_SERVICE_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x00,0x00,0xfe,0x40,0xcc,0x7a,0x48,0x2a,0x98,0x4a,0x7f,0x2e,0xd5,0xb3,0xe5,0x8f)
 #define COPY_SERIAL_COMMAND_INPUT_CHAR_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0xfe,0x41,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
 #define COPY_COMMAND_FEEDBACK_CHAR_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0xfe,0x42,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#define COPY_RECORDING_STREAM_SERVICE_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x00,0x00,0xfe,0x50,0xcc,0x7a,0x48,0x2a,0x98,0x4a,0x7f,0x2e,0xd5,0xb3,0xe5,0x8f)
+#define COPY_RECORDING_STREAM_CHAR_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0xfe,0x51,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
 
 /* USER CODE BEGIN PF */
 
@@ -250,7 +255,7 @@ void SVCCTL_InitCustomSvc(void)
     aci_gatt_add_char(CustomContext.CustomStim_Cmd_SvcsHdle,
                       UUID_TYPE_128, &uuid,
                       SizeSerial_Cmd_Char,
-                      CHAR_PROP_READ | CHAR_PROP_WRITE_WITHOUT_RESP,
+                      CHAR_PROP_WRITE_WITHOUT_RESP,
                       ATTR_PERMISSION_NONE,
                       GATT_NOTIFY_ATTRIBUTE_WRITE,
                       0x10,
@@ -269,6 +274,37 @@ void SVCCTL_InitCustomSvc(void)
                       0x10,
                       CHAR_VALUE_LEN_VARIABLE,
                       &(CustomContext.CustomCmd_Fb_CharHdle));
+
+    /*
+     *          RECORDING_STREAM_SERVICE
+     *
+     * Max_Attribute_Records = 1 + 2*1 + 1*no_of_char_with_notify_or_indicate_property
+     * service_max_attribute_record = 1 for RECORDING_STREAM_SERVICE +
+     *                                2 for RECORDING_STREAM_CHAR +
+     *                                1 for RECORDING_STREAM_CHAR configuration descriptor +
+     *                              = 4
+     */
+
+    COPY_RECORDING_STREAM_SERVICE_UUID(uuid.Char_UUID_128);
+    aci_gatt_add_service(UUID_TYPE_128,
+                      (Service_UUID_t *) &uuid,
+                      PRIMARY_SERVICE,
+                      4,
+                      &(CustomContext.CustomRec_Stream_SvcsHdle));
+
+    /**
+     *  RECORDING_STREAM_CHAR
+     */
+    COPY_RECORDING_STREAM_CHAR_UUID(uuid.Char_UUID_128);
+    aci_gatt_add_char(CustomContext.CustomRec_Stream_SvcsHdle,
+                      UUID_TYPE_128, &uuid,
+                      SizeRec_Stream_Char,
+                      CHAR_PROP_NOTIFY,
+                      ATTR_PERMISSION_NONE,
+                      GATT_DONT_NOTIFY_EVENTS,
+                      0x10,
+                      CHAR_VALUE_LEN_CONSTANT,
+                      &(CustomContext.CustomRec_Stream_CharHdle));
 
 /* USER CODE BEGIN SVCCTL_InitCustomSvc_2 */
 
@@ -313,6 +349,17 @@ tBleStatus Custom_STM_App_Update_Char(Custom_STM_Char_Opcode_t CharOpcode, uint8
     /* USER CODE BEGIN CUSTOM_STM_CMD_FB_CHAR*/
 
     /* USER CODE END CUSTOM_STM_CMD_FB_CHAR*/
+      break;
+
+    case CUSTOM_STM_REC_STREAM_CHAR:
+      result = aci_gatt_update_char_value(CustomContext.CustomRec_Stream_SvcsHdle,
+                            CustomContext.CustomRec_Stream_CharHdle,
+                            0, /* charValOffset */
+                            SizeRec_Stream_Char, /* charValueLen */
+                            (uint8_t *)  pPayload);
+    /* USER CODE BEGIN CUSTOM_STM_REC_STREAM_CHAR*/
+
+    /* USER CODE END CUSTOM_STM_REC_STREAM_CHAR*/
       break;
 
     default:

@@ -142,7 +142,6 @@ int main(void)
   APPE_Init();
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_TIM_Base_Start(&htim1);
   TIM2->ARR = 10000;
   HAL_TIM_Base_Start_IT(&htim2);
   while (1)
@@ -277,6 +276,7 @@ static void MX_ADC1_Init(void)
 
   /* USER CODE END ADC1_Init 0 */
 
+  ADC_AnalogWDGConfTypeDef AnalogWDGConfig = {0};
   ADC_ChannelConfTypeDef sConfig = {0};
   ADC_InjectionConfTypeDef sConfigInjected = {0};
 
@@ -307,6 +307,18 @@ static void MX_ADC1_Init(void)
   /** Disable Injected Queue
   */
   HAL_ADCEx_DisableInjectedQueue(&hadc1);
+  /** Configure Analog WatchDog 1
+  */
+  AnalogWDGConfig.WatchdogNumber = ADC_ANALOGWATCHDOG_1;
+  AnalogWDGConfig.WatchdogMode = ADC_ANALOGWATCHDOG_SINGLE_INJEC;
+  AnalogWDGConfig.Channel = ADC_CHANNEL_11;
+  AnalogWDGConfig.ITMode = ENABLE;
+  AnalogWDGConfig.HighThreshold = 4000;
+  AnalogWDGConfig.LowThreshold = 0;
+  if (HAL_ADC_AnalogWDGConfig(&hadc1, &AnalogWDGConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /** Configure Regular Channel
   */
   sConfig.Channel = ADC_CHANNEL_10;
@@ -339,7 +351,7 @@ static void MX_ADC1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN ADC1_Init 2 */
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)ADC_BUFFER, 200);
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)ADC_BUFFER, 240);
   /* USER CODE END ADC1_Init 2 */
 
 }
@@ -738,7 +750,7 @@ static void Param_Init(void){
 	}
 
 	ENABLE_RECORD = 0;
-	RECORD_FREQ = 2000;
+	RECORD_FREQ = 10000;
 	RECORD_START_OFFSET = 0;
 	RECORD_END_OFFSET = 0;
 

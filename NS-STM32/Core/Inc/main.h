@@ -81,7 +81,7 @@ uint8_t RAMP_UP;
 uint8_t SHORT_ELECTRODE;
 
 typedef struct ADC_DATA{
-	uint16_t data[100];
+	uint16_t data[120];
 }ADC_DATA;
 ADC_DATA ADC_BUFFER[2];
 uint8_t ENABLE_RECORD;

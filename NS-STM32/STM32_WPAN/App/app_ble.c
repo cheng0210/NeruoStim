@@ -231,7 +231,7 @@ uint8_t index_con_int, mutex;
  * Advertising Data
  */
 uint8_t ad_data[17] = {
-    2, AD_TYPE_TX_POWER_LEVEL, 2 /* 2dBm */, /* Transmission Power */
+    2, AD_TYPE_TX_POWER_LEVEL, 6 /* 6dBm */, /* Transmission Power */
     8, AD_TYPE_COMPLETE_LOCAL_NAME, 'N', 'e', 'u', 'r', 'o', 'S', 'T',  /* Complete name */
 
     4, AD_TYPE_MANUFACTURER_SPECIFIC_DATA, 0x30, 0x00, 0x00 /*  */,

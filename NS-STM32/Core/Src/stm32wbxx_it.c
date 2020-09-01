@@ -60,6 +60,7 @@ uint16_t SECOND_COUNTER = 0;
 
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_adc1;
+extern ADC_HandleTypeDef hadc1;
 extern LPTIM_HandleTypeDef hlptim2;
 extern TIM_HandleTypeDef htim2;
 /* USER CODE BEGIN EV */
@@ -209,15 +210,40 @@ void DMA1_Channel2_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel2_IRQn 0 */
 	if(DMA1->ISR & DMA_FLAG_HT2){
-		Custom_STM_App_Update_Char(CUSTOM_STM_CMD_FB_CHAR,(uint8_t *)ADC_BUFFER[0].data);
+		Custom_STM_App_Update_Char(CUSTOM_STM_REC_STREAM_CHAR,(uint8_t *)ADC_BUFFER[0].data);
+		DMA1->IFCR |= DMA_IFCR_CHTIF2;
 	}else if(DMA1->ISR & DMA_FLAG_TC2){
-		Custom_STM_App_Update_Char(CUSTOM_STM_CMD_FB_CHAR,(uint8_t *)ADC_BUFFER[1].data);
+		Custom_STM_App_Update_Char(CUSTOM_STM_REC_STREAM_CHAR,(uint8_t *)ADC_BUFFER[1].data);
+		DMA1->IFCR |= DMA_IFCR_CTCIF2;
 	}
   /* USER CODE END DMA1_Channel2_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_adc1);
   /* USER CODE BEGIN DMA1_Channel2_IRQn 1 */
 
   /* USER CODE END DMA1_Channel2_IRQn 1 */
+}
+
+/**
+  * @brief This function handles ADC1 global interrupt.
+  */
+void ADC1_IRQHandler(void)
+{
+  /* USER CODE BEGIN ADC1_IRQn 0 */
+  if (((ADC1->ISR & ADC_FLAG_AWD1) == ADC_FLAG_AWD1) && ((ADC1->IER & ADC_IT_AWD1) == ADC_IT_AWD1)){
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);
+	  while(PULSE_PROBE != 0);
+	  STIM_STATUS = STIM_STATUS_STOP;
+	  if(RAMP_UP){
+		  HAL_LPTIM_Counter_Stop_IT(&hlptim2);
+	  }
+	  char err_msg[256] = "Electrode voltage exceed threshold!";
+	  Custom_STM_App_Update_Char(CUSTOM_STM_CMD_FB_CHAR, (uint8_t *)err_msg);
+	  /* Clear ADC analog watchdog flag */
+	  __HAL_ADC_CLEAR_FLAG(&hadc1, ADC_FLAG_AWD1);
+  }
+  /* USER CODE END ADC1_IRQn 0 */
+  /* USER CODE BEGIN ADC1_IRQn 1 */
+
+  /* USER CODE END ADC1_IRQn 1 */
 }
 
 /**
@@ -237,9 +263,6 @@ void TIM2_IRQHandler(void)
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
 					HAL_TIM_Base_Stop_IT(&htim2);
-					if(RAMP_UP){
-						HAL_LPTIM_Counter_Stop_IT(&hlptim2);
-					}
 					break;
 				// PHASE ONE STATUS
 				case STIM_STATUS_PHASE_ONE:
@@ -249,6 +272,8 @@ void TIM2_IRQHandler(void)
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_PHASE_ONE;
 					//while((SPI1->SR & 1) == 0);
+
+					ADC1->CR |= 8;
 
 					TIM2->ARR = PHASE_ONE_TIMER;
 					TIM2->CR1 |= 1;
@@ -265,6 +290,8 @@ void TIM2_IRQHandler(void)
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
 					//while((SPI1->SR & 1) == 0);
+
+					ADC1->CR |= 32;
 
 					TIM2->ARR = PHASE_GAP_TIMER;
 					TIM2->CR1 |= 1;
@@ -310,9 +337,6 @@ void TIM2_IRQHandler(void)
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
 					HAL_TIM_Base_Stop_IT(&htim2);
-					if(RAMP_UP){
-						HAL_LPTIM_Counter_Stop_IT(&hlptim2);
-					}
 					break;
 				case STIM_STATUS_PHASE_ONE:
 					PULSE_PROBE = 1;
@@ -372,9 +396,6 @@ void TIM2_IRQHandler(void)
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
 					HAL_TIM_Base_Stop_IT(&htim2);
-					if(RAMP_UP){
-						HAL_LPTIM_Counter_Stop_IT(&hlptim2);
-					}
 					break;
 				// PHASE ONE STATUS
 				case STIM_STATUS_PHASE_ONE:
@@ -464,9 +485,6 @@ void TIM2_IRQHandler(void)
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
 					HAL_TIM_Base_Stop_IT(&htim2);
-					if(RAMP_UP){
-						HAL_LPTIM_Counter_Stop_IT(&hlptim2);
-					}
 					break;
 				// PHASE ONE STATUS
 				case STIM_STATUS_PHASE_ONE:
