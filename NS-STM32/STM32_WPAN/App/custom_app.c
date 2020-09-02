@@ -52,7 +52,8 @@ typedef struct
 
 /* Private defines ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define COMMAND_HSEM_ID (9U)
+#define COMMAND_HSEM_PROCESS_ID 12U
 /* USER CODE END PD */
 
 /* Private macros -------------------------------------------------------------*/
@@ -76,7 +77,6 @@ uint8_t UpdateCharData[247];
 uint8_t NotifyCharData[247];
 
 uint8_t SecureReadData;
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -113,16 +113,20 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
     case CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT:
 /* USER CODE BEGIN CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT */
     {
-          char buffer[256] = {0};
-          memcpy(buffer,pNotification->DataTransfered.pPayload,pNotification->DataTransfered.Length);
-          if(pNotification->DataTransfered.Length != 0){
-        	  if(strcmp(buffer,"electrode_voltage")==0){
-        		  sprintf(buffer,"electrode_voltage:%d",(uint16_t)ADC1->JDR1);
-        	  }else{
-        		  parse_command(buffer);
-        	  }
-        	  Custom_STM_App_Update_Char(CUSTOM_STM_CMD_FB_CHAR, (uint8_t *)buffer);
-          }
+
+    	if(HAL_HSEM_Take(COMMAND_HSEM_ID, COMMAND_HSEM_PROCESS_ID)==HAL_OK){
+    		char buffer[256] = {0};
+    		memcpy(buffer,pNotification->DataTransfered.pPayload,pNotification->DataTransfered.Length);
+    		if(pNotification->DataTransfered.Length != 0){
+    		if(strcmp(buffer,"electrode_voltage")==0){
+    			sprintf(buffer,"electrode_voltage:%d",(uint16_t)ADC1->JDR1);
+    		}else{
+    			parse_command(buffer);
+    		}
+			  	Custom_STM_App_Update_Char(CUSTOM_STM_CMD_FB_CHAR, (uint8_t *)buffer);
+    		}
+    		HAL_HSEM_Release(COMMAND_HSEM_ID, COMMAND_HSEM_PROCESS_ID);
+    	}
 	}
 /* USER CODE END CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT */
       break;

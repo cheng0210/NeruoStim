@@ -26,6 +26,7 @@
 #include "app_common.h"
 #include "ble_types.h"
 #include "custom_stm.h"
+#include "command_parse.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -266,6 +267,9 @@ void TIM2_IRQHandler(void)
 					HAL_TIM_Base_Stop_IT(&htim2);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					HAL_HSEM_Release(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID);
+
 					break;
 				// PHASE ONE STATUS
 				case STIM_STATUS_PHASE_ONE:
@@ -274,12 +278,13 @@ void TIM2_IRQHandler(void)
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_PHASE_ONE;
-					//while((SPI1->SR & 1) == 0);
+
 					TIM2->ARR = PHASE_ONE_TIMER;
 					TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
-					if(PHASE_GAP_TIMER > 4){
+					ADC1->CR |= 8;
+					if(PHASE_GAP_TIMER > 8){
 						STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
 					}else{
 						STIM_STATUS = STIM_STATUS_PHASE_TWO;
@@ -287,7 +292,7 @@ void TIM2_IRQHandler(void)
 					break;
 				// INTER PHASE GAP STATUS
 				case STIM_STATUS_INTER_PHASE_GAP:
-
+					ADC1->CR |= 32;
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
@@ -296,7 +301,6 @@ void TIM2_IRQHandler(void)
 					TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
-					ADC1->CR |= 32;
 					STIM_STATUS = STIM_STATUS_PHASE_TWO;
 					break;
 				// PHASE TWO STATUS
@@ -311,7 +315,8 @@ void TIM2_IRQHandler(void)
 					TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
-					if(INTER_STIM_DELAY >= 1){
+					ADC1->CR |= 32;
+					if(STIM_DELAY_TIMER > 8){
 						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
 					}else{
 						STIM_STATUS = STIM_STATUS_PHASE_ONE;
@@ -345,6 +350,7 @@ void TIM2_IRQHandler(void)
 					HAL_TIM_Base_Stop_IT(&htim2);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+					HAL_HSEM_Release(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID);
 					break;
 				case STIM_STATUS_PHASE_ONE:
 					PULSE_PROBE = 1;
@@ -355,7 +361,8 @@ void TIM2_IRQHandler(void)
 						TIM2->CR1 |= 1;
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
-						if(INTER_PHASE_GAP >= 1){
+						ADC1->CR |= 8;
+						if(PHASE_GAP_TIMER > 8){
 							STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
 						}else{
 							STIM_STATUS = STIM_STATUS_PHASE_TWO;
@@ -370,6 +377,7 @@ void TIM2_IRQHandler(void)
 					}
 					break;
 				case STIM_STATUS_INTER_PHASE_GAP:
+					ADC1->CR |= 32;
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
 					TIM2->ARR = PHASE_GAP_TIMER;
@@ -385,7 +393,8 @@ void TIM2_IRQHandler(void)
 					TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
-					if(INTER_STIM_DELAY >= 1){
+					ADC1->CR |= 32;
+					if(STIM_DELAY_TIMER > 8){
 						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
 					}else{
 						STIM_STATUS = STIM_STATUS_PHASE_ONE;
@@ -416,6 +425,9 @@ void TIM2_IRQHandler(void)
 					HAL_TIM_Base_Stop_IT(&htim2);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					HAL_HSEM_Release(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID);
+
 					break;
 				// PHASE ONE STATUS
 				case STIM_STATUS_PHASE_ONE:
@@ -429,7 +441,8 @@ void TIM2_IRQHandler(void)
 					TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
-					if(INTER_PHASE_GAP >= 1){
+					ADC1->CR |= 8;
+					if(PHASE_GAP_TIMER > 8){
 						STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
 					}else{
 						STIM_STATUS = STIM_STATUS_PHASE_TWO;
@@ -437,7 +450,7 @@ void TIM2_IRQHandler(void)
 					break;
 				// INTER PHASE GAP STATUS
 				case STIM_STATUS_INTER_PHASE_GAP:
-
+					ADC1->CR |= 32;
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
@@ -459,7 +472,8 @@ void TIM2_IRQHandler(void)
 					TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
-					if(INTER_STIM_DELAY > 1){
+					ADC1->CR |= 32;
+					if(STIM_DELAY_TIMER > 8){
 						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
 					}else{
 						if(TEMP_PULSE_NUM_IN_BURST > 1){
@@ -516,6 +530,8 @@ void TIM2_IRQHandler(void)
 					HAL_TIM_Base_Stop_IT(&htim2);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					HAL_HSEM_Release(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID);
 					break;
 				// PHASE ONE STATUS
 				case STIM_STATUS_PHASE_ONE:
@@ -532,6 +548,7 @@ void TIM2_IRQHandler(void)
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
+						ADC1->CR |= 8;
 						if(INTER_PHASE_GAP > 2){
 							STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
 						}else{
@@ -548,7 +565,7 @@ void TIM2_IRQHandler(void)
 					break;
 				// INTER PHASE GAP STATUS
 				case STIM_STATUS_INTER_PHASE_GAP:
-
+					ADC1->CR |= 32;
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
@@ -572,6 +589,7 @@ void TIM2_IRQHandler(void)
 
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+					ADC1->CR |= 32;
 					if(INTER_STIM_DELAY > 1){
 						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
 					}else{
