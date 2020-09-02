@@ -16,6 +16,29 @@ void parse_command(char *command){
 			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);
     	}
     }
+    else if(strcmp(result[0],"show_dac")==0){
+		if(result[1] != NULL){
+			int dac_value = atoi(result[1]);
+
+			while((SPI1->SR & 2) == 0);
+			SPI1->DR = dac_value;
+
+			for(int x=0;x<2;x++);//short delay
+
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+		}
+	}
+    else if(strcmp(result[0],"return_idle")==0){
+    	while((SPI1->SR & 2) == 0);
+		SPI1->DR = DAC_GAP;
+
+		for(int x=0;x<2;x++);//short delay
+
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+	}
     else if(strcmp(result[0],"stim_amp")==0){
 		if(result[1] != NULL){
 			STIM_AMP = atoi(result[1]);
