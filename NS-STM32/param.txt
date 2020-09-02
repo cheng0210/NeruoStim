@@ -20,6 +20,7 @@ stimulation_commands:
     enable_record:0 // 0:no; 1:yes
     record_freq:2000 // [1,20000];
     
+    electrode_voltage // it will return the last measured phase one voltage in the format like "electrode_voltage:xxxx"
     show_dac:65535 // [0,65535];
     return_idle // dac will return to DAC_GAP(1.5V)
     
