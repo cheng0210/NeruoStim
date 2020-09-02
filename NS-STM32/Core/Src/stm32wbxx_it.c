@@ -254,6 +254,7 @@ void TIM2_IRQHandler(void)
   /* USER CODE BEGIN TIM2_IRQn 0 */
 	//pause timer2
 	TIM2->CR1 &= 0;
+	TIM2->CNT = 0;
 	switch(STIM_MODE){
 		// UNIFORM CONTINUOUS STIMULATION
 		case STIM_MODE_UNI_CONT:
@@ -263,6 +264,8 @@ void TIM2_IRQHandler(void)
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
 					HAL_TIM_Base_Stop_IT(&htim2);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					break;
 				// PHASE ONE STATUS
 				case STIM_STATUS_PHASE_ONE:
@@ -272,12 +275,11 @@ void TIM2_IRQHandler(void)
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_PHASE_ONE;
 					//while((SPI1->SR & 1) == 0);
-
-					ADC1->CR |= 8;
-
 					TIM2->ARR = PHASE_ONE_TIMER;
 					TIM2->CR1 |= 1;
-					if(INTER_PHASE_GAP >= 1){
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+					if(PHASE_GAP_TIMER > 4){
 						STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
 					}else{
 						STIM_STATUS = STIM_STATUS_PHASE_TWO;
@@ -290,11 +292,11 @@ void TIM2_IRQHandler(void)
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
 					//while((SPI1->SR & 1) == 0);
-
-					ADC1->CR |= 32;
-
 					TIM2->ARR = PHASE_GAP_TIMER;
 					TIM2->CR1 |= 1;
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+					ADC1->CR |= 32;
 					STIM_STATUS = STIM_STATUS_PHASE_TWO;
 					break;
 				// PHASE TWO STATUS
@@ -307,6 +309,8 @@ void TIM2_IRQHandler(void)
 
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					if(INTER_STIM_DELAY >= 1){
 						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
 					}else{
@@ -324,6 +328,8 @@ void TIM2_IRQHandler(void)
 
 					TIM2->ARR = STIM_DELAY_TIMER;
 					TIM2->CR1 |= 1;
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					STIM_STATUS = STIM_STATUS_PHASE_ONE;
 					PULSE_PROBE = 0;	// MARK AS STIMULATION END SO THE STIM_STATUS CAN BE CHANGED TO STOP STATUS
 					break;
@@ -337,6 +343,8 @@ void TIM2_IRQHandler(void)
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
 					HAL_TIM_Base_Stop_IT(&htim2);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					break;
 				case STIM_STATUS_PHASE_ONE:
 					PULSE_PROBE = 1;
@@ -345,6 +353,8 @@ void TIM2_IRQHandler(void)
 						SPI1->DR = TEMP_DAC_PHASE_ONE;
 						TIM2->ARR = PHASE_ONE_TIMER;
 						TIM2->CR1 |= 1;
+						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 						if(INTER_PHASE_GAP >= 1){
 							STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
 						}else{
@@ -355,6 +365,8 @@ void TIM2_IRQHandler(void)
 						SPI1->DR = TEMP_DAC_GAP;
 						HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);
 						HAL_TIM_Base_Stop_IT(&htim2);
+						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					}
 					break;
 				case STIM_STATUS_INTER_PHASE_GAP:
@@ -362,6 +374,8 @@ void TIM2_IRQHandler(void)
 					SPI1->DR = TEMP_DAC_GAP;
 					TIM2->ARR = PHASE_GAP_TIMER;
 					TIM2->CR1 |= 1;
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					STIM_STATUS = STIM_STATUS_PHASE_TWO;
 					break;
 				case STIM_STATUS_PHASE_TWO:
@@ -369,6 +383,8 @@ void TIM2_IRQHandler(void)
 					SPI1->DR = TEMP_DAC_PHASE_TWO;
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					if(INTER_STIM_DELAY >= 1){
 						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
 					}else{
@@ -382,6 +398,8 @@ void TIM2_IRQHandler(void)
 					SPI1->DR = TEMP_DAC_GAP;
 					TIM2->ARR = STIM_DELAY_TIMER;
 					TIM2->CR1 |= 1;
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					STIM_STATUS = STIM_STATUS_PHASE_ONE;
 					TEMP_PULSE_NUM--;
 					PULSE_PROBE = 0;
@@ -396,6 +414,8 @@ void TIM2_IRQHandler(void)
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
 					HAL_TIM_Base_Stop_IT(&htim2);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					break;
 				// PHASE ONE STATUS
 				case STIM_STATUS_PHASE_ONE:
@@ -407,6 +427,8 @@ void TIM2_IRQHandler(void)
 
 					TIM2->ARR = PHASE_ONE_TIMER;
 					TIM2->CR1 |= 1;
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					if(INTER_PHASE_GAP >= 1){
 						STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
 					}else{
@@ -422,6 +444,8 @@ void TIM2_IRQHandler(void)
 
 					TIM2->ARR = PHASE_GAP_TIMER;
 					TIM2->CR1 |= 1;
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					STIM_STATUS = STIM_STATUS_PHASE_TWO;
 					break;
 				// PHASE TWO STATUS
@@ -433,6 +457,8 @@ void TIM2_IRQHandler(void)
 
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					if(INTER_STIM_DELAY > 1){
 						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
 					}else{
@@ -454,6 +480,8 @@ void TIM2_IRQHandler(void)
 
 					TIM2->ARR = STIM_DELAY_TIMER;
 					TIM2->CR1 |= 1;
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					if(TEMP_PULSE_NUM_IN_BURST > 1){
 						STIM_STATUS = STIM_STATUS_PHASE_ONE;
 						TEMP_PULSE_NUM_IN_BURST--;
@@ -470,7 +498,8 @@ void TIM2_IRQHandler(void)
 
 					TIM2->ARR = BURST_DELAY_TIMER;
 					TIM2->CR1 |= 1;
-
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					TEMP_PULSE_NUM_IN_BURST = PULSE_NUM_IN_ONE_BURST;
 					STIM_STATUS = STIM_STATUS_PHASE_ONE;
 
@@ -485,6 +514,8 @@ void TIM2_IRQHandler(void)
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
 					HAL_TIM_Base_Stop_IT(&htim2);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					break;
 				// PHASE ONE STATUS
 				case STIM_STATUS_PHASE_ONE:
@@ -497,7 +528,11 @@ void TIM2_IRQHandler(void)
 
 						TIM2->ARR = PHASE_ONE_TIMER;
 						TIM2->CR1 |= 1;
-						if(INTER_PHASE_GAP >= 1){
+
+						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+						if(INTER_PHASE_GAP > 2){
 							STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
 						}else{
 							STIM_STATUS = STIM_STATUS_PHASE_TWO;
@@ -507,6 +542,8 @@ void TIM2_IRQHandler(void)
 						SPI1->DR = TEMP_DAC_GAP;
 						HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);
 						HAL_TIM_Base_Stop_IT(&htim2);
+						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					}
 					break;
 				// INTER PHASE GAP STATUS
@@ -518,6 +555,9 @@ void TIM2_IRQHandler(void)
 
 					TIM2->ARR = PHASE_GAP_TIMER;
 					TIM2->CR1 |= 1;
+
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					STIM_STATUS = STIM_STATUS_PHASE_TWO;
 					break;
 				// PHASE TWO STATUS
@@ -529,6 +569,9 @@ void TIM2_IRQHandler(void)
 
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
+
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					if(INTER_STIM_DELAY > 1){
 						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
 					}else{
@@ -550,6 +593,9 @@ void TIM2_IRQHandler(void)
 
 					TIM2->ARR = STIM_DELAY_TIMER;
 					TIM2->CR1 |= 1;
+
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					if(TEMP_PULSE_NUM_IN_BURST > 1){
 						STIM_STATUS = STIM_STATUS_PHASE_ONE;
 						TEMP_PULSE_NUM_IN_BURST--;
@@ -566,6 +612,9 @@ void TIM2_IRQHandler(void)
 
 					TIM2->ARR = BURST_DELAY_TIMER;
 					TIM2->CR1 |= 1;
+
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 					TEMP_PULSE_NUM_IN_BURST = PULSE_NUM_IN_ONE_BURST;
 					TEMP_BURST_NUM--;
