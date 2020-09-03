@@ -52,7 +52,8 @@ typedef struct{
 #define BM_REQ_CHAR_SIZE    (3)
 
 /* USER CODE BEGIN PD */
-
+#define COMMAND_HSEM_ID (9U)
+#define COMMAND_HSEM_PROCESS_ID 12U
 /* USER CODE END PD */
 
 /* Private macros ------------------------------------------------------------*/
@@ -144,33 +145,36 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
 
         case EVT_BLUE_GATT_ATTRIBUTE_MODIFIED:
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED */
-        	attribute_modified = (aci_gatt_attribute_modified_event_rp0*)blue_evt->data;
-			if(attribute_modified->Attr_Handle == (CustomContext.CustomCmd_Fb_CharHdle + 2))
-			{
-			  /**
-			   * Descriptor handle
-			   */
-			  return_value = SVCCTL_EvtAckFlowEnable;
-			  /**
-			   * Notify to application
-			   */
-			  if(attribute_modified->Attr_Data[0] & COMSVC_Notification)
-			  {
-				Notification.Custom_Evt_Opcode = CUSTOM_STM_CMD_FB_CHAR_NOTIFY_ENABLED_EVT;
-				Custom_STM_App_Notification(&Notification);
-			  }
-			  else
-			  {
-				Notification.Custom_Evt_Opcode = CUSTOM_STM_CMD_FB_CHAR_NOTIFY_DISABLED_EVT;
-				Custom_STM_App_Notification(&Notification);
-			  }
-			}else if(attribute_modified->Attr_Handle == (CustomContext.CustomSerial_Cmd_CharHdle + 1))
-            {
-              Notification.Custom_Evt_Opcode = CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT;
-              Notification.DataTransfered.Length=attribute_modified->Attr_Data_Length;
-              Notification.DataTransfered.pPayload=attribute_modified->Attr_Data;
-              Custom_STM_App_Notification(&Notification);
-            }
+        	if(HAL_HSEM_Take(COMMAND_HSEM_ID, COMMAND_HSEM_PROCESS_ID)==HAL_OK){
+        		attribute_modified = (aci_gatt_attribute_modified_event_rp0*)blue_evt->data;
+				if(attribute_modified->Attr_Handle == (CustomContext.CustomSerial_Cmd_CharHdle + 1))
+				{
+				  Notification.Custom_Evt_Opcode = CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT;
+				  Notification.DataTransfered.Length=attribute_modified->Attr_Data_Length;
+				  Notification.DataTransfered.pPayload=attribute_modified->Attr_Data;
+				  Custom_STM_App_Notification(&Notification);
+				}else if(attribute_modified->Attr_Handle == (CustomContext.CustomCmd_Fb_CharHdle + 2))
+				{
+				  /**
+				   * Descriptor handle
+				   */
+				  return_value = SVCCTL_EvtAckFlowEnable;
+				  /**
+				   * Notify to application
+				   */
+				  if(attribute_modified->Attr_Data[0] & COMSVC_Notification)
+				  {
+					Notification.Custom_Evt_Opcode = CUSTOM_STM_CMD_FB_CHAR_NOTIFY_ENABLED_EVT;
+					Custom_STM_App_Notification(&Notification);
+				  }
+				  else
+				  {
+					Notification.Custom_Evt_Opcode = CUSTOM_STM_CMD_FB_CHAR_NOTIFY_DISABLED_EVT;
+					Custom_STM_App_Notification(&Notification);
+				  }
+				}
+				HAL_HSEM_Release(COMMAND_HSEM_ID, COMMAND_HSEM_PROCESS_ID);
+        	}
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED */
           break;
         case EVT_BLUE_GATT_READ_PERMIT_REQ :

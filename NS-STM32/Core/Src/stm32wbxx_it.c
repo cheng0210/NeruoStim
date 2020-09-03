@@ -264,9 +264,17 @@ void TIM2_IRQHandler(void)
 				case STIM_STATUS_STOP:
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
-					HAL_TIM_Base_Stop_IT(&htim2);
+					while((SPI1->SR & 1) == 0);
+					if(HAL_TIM_Base_GetState(&htim2)==HAL_TIM_STATE_BUSY){
+						HAL_TIM_Base_Stop_IT(&htim2);
+					}
+
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					if(RAMP_UP && HAL_LPTIM_GetState(&hlptim2)==HAL_LPTIM_STATE_BUSY){
+						HAL_LPTIM_Counter_Stop_IT(&hlptim2);
+					}
 
 					HAL_HSEM_Release(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID);
 
@@ -278,6 +286,7 @@ void TIM2_IRQHandler(void)
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_PHASE_ONE;
+					while((SPI1->SR & 1) == 0);
 
 					TIM2->ARR = PHASE_ONE_TIMER;
 					TIM2->CR1 |= 1;
@@ -296,7 +305,7 @@ void TIM2_IRQHandler(void)
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
-					//while((SPI1->SR & 1) == 0);
+					while((SPI1->SR & 1) == 0);
 					TIM2->ARR = PHASE_GAP_TIMER;
 					TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
@@ -309,7 +318,7 @@ void TIM2_IRQHandler(void)
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_PHASE_TWO;
-					//while((SPI1->SR & 1) == 0);
+					while((SPI1->SR & 1) == 0);
 
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
@@ -329,8 +338,7 @@ void TIM2_IRQHandler(void)
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
-					//while((SPI1->SR & 1) == 0);
-
+					while((SPI1->SR & 1) == 0);
 					TIM2->ARR = STIM_DELAY_TIMER;
 					TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
@@ -347,9 +355,17 @@ void TIM2_IRQHandler(void)
 				case STIM_STATUS_STOP:
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
-					HAL_TIM_Base_Stop_IT(&htim2);
+					while((SPI1->SR & 1) == 0);
+					if(HAL_TIM_Base_GetState(&htim2)==HAL_TIM_STATE_BUSY){
+						HAL_TIM_Base_Stop_IT(&htim2);
+					}
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					if(RAMP_UP && HAL_LPTIM_GetState(&hlptim2)==HAL_LPTIM_STATE_BUSY){
+						HAL_LPTIM_Counter_Stop_IT(&hlptim2);
+					}
+
 					HAL_HSEM_Release(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID);
 					break;
 				case STIM_STATUS_PHASE_ONE:
@@ -357,6 +373,7 @@ void TIM2_IRQHandler(void)
 					if(TEMP_PULSE_NUM > 0){
 						while((SPI1->SR & 2) == 0);
 						SPI1->DR = TEMP_DAC_PHASE_ONE;
+						while((SPI1->SR & 1) == 0);
 						TIM2->ARR = PHASE_ONE_TIMER;
 						TIM2->CR1 |= 1;
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
@@ -370,16 +387,26 @@ void TIM2_IRQHandler(void)
 					}else{
 						while((SPI1->SR & 2) == 0);
 						SPI1->DR = TEMP_DAC_GAP;
-						HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);
-						HAL_TIM_Base_Stop_IT(&htim2);
+						while((SPI1->SR & 1) == 0);
+						PULSE_PROBE = 0;
+						STIM_STATUS = STIM_STATUS_STOP;
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+						if(HAL_TIM_Base_GetState(&htim2)==HAL_TIM_STATE_BUSY){
+							HAL_TIM_Base_Stop_IT(&htim2);
+						}
+
+						if(RAMP_UP && HAL_LPTIM_GetState(&hlptim2)==HAL_LPTIM_STATE_BUSY){
+							HAL_LPTIM_Counter_Stop_IT(&hlptim2);
+						}
+						HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);
 					}
 					break;
 				case STIM_STATUS_INTER_PHASE_GAP:
 					ADC1->CR |= 32;
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
+					while((SPI1->SR & 1) == 0);
 					TIM2->ARR = PHASE_GAP_TIMER;
 					TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
@@ -389,6 +416,7 @@ void TIM2_IRQHandler(void)
 				case STIM_STATUS_PHASE_TWO:
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_PHASE_TWO;
+					while((SPI1->SR & 1) == 0);
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
@@ -405,6 +433,7 @@ void TIM2_IRQHandler(void)
 				case STIM_STATUS_INTER_STIM_DEALY:
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
+					while((SPI1->SR & 1) == 0);
 					TIM2->ARR = STIM_DELAY_TIMER;
 					TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
@@ -422,9 +451,17 @@ void TIM2_IRQHandler(void)
 				case STIM_STATUS_STOP:
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
-					HAL_TIM_Base_Stop_IT(&htim2);
+					while((SPI1->SR & 1) == 0);
+					if(HAL_TIM_Base_GetState(&htim2)==HAL_TIM_STATE_BUSY){
+						HAL_TIM_Base_Stop_IT(&htim2);
+					}
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+
+					if(RAMP_UP && HAL_LPTIM_GetState(&hlptim2)==HAL_LPTIM_STATE_BUSY){
+						HAL_LPTIM_Counter_Stop_IT(&hlptim2);
+					}
 
 					HAL_HSEM_Release(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID);
 
@@ -436,6 +473,7 @@ void TIM2_IRQHandler(void)
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_PHASE_ONE;
+					while((SPI1->SR & 1) == 0);
 
 					TIM2->ARR = PHASE_ONE_TIMER;
 					TIM2->CR1 |= 1;
@@ -454,6 +492,7 @@ void TIM2_IRQHandler(void)
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
+					while((SPI1->SR & 1) == 0);
 
 					TIM2->ARR = PHASE_GAP_TIMER;
 					TIM2->CR1 |= 1;
@@ -467,6 +506,7 @@ void TIM2_IRQHandler(void)
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_PHASE_TWO;
+					while((SPI1->SR & 1) == 0);
 
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
@@ -491,6 +531,7 @@ void TIM2_IRQHandler(void)
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
+					while((SPI1->SR & 1) == 0);
 
 					TIM2->ARR = STIM_DELAY_TIMER;
 					TIM2->CR1 |= 1;
@@ -509,6 +550,7 @@ void TIM2_IRQHandler(void)
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
+					while((SPI1->SR & 1) == 0);
 
 					TIM2->ARR = BURST_DELAY_TIMER;
 					TIM2->CR1 |= 1;
@@ -527,9 +569,18 @@ void TIM2_IRQHandler(void)
 				case STIM_STATUS_STOP:
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
-					HAL_TIM_Base_Stop_IT(&htim2);
+					while((SPI1->SR & 1) == 0);
+
+					if(HAL_TIM_Base_GetState(&htim2)==HAL_TIM_STATE_BUSY){
+						HAL_TIM_Base_Stop_IT(&htim2);
+					}
+
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					if(RAMP_UP && HAL_LPTIM_GetState(&hlptim2)==HAL_LPTIM_STATE_BUSY){
+						HAL_LPTIM_Counter_Stop_IT(&hlptim2);
+					}
 
 					HAL_HSEM_Release(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID);
 					break;
@@ -541,6 +592,7 @@ void TIM2_IRQHandler(void)
 						//WRITE DATA TO DAC
 						while((SPI1->SR & 2) == 0);
 						SPI1->DR = TEMP_DAC_PHASE_ONE;
+						while((SPI1->SR & 1) == 0);
 
 						TIM2->ARR = PHASE_ONE_TIMER;
 						TIM2->CR1 |= 1;
@@ -557,10 +609,19 @@ void TIM2_IRQHandler(void)
 					}else{
 						while((SPI1->SR & 2) == 0);
 						SPI1->DR = TEMP_DAC_GAP;
-						HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);
-						HAL_TIM_Base_Stop_IT(&htim2);
+						while((SPI1->SR & 1) == 0);
+						PULSE_PROBE = 0;
+						STIM_STATUS = STIM_STATUS_STOP;
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+						if(HAL_TIM_Base_GetState(&htim2)==HAL_TIM_STATE_BUSY){
+							HAL_TIM_Base_Stop_IT(&htim2);
+						}
+
+						if(RAMP_UP && HAL_LPTIM_GetState(&hlptim2)==HAL_LPTIM_STATE_BUSY){
+							HAL_LPTIM_Counter_Stop_IT(&hlptim2);
+						}
+						HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);
 					}
 					break;
 				// INTER PHASE GAP STATUS
@@ -569,6 +630,7 @@ void TIM2_IRQHandler(void)
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
+					while((SPI1->SR & 1) == 0);
 
 					TIM2->ARR = PHASE_GAP_TIMER;
 					TIM2->CR1 |= 1;
@@ -583,6 +645,7 @@ void TIM2_IRQHandler(void)
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_PHASE_TWO;
+					while((SPI1->SR & 1) == 0);
 
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
@@ -608,6 +671,7 @@ void TIM2_IRQHandler(void)
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
+					while((SPI1->SR & 1) == 0);
 
 					TIM2->ARR = STIM_DELAY_TIMER;
 					TIM2->CR1 |= 1;
@@ -627,6 +691,7 @@ void TIM2_IRQHandler(void)
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_GAP;
+					while((SPI1->SR & 1) == 0);
 
 					TIM2->ARR = BURST_DELAY_TIMER;
 					TIM2->CR1 |= 1;

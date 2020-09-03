@@ -441,7 +441,13 @@ static void MX_RTC_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN RTC_Init 2 */
+  /* Disable RTC registers write protection */
+    LL_RTC_DisableWriteProtection(RTC);
 
+    LL_RTC_WAKEUP_SetClock(RTC, CFG_RTC_WUCKSEL_DIVIDER);
+
+    /* Enable RTC registers write protection */
+    LL_RTC_EnableWriteProtection(RTC);
   /* USER CODE END RTC_Init 2 */
 
 }
@@ -741,10 +747,10 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 static void Param_Init(void){
 	PHASE_ONE_TIME = 50;// default 10us
-	PHASE_TWO_TIME = 50;// default 10us
+	PHASE_TWO_TIME = 100;// default 10us
 	STIM_AMP = 2000;// default 0uA
-	INTER_PHASE_GAP = 50;//default 0us
-	INTER_STIM_DELAY = 50;//default 0us
+	INTER_PHASE_GAP = 3;//default 0us
+	INTER_STIM_DELAY = 3;//default 0us
 	ANODIC_CATHODIC = 1;//default cathodic
 	STIM_TYPE = 0;//default uniform stim
 	PULSE_NUM = 0;//default 0 is forever in ms

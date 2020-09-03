@@ -10,9 +10,6 @@ void parse_command(char *command){
     	if(HAL_HSEM_IsSemTaken(STIM_HSEM_ID)){
     		while(PULSE_PROBE != 0);
     		STIM_STATUS = STIM_STATUS_STOP;
-			if(RAMP_UP && HAL_LPTIM_GetState(&hlptim2)==HAL_LPTIM_STATE_BUSY){
-				HAL_LPTIM_Counter_Stop_IT(&hlptim2);
-			}
 			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);
     	}
     }
