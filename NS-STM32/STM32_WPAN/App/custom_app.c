@@ -116,11 +116,11 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
     	memset(Rxbuffer,0,256);
 		memcpy(Rxbuffer,pNotification->DataTransfered.pPayload,pNotification->DataTransfered.Length);
 		if(pNotification->DataTransfered.Length != 0){
-		if(strcmp(Rxbuffer,"electrode_voltage")==0){
-			sprintf(Rxbuffer,"electrode_voltage:%d",(uint16_t)ADC1->JDR1);
-		}else{
-			parse_command(Rxbuffer);
-		}
+			if(strcmp(Rxbuffer,"electrode_voltage")==0){
+				sprintf(Rxbuffer,"electrode_voltage:%d",(uint16_t)ADC1->JDR1);
+			}else{
+				parse_command(Rxbuffer);
+			}
 			Custom_STM_App_Update_Char(CUSTOM_STM_CMD_FB_CHAR, (uint8_t *)Rxbuffer);
 		}
 	}

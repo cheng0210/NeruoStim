@@ -52,8 +52,7 @@ typedef struct{
 #define BM_REQ_CHAR_SIZE    (3)
 
 /* USER CODE BEGIN PD */
-#define COMMAND_HSEM_ID (9U)
-#define COMMAND_HSEM_PROCESS_ID 12U
+
 /* USER CODE END PD */
 
 /* Private macros ------------------------------------------------------------*/
@@ -62,8 +61,8 @@ typedef struct{
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-static const uint8_t SizeSerial_Cmd_Char=247;
-static const uint8_t SizeCmd_Fb_Char=247;
+static const uint8_t SizeSerial_Cmd_Char=64;
+static const uint8_t SizeCmd_Fb_Char=64;
 static const uint8_t SizeRec_Stream_Char=240;
 /**
  * START of Section BLE_DRIVER_CONTEXT
@@ -129,7 +128,7 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
   hci_event_pckt *event_pckt;
   evt_blue_aci *blue_evt;
 /* USER CODE BEGIN Custom_STM_Event_Handler_1 */
-  aci_gatt_attribute_modified_event_rp0    * attribute_modified;
+  aci_gatt_write_permit_req_event_rp0    * attribute_modified;
   Custom_STM_App_Notification_evt_t Notification;
 /* USER CODE END Custom_STM_Event_Handler_1 */
 
@@ -145,36 +144,6 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
 
         case EVT_BLUE_GATT_ATTRIBUTE_MODIFIED:
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED */
-        	if(HAL_HSEM_Take(COMMAND_HSEM_ID, COMMAND_HSEM_PROCESS_ID)==HAL_OK){
-        		attribute_modified = (aci_gatt_attribute_modified_event_rp0*)blue_evt->data;
-				if(attribute_modified->Attr_Handle == (CustomContext.CustomSerial_Cmd_CharHdle + 1))
-				{
-				  Notification.Custom_Evt_Opcode = CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT;
-				  Notification.DataTransfered.Length=attribute_modified->Attr_Data_Length;
-				  Notification.DataTransfered.pPayload=attribute_modified->Attr_Data;
-				  Custom_STM_App_Notification(&Notification);
-				}else if(attribute_modified->Attr_Handle == (CustomContext.CustomCmd_Fb_CharHdle + 2))
-				{
-				  /**
-				   * Descriptor handle
-				   */
-				  return_value = SVCCTL_EvtAckFlowEnable;
-				  /**
-				   * Notify to application
-				   */
-				  if(attribute_modified->Attr_Data[0] & COMSVC_Notification)
-				  {
-					Notification.Custom_Evt_Opcode = CUSTOM_STM_CMD_FB_CHAR_NOTIFY_ENABLED_EVT;
-					Custom_STM_App_Notification(&Notification);
-				  }
-				  else
-				  {
-					Notification.Custom_Evt_Opcode = CUSTOM_STM_CMD_FB_CHAR_NOTIFY_DISABLED_EVT;
-					Custom_STM_App_Notification(&Notification);
-				  }
-				}
-				HAL_HSEM_Release(COMMAND_HSEM_ID, COMMAND_HSEM_PROCESS_ID);
-        	}
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED */
           break;
         case EVT_BLUE_GATT_READ_PERMIT_REQ :
@@ -184,6 +153,16 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
           break;
         case EVT_BLUE_GATT_WRITE_PERMIT_REQ:
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ */
+			attribute_modified = (aci_gatt_write_permit_req_event_rp0*)blue_evt->data;
+			if(attribute_modified->Attribute_Handle == (CustomContext.CustomSerial_Cmd_CharHdle + 1))
+			{
+			  Notification.Custom_Evt_Opcode = CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT;
+			  Notification.DataTransfered.Length=attribute_modified->Data_Length;
+			  Notification.DataTransfered.pPayload=attribute_modified->Data;
+			  Custom_STM_App_Notification(&Notification);
+			  aci_gatt_write_resp(attribute_modified->Connection_Handle, attribute_modified->Attribute_Handle, 0, 0, attribute_modified->Data_Length, attribute_modified->Data);
+			}
+			return_value = SVCCTL_EvtAckFlowEnable;
 
           /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ */
           break;
@@ -261,7 +240,7 @@ void SVCCTL_InitCustomSvc(void)
                       SizeSerial_Cmd_Char,
                       CHAR_PROP_WRITE_WITHOUT_RESP,
                       ATTR_PERMISSION_NONE,
-                      GATT_NOTIFY_ATTRIBUTE_WRITE,
+                      GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP,
                       0x10,
                       CHAR_VALUE_LEN_VARIABLE,
                       &(CustomContext.CustomSerial_Cmd_CharHdle));
