@@ -1,4 +1,5 @@
 #MicroXplorer Configuration settings - do not modify
+ADC1.AWD1LowThreshold=455
 STM32_WPAN.GAP_PERIPHERAL_ROLE=1
 PD1.GPIO_Mode=GPIO_MODE_INPUT
 RCC.USART1Freq_Value=64000000
@@ -111,7 +112,7 @@ Dma.ADC1.0.Instance=DMA1_Channel2
 ADC1.Rank-0\#ChannelRegularConversion=1
 Mcu.PinsNb=35
 Dma.ADC1.0.SyncRequestNumber=1
-ADC1.IPParameters=Rank-0\#ChannelRegularConversion,Channel-0\#ChannelRegularConversion,SamplingTime-0\#ChannelRegularConversion,OffsetNumber-0\#ChannelRegularConversion,NbrOfConversionFlag,master,ContinuousConvMode,NbrOfConversion,EnableInjectedConversion,Rank1_Channel,InjNumberOfConversion,InjectedRank-2\#ChannelInjectedConversion,InjectedChannel-2\#ChannelInjectedConversion,InjectedSamplingTime-2\#ChannelInjectedConversion,InjectedOffsetNumber-2\#ChannelInjectedConversion,InjMonitoredBy-2\#ChannelInjectedConversion,ExternalTrigInjecConv,InjectedConvMode,EOCSelection,DMAContinuousRequests,ExternalTrigConv,EnableAnalogWatchDog1,WatchdogChannel,WatchdogMode,AWD1ITMode,AWD1HighThreshold
+ADC1.IPParameters=Rank-0\#ChannelRegularConversion,Channel-0\#ChannelRegularConversion,SamplingTime-0\#ChannelRegularConversion,OffsetNumber-0\#ChannelRegularConversion,NbrOfConversionFlag,master,ContinuousConvMode,NbrOfConversion,EnableInjectedConversion,Rank1_Channel,InjNumberOfConversion,InjectedRank-2\#ChannelInjectedConversion,InjectedChannel-2\#ChannelInjectedConversion,InjectedSamplingTime-2\#ChannelInjectedConversion,InjectedOffsetNumber-2\#ChannelInjectedConversion,InjMonitoredBy-2\#ChannelInjectedConversion,ExternalTrigInjecConv,InjectedConvMode,EOCSelection,DMAContinuousRequests,ExternalTrigConv,EnableAnalogWatchDog1,WatchdogChannel,WatchdogMode,AWD1ITMode,AWD1HighThreshold,AWD1LowThreshold
 PC13.Locked=true
 ADC1.OffsetNumber-0\#ChannelRegularConversion=ADC_OFFSET_NONE
 RCC.HCLK3Freq_Value=64000000
@@ -295,7 +296,7 @@ Mcu.IP13=TIM2
 Mcu.IP15=USART1
 PC14-OSC32_IN.Mode=LSE-External-Oscillator
 RCC.VCOInputFreq_Value=4000000
-ADC1.AWD1HighThreshold=4000
+ADC1.AWD1HighThreshold=3640
 PA14.Mode=Trace_Asynchronous_SW
 File.Version=6
 PB7.Signal=USART1_RX
