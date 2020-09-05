@@ -75,8 +75,6 @@ uint8_t UpdateCharData[247];
 uint8_t NotifyCharData[247];
 
 uint8_t SecureReadData;
-
-char Rxbuffer[64];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -113,15 +111,10 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
     case CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT:
 /* USER CODE BEGIN CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT */
     {
-    	memset(Rxbuffer,0,64);
+    	char *Rxbuffer = calloc(64,sizeof(char));
 		memcpy(Rxbuffer,pNotification->DataTransfered.pPayload,pNotification->DataTransfered.Length);
 		if(pNotification->DataTransfered.Length != 0){
-			if(strcmp(Rxbuffer,"electrode_voltage")==0){
-				sprintf(Rxbuffer,"electrode_voltage:%d",(uint16_t)ADC1->JDR1);
-			}else{
-				parse_command(Rxbuffer);
-			}
-			Custom_STM_App_Update_Char(CUSTOM_STM_CMD_FB_CHAR, (uint8_t *)Rxbuffer);
+			EnQueue(&COMMAND_QUEUE, Rxbuffer);
 		}
 	}
 /* USER CODE END CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT */

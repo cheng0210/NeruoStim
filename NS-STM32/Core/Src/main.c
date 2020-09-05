@@ -147,6 +147,16 @@ int main(void)
   while (1)
   {
 	  UTIL_SEQ_Run( UTIL_SEQ_DEFAULT );
+	  if(IsEmptyQueue(&COMMAND_QUEUE) == 0){
+		  char *command_buffer = calloc(64,sizeof(char));
+		  DeQueue(&COMMAND_QUEUE, command_buffer);
+		  if(strcmp(command_buffer,"electrode_voltage")==0){
+			  sprintf(command_buffer,"electrode_voltage:%d",(uint16_t)ADC1->JDR1);
+		  }else{
+			  parse_command(command_buffer);
+		  }
+		  Custom_STM_App_Update_Char(CUSTOM_STM_CMD_FB_CHAR, (uint8_t *)command_buffer);
+	  }
 	  //HAL_SPI_TransmitReceive(&hspi1, (uint8_t *)& DAC_PHASE_TWO, &h, 1, HAL_MAX_DELAY);
 	  //while( hspi1.State == HAL_SPI_STATE_BUSY );
 
@@ -169,12 +179,6 @@ int main(void)
 //	  SPI1->DR = DAC_GAP;
 //	  while((SPI1->SR & 1<<0) == 0);//wait for recv complete
 //	  for(int i=0;i<3200;i++);
-
-
-	  //HAL_SPI_TransmitReceive(&hspi1, (uint8_t *)& DAC_PHASE_ONE, &h, 1, HAL_MAX_DELAY);
-	  //while( hspi1.State == HAL_SPI_STATE_BUSY );
-
-	  //printf("%d\n",half_word[0]);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -746,6 +750,9 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 static void Param_Init(void){
+
+	InitQueue(&COMMAND_QUEUE);
+
 	PHASE_ONE_TIME = 100;// default 10us
 	PHASE_TWO_TIME = 100;// default 10us
 	STIM_AMP = 2000;// default 0uA

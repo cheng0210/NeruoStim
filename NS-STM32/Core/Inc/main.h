@@ -43,7 +43,14 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "app_common.h"
+#include "dbg_trace.h"
+#include "ble.h"
+#include "custom_app.h"
+#include "custom_stm.h"
+#include "stm32_seq.h"
+#include "command_queue.h"
+#include "command_parse.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -79,6 +86,10 @@ uint32_t INTER_BURST_DELAY;
 uint32_t PULSE_NUM_IN_ONE_BURST;
 uint8_t RAMP_UP;
 uint8_t SHORT_ELECTRODE;
+
+
+Queue COMMAND_QUEUE;
+
 
 typedef struct ADC_DATA{
 	uint16_t data[120];
