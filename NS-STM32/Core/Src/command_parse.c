@@ -11,6 +11,10 @@ void parse_command(char *command){
     		while(PULSE_PROBE != 0);
     		STIM_STATUS = STIM_STATUS_STOP;
 			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);
+			if(ENABLE_RECORD && HAL_TIM_Base_GetState(&htim1) == HAL_TIM_STATE_BUSY){
+				HAL_TIM_Base_Stop(&htim1);
+			}
+
     	}
     }
     else if(strcmp(result[0],"show_dac")==0){
@@ -215,8 +219,10 @@ void parse_command(char *command){
 			}
 
 			//setup sampling rate and enable timer1 to trigger ADC DMA
-			TIM1->ARR = 100000 / RECORD_FREQ;
-			HAL_TIM_Base_Start(&htim1);
+			if(ENABLE_RECORD){
+				TIM1->ARR = 100000 / RECORD_FREQ;
+				HAL_TIM_Base_Start(&htim1);
+			}
 
 			//clear timer2 cnt and enable timer2 with interrupts
 			TIM2->CNT = 0;

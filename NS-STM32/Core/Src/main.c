@@ -746,11 +746,11 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 static void Param_Init(void){
-	PHASE_ONE_TIME = 50;// default 10us
+	PHASE_ONE_TIME = 100;// default 10us
 	PHASE_TWO_TIME = 100;// default 10us
 	STIM_AMP = 2000;// default 0uA
-	INTER_PHASE_GAP = 3;//default 0us
-	INTER_STIM_DELAY = 3;//default 0us
+	INTER_PHASE_GAP = 0;//default 0us
+	INTER_STIM_DELAY = 0;//default 0us
 	ANODIC_CATHODIC = 1;//default cathodic
 	STIM_TYPE = 0;//default uniform stim
 	PULSE_NUM = 0;//default 0 is forever in ms
@@ -766,7 +766,7 @@ static void Param_Init(void){
 	}
 
 	ENABLE_RECORD = 0;
-	RECORD_FREQ = 10000;
+	RECORD_FREQ = 2000;
 	RECORD_START_OFFSET = 0;
 	RECORD_END_OFFSET = 0;
 

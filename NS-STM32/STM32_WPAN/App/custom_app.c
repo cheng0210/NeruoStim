@@ -76,7 +76,7 @@ uint8_t NotifyCharData[247];
 
 uint8_t SecureReadData;
 
-char Rxbuffer[256];
+char Rxbuffer[64];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -113,7 +113,7 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
     case CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT:
 /* USER CODE BEGIN CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT */
     {
-    	memset(Rxbuffer,0,256);
+    	memset(Rxbuffer,0,64);
 		memcpy(Rxbuffer,pNotification->DataTransfered.pPayload,pNotification->DataTransfered.Length);
 		if(pNotification->DataTransfered.Length != 0){
 			if(strcmp(Rxbuffer,"electrode_voltage")==0){

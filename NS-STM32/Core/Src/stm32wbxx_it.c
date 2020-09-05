@@ -236,7 +236,7 @@ void ADC1_IRQHandler(void)
 	  if(RAMP_UP){
 		  HAL_LPTIM_Counter_Stop_IT(&hlptim2);
 	  }
-	  char err_msg[256] = "Electrode voltage exceed threshold!";
+	  char err_msg[64] = "Electrode voltage exceed threshold!";
 	  Custom_STM_App_Update_Char(CUSTOM_STM_CMD_FB_CHAR, (uint8_t *)err_msg);
 	  /* Clear ADC analog watchdog flag */
 	  __HAL_ADC_CLEAR_FLAG(&hadc1, ADC_FLAG_AWD1);
