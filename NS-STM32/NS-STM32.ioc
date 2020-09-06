@@ -1,5 +1,5 @@
 #MicroXplorer Configuration settings - do not modify
-ADC1.AWD1LowThreshold=455
+ADC1.AWD1LowThreshold=0
 STM32_WPAN.GAP_PERIPHERAL_ROLE=1
 PD1.GPIO_Mode=GPIO_MODE_INPUT
 RCC.USART1Freq_Value=64000000

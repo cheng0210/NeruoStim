@@ -111,10 +111,8 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
     case CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT:
 /* USER CODE BEGIN CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT */
     {
-    	char *Rxbuffer = calloc(64,sizeof(char));
-		memcpy(Rxbuffer,pNotification->DataTransfered.pPayload,pNotification->DataTransfered.Length);
 		if(pNotification->DataTransfered.Length != 0){
-			EnQueue(&COMMAND_QUEUE, Rxbuffer);
+			EnQueue(&COMMAND_QUEUE, pNotification->DataTransfered.pPayload,pNotification->DataTransfered.Length);
 		}
 	}
 /* USER CODE END CUSTOM_STM_SERIAL_CMD_CHAR_WRITE_NO_RESP_EVT */

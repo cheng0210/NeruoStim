@@ -1,13 +1,13 @@
 #include "command_queue.h"
 
 void InitQueue(PQueue queue){
-	queue->Front = queue->Rear = (PNODE)malloc(sizeof(NODE));    //    动态创建头节点，使队头，队尾指向该节点
-	//头节点相当于哨兵节点的作用，不存储数据（区别于首节点）
-	if (queue->Front == NULL) {        //    判断内存是否分配成功
-		printf("创建队列，无法分配所需内存...");
+	queue->Front = queue->Rear = (PNODE)malloc(sizeof(NODE));
+	if (queue->Front != NULL) {
+		queue->Front->Next = NULL;
+	}else{
 		//should reboot here
+		HAL_NVIC_SystemReset();
 	}
-	queue->Front->Next = NULL;    //    初始队列头节点指针指向为空
 }
 
 uint8_t IsEmptyQueue(PQueue queue) {
@@ -19,10 +19,10 @@ uint8_t IsEmptyQueue(PQueue queue) {
     }
 }
 
-void EnQueue(PQueue queue,char *commands) {
-    PNODE P = (PNODE)malloc(sizeof(NODE));    //    创建一个新节点用于存放插入的元素
+void EnQueue(PQueue queue, uint8_t *commands,uint8_t commands_len) {
+    PNODE P = (PNODE)calloc(1,sizeof(NODE));
     if (P != NULL) {
-    	memcpy(P->command,commands,64);
+    	memcpy(P->command,commands,commands_len);
 		P->Next = NULL;
 		queue->Rear->Next = P;
 		queue->Rear = P;

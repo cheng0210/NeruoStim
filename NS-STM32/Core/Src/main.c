@@ -318,7 +318,7 @@ static void MX_ADC1_Init(void)
   AnalogWDGConfig.Channel = ADC_CHANNEL_11;
   AnalogWDGConfig.ITMode = ENABLE;
   AnalogWDGConfig.HighThreshold = 3640;
-  AnalogWDGConfig.LowThreshold = 455;
+  AnalogWDGConfig.LowThreshold = 0;
   if (HAL_ADC_AnalogWDGConfig(&hadc1, &AnalogWDGConfig) != HAL_OK)
   {
     Error_Handler();
