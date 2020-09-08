@@ -17,15 +17,14 @@ stimulation_commands:
     inter_burst_delay:0 //[10,2^30-1]
     ramp_up:0 // 0:no; 1:yes
     short_electrode:1 // 0:no; 1:yes
-    enable_record:0 // 0:no; 1:yes
     record_freq:2000 // [1,20000];
+    
+    start_recording
+    stop_recording
     
     electrode_voltage // it will return the last measured phase one voltage in the format like "electrode_voltage:xxxx"
     show_dac:65535 // [0,65535];
     return_idle // dac will return to DAC_GAP(1.5V)
     
-    //haven't implemented
-    record_start_offset:0
-    record_end_offset:0
     
 

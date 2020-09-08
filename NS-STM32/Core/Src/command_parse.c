@@ -11,12 +11,22 @@ void parse_command(char *command){
     		while(PULSE_PROBE != 0);
     		STIM_STATUS = STIM_STATUS_STOP;
 			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);
-			if(ENABLE_RECORD && HAL_TIM_Base_GetState(&htim1) == HAL_TIM_STATE_BUSY){
-				HAL_TIM_Base_Stop(&htim1);
-			}
-
     	}
     }
+    else if(strcmp(result[0],"start_recording")==0){
+    	//setup sampling rate and enable timer1 to trigger ADC DMA
+    	if(ENABLE_RECORD == 0 && HAL_TIM_Base_GetState(&htim1) == HAL_TIM_STATE_READY){
+    		TIM1->ARR = 100000 / RECORD_FREQ;
+			HAL_TIM_Base_Start(&htim1);
+			ENABLE_RECORD = 1;
+    	}
+	}
+    else if(strcmp(result[0],"stop_recording")==0){
+    	if(ENABLE_RECORD && HAL_TIM_Base_GetState(&htim1) == HAL_TIM_STATE_BUSY){
+			HAL_TIM_Base_Stop(&htim1);
+			ENABLE_RECORD = 0;
+		}
+	}
     else if(strcmp(result[0],"show_dac")==0){
 		if(result[1] != NULL){
 			int dac_value = atoi(result[1]);
@@ -117,28 +127,10 @@ void parse_command(char *command){
 			PULSE_NUM_IN_ONE_BURST = atoi(result[1]);
 		}
 	}
-	else if (strcmp(result[0], "enable_record") == 0)
-	{
-		if(result[1] != NULL){
-			ENABLE_RECORD = atoi(result[1]);;
-		}
-	}
     else if (strcmp(result[0], "record_freq") == 0)
 	{
     	if(result[1] != NULL){
     		RECORD_FREQ = atoi(result[1]);;
-		}
-	}
-    else if (strcmp(result[0], "record_start_offset") == 0)
-    {
-    	if(result[1] != NULL){
-    		RECORD_START_OFFSET = atoi(result[1]);;
-		}
-    }
-    else if (strcmp(result[0], "record_end_offset") == 0)
-	{
-    	if(result[1] != NULL){
-    		RECORD_END_OFFSET = atoi(result[1]);;
 		}
 	}
     else if (strcmp(result[0], "dac_phase_one") == 0)
@@ -216,12 +208,6 @@ void parse_command(char *command){
 				TEMP_DAC_PHASE_ONE = DAC_PHASE_ONE;
 				TEMP_DAC_PHASE_TWO = DAC_PHASE_TWO;
 				TEMP_DAC_GAP = DAC_GAP;
-			}
-
-			//setup sampling rate and enable timer1 to trigger ADC DMA
-			if(ENABLE_RECORD){
-				TIM1->ARR = 100000 / RECORD_FREQ;
-				HAL_TIM_Base_Start(&htim1);
 			}
 
 			//clear timer2 cnt and enable timer2 with interrupts
