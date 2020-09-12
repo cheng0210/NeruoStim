@@ -4,6 +4,7 @@ extern TIM_HandleTypeDef htim1;
 extern LPTIM_HandleTypeDef hlptim2;
 extern ADC_HandleTypeDef hadc1;
 void parse_command(char *command){
+#if COMMAND_TYPE == 0
     char **result = split(command,':');
     if (strcmp(result[0], "stop") == 0)
     {
@@ -225,6 +226,9 @@ void parse_command(char *command){
         x++;
     }
     free(result);
+#else
+
+#endif
 }
 
 

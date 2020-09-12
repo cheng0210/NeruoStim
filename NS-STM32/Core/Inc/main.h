@@ -55,6 +55,8 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+#define COMMAND_TYPE 1 //0 IS STRING; 1 IS NUMBER
+
 #define STIM_STATUS_STOP 0
 #define STIM_STATUS_PHASE_ONE 1
 #define STIM_STATUS_INTER_PHASE_GAP 2
