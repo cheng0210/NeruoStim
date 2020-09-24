@@ -269,13 +269,16 @@ void TIM2_IRQHandler(void)
 						HAL_TIM_Base_Stop_IT(&htim2);
 					}
 
+					//toggle LDAC pin
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
+					//disable low-power timer2 if it is enabled
 					if(RAMP_UP && HAL_LPTIM_GetState(&hlptim2)==HAL_LPTIM_STATE_BUSY){
 						HAL_LPTIM_Counter_Stop_IT(&hlptim2);
 					}
 
+					//release lock
 					HAL_HSEM_Release(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID);
 
 					break;
