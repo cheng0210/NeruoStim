@@ -687,11 +687,11 @@ static void Param_Init(void){
 
 	InitQueue(&COMMAND_QUEUE);
 
-	PHASE_ONE_TIME = 100;// default 10us
-	PHASE_TWO_TIME = 100;// default 10us
+	PHASE_ONE_TIME = 10;// default 10us
+	PHASE_TWO_TIME = 10;// default 10us
 	STIM_AMP = 2000;// default 0uA
-	INTER_PHASE_GAP = 0;//default 0us
-	INTER_STIM_DELAY = 0;//default 0us
+	INTER_PHASE_GAP = 3;//default 0us
+	INTER_STIM_DELAY = 3;//default 0us
 	ANODIC_CATHODIC = 1;//default cathodic
 	STIM_TYPE = 0;//default uniform stim
 	PULSE_NUM = 0;//default 0 is forever in ms
@@ -711,8 +711,8 @@ static void Param_Init(void){
 	RECORD_START_OFFSET = 0;
 	RECORD_END_OFFSET = 0;
 
-	DAC_PHASE_ONE = 22767;
-	DAC_PHASE_TWO = 42767; // 16 bits DAC8831
+	DAC_PHASE_ONE = 12767;
+	DAC_PHASE_TWO = 52767; // 16 bits DAC8831
 	DAC_GAP = 32767;
 
 	if(ANODIC_CATHODIC){

@@ -211,6 +211,10 @@ void parse_command(char *command){
 				TEMP_DAC_GAP = DAC_GAP;
 			}
 
+			//WRITE DATA TO DAC
+			while((SPI1->SR & 2) == 0);
+			SPI1->DR = TEMP_DAC_PHASE_ONE;
+
 			//clear timer2 cnt and enable timer2 with interrupts
 			TIM2->CNT = 0;
 			HAL_TIM_Base_Start_IT(&htim2);

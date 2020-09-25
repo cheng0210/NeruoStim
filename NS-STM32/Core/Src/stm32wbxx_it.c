@@ -286,67 +286,79 @@ void TIM2_IRQHandler(void)
 				case STIM_STATUS_PHASE_ONE:
 					PULSE_PROBE = 1;	// MARK AS STIMULATION BEGIN SO THE STIM_STATUS CAN NOT BE CHANGED TO STOP STATUS
 
-					//WRITE DATA TO DAC
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_PHASE_ONE;
-					while((SPI1->SR & 1) == 0);
+					//update DAC
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 					TIM2->ARR = PHASE_ONE_TIMER;
 					TIM2->CR1 |= 1;
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					ADC1->CR |= 8;
 					if(PHASE_GAP_TIMER > 8){
 						STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
+						//WRITE DATA TO DAC
+						while((SPI1->SR & 2) == 0);
+						SPI1->DR = TEMP_DAC_GAP;
 					}else{
 						STIM_STATUS = STIM_STATUS_PHASE_TWO;
+						//WRITE DATA TO DAC
+						while((SPI1->SR & 2) == 0);
+						SPI1->DR = TEMP_DAC_PHASE_TWO;
 					}
 					break;
 				// INTER PHASE GAP STATUS
 				case STIM_STATUS_INTER_PHASE_GAP:
 					ADC1->CR |= 32;
-					//WRITE DATA TO DAC
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_GAP;
-					while((SPI1->SR & 1) == 0);
-					TIM2->ARR = PHASE_GAP_TIMER;
-					TIM2->CR1 |= 1;
+
+					//update DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					TIM2->ARR = PHASE_GAP_TIMER;
+					TIM2->CR1 |= 1;
+
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 2) == 0);
+					SPI1->DR = TEMP_DAC_PHASE_TWO;
+
 					STIM_STATUS = STIM_STATUS_PHASE_TWO;
 					break;
 				// PHASE TWO STATUS
 				case STIM_STATUS_PHASE_TWO:
 
-					//WRITE DATA TO DAC
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_PHASE_TWO;
-					while((SPI1->SR & 1) == 0);
+					//update DAC
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					ADC1->CR |= 32;
+
 					if(STIM_DELAY_TIMER > 8){
 						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
+						//WRITE DATA TO DAC
+						while((SPI1->SR & 2) == 0);
+						SPI1->DR = TEMP_DAC_GAP;
 					}else{
 						STIM_STATUS = STIM_STATUS_PHASE_ONE;
+						//WRITE DATA TO DAC
+						while((SPI1->SR & 2) == 0);
+						SPI1->DR = TEMP_DAC_PHASE_ONE;
 						PULSE_PROBE = 0;	// MARK AS STIMULATION END SO THE STIM_STATUS CAN BE CHANGED TO STOP STATUS
 					}
 					break;
 				// INTER STIM DELAY STATUS
 				case STIM_STATUS_INTER_STIM_DEALY:
 
-					//WRITE DATA TO DAC
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_GAP;
-					while((SPI1->SR & 1) == 0);
-					TIM2->ARR = STIM_DELAY_TIMER;
-					TIM2->CR1 |= 1;
+					//update DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					TIM2->ARR = STIM_DELAY_TIMER;
+					TIM2->CR1 |= 1;
 					STIM_STATUS = STIM_STATUS_PHASE_ONE;
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 2) == 0);
+					SPI1->DR = TEMP_DAC_PHASE_ONE;
 					PULSE_PROBE = 0;	// MARK AS STIMULATION END SO THE STIM_STATUS CAN BE CHANGED TO STOP STATUS
 					break;
 				default: break;
@@ -374,20 +386,23 @@ void TIM2_IRQHandler(void)
 				case STIM_STATUS_PHASE_ONE:
 					PULSE_PROBE = 1;
 					if(TEMP_PULSE_NUM > 0){
-						while((SPI1->SR & 2) == 0);
-						SPI1->DR = TEMP_DAC_PHASE_ONE;
-						while((SPI1->SR & 1) == 0);
-						TIM2->ARR = PHASE_ONE_TIMER;
-						TIM2->CR1 |= 1;
+						//update DAC
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+						TIM2->ARR = PHASE_ONE_TIMER;
+						TIM2->CR1 |= 1;
 						ADC1->CR |= 8;
 						if(PHASE_GAP_TIMER > 8){
+							while((SPI1->SR & 2) == 0);
+							SPI1->DR = TEMP_DAC_GAP;
 							STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
 						}else{
+							while((SPI1->SR & 2) == 0);
+							SPI1->DR = TEMP_DAC_PHASE_TWO;
 							STIM_STATUS = STIM_STATUS_PHASE_TWO;
 						}
-					}else{
+					}else{//stop stimulating
 						while((SPI1->SR & 2) == 0);
 						SPI1->DR = TEMP_DAC_GAP;
 						while((SPI1->SR & 1) == 0);
@@ -407,25 +422,31 @@ void TIM2_IRQHandler(void)
 					break;
 				case STIM_STATUS_INTER_PHASE_GAP:
 					ADC1->CR |= 32;
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_GAP;
-					while((SPI1->SR & 1) == 0);
-					TIM2->ARR = PHASE_GAP_TIMER;
-					TIM2->CR1 |= 1;
+
+					//update DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					TIM2->ARR = PHASE_GAP_TIMER;
+					TIM2->CR1 |= 1;
+
+					while((SPI1->SR & 2) == 0);
+					SPI1->DR = TEMP_DAC_PHASE_TWO;
 					STIM_STATUS = STIM_STATUS_PHASE_TWO;
 					break;
 				case STIM_STATUS_PHASE_TWO:
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_PHASE_TWO;
-					while((SPI1->SR & 1) == 0);
-					TIM2->ARR = PHASE_TWO_TIMER;
-					TIM2->CR1 |= 1;
+
+					//update DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					TIM2->ARR = PHASE_TWO_TIMER;
+					TIM2->CR1 |= 1;
 					ADC1->CR |= 32;
+
 					if(STIM_DELAY_TIMER > 8){
+						while((SPI1->SR & 2) == 0);
+						SPI1->DR = TEMP_DAC_GAP;
 						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
 					}else{
 						STIM_STATUS = STIM_STATUS_PHASE_ONE;
@@ -434,15 +455,19 @@ void TIM2_IRQHandler(void)
 					}
 					break;
 				case STIM_STATUS_INTER_STIM_DEALY:
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_GAP;
-					while((SPI1->SR & 1) == 0);
-					TIM2->ARR = STIM_DELAY_TIMER;
-					TIM2->CR1 |= 1;
+
+					//UPDATE DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
-					STIM_STATUS = STIM_STATUS_PHASE_ONE;
+
 					TEMP_PULSE_NUM--;
+					TIM2->ARR = STIM_DELAY_TIMER;
+					TIM2->CR1 |= 1;
+
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 2) == 0);
+					SPI1->DR = TEMP_DAC_PHASE_ONE;
+					STIM_STATUS = STIM_STATUS_PHASE_ONE;
 					PULSE_PROBE = 0;
 					break;
 				default: break;
@@ -473,56 +498,65 @@ void TIM2_IRQHandler(void)
 				case STIM_STATUS_PHASE_ONE:
 					PULSE_PROBE = 1;	// MARK AS STIMULATION BEGIN SO THE STIM_STATUS CAN NOT BE CHANGED TO STOP STATUS
 
-					//WRITE DATA TO DAC
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_PHASE_ONE;
-					while((SPI1->SR & 1) == 0);
+					//UPDATE DAC
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 					TIM2->ARR = PHASE_ONE_TIMER;
 					TIM2->CR1 |= 1;
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					ADC1->CR |= 8;
 					if(PHASE_GAP_TIMER > 8){
+						//WRITE DATA TO DAC
+						while((SPI1->SR & 2) == 0);
+						SPI1->DR = TEMP_DAC_GAP;
 						STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
 					}else{
+						//WRITE DATA TO DAC
+						while((SPI1->SR & 2) == 0);
+						SPI1->DR = TEMP_DAC_PHASE_TWO;
 						STIM_STATUS = STIM_STATUS_PHASE_TWO;
 					}
 					break;
 				// INTER PHASE GAP STATUS
 				case STIM_STATUS_INTER_PHASE_GAP:
 					ADC1->CR |= 32;
-					//WRITE DATA TO DAC
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_GAP;
-					while((SPI1->SR & 1) == 0);
+
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 					TIM2->ARR = PHASE_GAP_TIMER;
 					TIM2->CR1 |= 1;
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 2) == 0);
+					SPI1->DR = TEMP_DAC_PHASE_TWO;
 					STIM_STATUS = STIM_STATUS_PHASE_TWO;
 					break;
 				// PHASE TWO STATUS
 				case STIM_STATUS_PHASE_TWO:
 
-					//WRITE DATA TO DAC
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_PHASE_TWO;
-					while((SPI1->SR & 1) == 0);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					ADC1->CR |= 32;
 					if(STIM_DELAY_TIMER > 8){
+						//WRITE DATA TO DAC
+						while((SPI1->SR & 2) == 0);
+						SPI1->DR = TEMP_DAC_GAP;
 						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
 					}else{
 						if(TEMP_PULSE_NUM_IN_BURST > 1){
+							//WRITE DATA TO DAC
+							while((SPI1->SR & 2) == 0);
+							SPI1->DR = TEMP_DAC_PHASE_ONE;
 							STIM_STATUS = STIM_STATUS_PHASE_ONE;
 							TEMP_PULSE_NUM_IN_BURST--;
 						}else{
+							//WRITE DATA TO DAC
+							while((SPI1->SR & 2) == 0);
+							SPI1->DR = TEMP_DAC_GAP;
 							STIM_STATUS = STIM_STATUS_INTER_BURST_DELAY;
 						}
 						PULSE_PROBE = 0;	// MARK AS STIMULATION END SO THE STIM_STATUS CAN BE CHANGED TO STOP STATUS
@@ -531,34 +565,39 @@ void TIM2_IRQHandler(void)
 				// INTER STIM DELAY STATUS
 				case STIM_STATUS_INTER_STIM_DEALY:
 
-					//WRITE DATA TO DAC
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_GAP;
-					while((SPI1->SR & 1) == 0);
+
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 					TIM2->ARR = STIM_DELAY_TIMER;
 					TIM2->CR1 |= 1;
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
 					if(TEMP_PULSE_NUM_IN_BURST > 1){
+						//WRITE DATA TO DAC
+						while((SPI1->SR & 2) == 0);
+						SPI1->DR = TEMP_DAC_PHASE_ONE;
 						STIM_STATUS = STIM_STATUS_PHASE_ONE;
 						TEMP_PULSE_NUM_IN_BURST--;
 					}else{
+						//WRITE DATA TO DAC
+						while((SPI1->SR & 2) == 0);
+						SPI1->DR = TEMP_DAC_GAP;
 						STIM_STATUS = STIM_STATUS_INTER_BURST_DELAY;
 					}
 					PULSE_PROBE = 0;	// MARK AS STIMULATION END SO THE STIM_STATUS CAN BE CHANGED TO STOP STATUS
 					break;
 
 				case STIM_STATUS_INTER_BURST_DELAY:
-					//WRITE DATA TO DAC
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_GAP;
-					while((SPI1->SR & 1) == 0);
+
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 					TIM2->ARR = BURST_DELAY_TIMER;
 					TIM2->CR1 |= 1;
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 2) == 0);
+					SPI1->DR = TEMP_DAC_PHASE_ONE;
 					TEMP_PULSE_NUM_IN_BURST = PULSE_NUM_IN_ONE_BURST;
 					STIM_STATUS = STIM_STATUS_PHASE_ONE;
 
@@ -592,21 +631,22 @@ void TIM2_IRQHandler(void)
 					if(TEMP_BURST_NUM > 0){
 						PULSE_PROBE = 1;	// MARK AS STIMULATION BEGIN SO THE STIM_STATUS CAN NOT BE CHANGED TO STOP STATUS
 
-						//WRITE DATA TO DAC
-						while((SPI1->SR & 2) == 0);
-						SPI1->DR = TEMP_DAC_PHASE_ONE;
-						while((SPI1->SR & 1) == 0);
+						//update dac
+						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 						TIM2->ARR = PHASE_ONE_TIMER;
 						TIM2->CR1 |= 1;
 
-						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
-						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
-
 						ADC1->CR |= 8;
-						if(INTER_PHASE_GAP > 2){
+						if(PHASE_GAP_TIMER > 8){
+							while((SPI1->SR & 2) == 0);
+							SPI1->DR = TEMP_DAC_GAP;
 							STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
 						}else{
+							//WRITE DATA TO DAC
+							while((SPI1->SR & 2) == 0);
+							SPI1->DR = TEMP_DAC_PHASE_TWO;
 							STIM_STATUS = STIM_STATUS_PHASE_TWO;
 						}
 					}else{
@@ -630,39 +670,43 @@ void TIM2_IRQHandler(void)
 				// INTER PHASE GAP STATUS
 				case STIM_STATUS_INTER_PHASE_GAP:
 					ADC1->CR |= 32;
-					//WRITE DATA TO DAC
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_GAP;
-					while((SPI1->SR & 1) == 0);
 
-					TIM2->ARR = PHASE_GAP_TIMER;
-					TIM2->CR1 |= 1;
-
+					//UPDATE DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+					TIM2->ARR = PHASE_GAP_TIMER;
+					TIM2->CR1 |= 1;
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 2) == 0);
+					SPI1->DR = TEMP_DAC_PHASE_TWO;
 					STIM_STATUS = STIM_STATUS_PHASE_TWO;
 					break;
 				// PHASE TWO STATUS
 				case STIM_STATUS_PHASE_TWO:
 
-					//WRITE DATA TO DAC
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_PHASE_TWO;
-					while((SPI1->SR & 1) == 0);
+					//UPDATE DAC
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
-
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					ADC1->CR |= 32;
-					if(INTER_STIM_DELAY > 1){
+					if(STIM_DELAY_TIMER > 8){
+						//WRITE DATA TO DAC
+						while((SPI1->SR & 2) == 0);
+						SPI1->DR = TEMP_DAC_GAP;
 						STIM_STATUS = STIM_STATUS_INTER_STIM_DEALY;
 					}else{
 						if(TEMP_PULSE_NUM_IN_BURST > 1){
+							//WRITE DATA TO DAC
+							while((SPI1->SR & 2) == 0);
+							SPI1->DR = TEMP_DAC_PHASE_ONE;
 							STIM_STATUS = STIM_STATUS_PHASE_ONE;
 							TEMP_PULSE_NUM_IN_BURST--;
 						}else{
+							//WRITE DATA TO DAC
+							while((SPI1->SR & 2) == 0);
+							SPI1->DR = TEMP_DAC_GAP;
 							STIM_STATUS = STIM_STATUS_INTER_BURST_DELAY;
 						}
 						PULSE_PROBE = 0;	// MARK AS STIMULATION END SO THE STIM_STATUS CAN BE CHANGED TO STOP STATUS
@@ -671,39 +715,43 @@ void TIM2_IRQHandler(void)
 				// INTER STIM DELAY STATUS
 				case STIM_STATUS_INTER_STIM_DEALY:
 
-					//WRITE DATA TO DAC
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_GAP;
-					while((SPI1->SR & 1) == 0);
+					//UPDATE DAC
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 					TIM2->ARR = STIM_DELAY_TIMER;
 					TIM2->CR1 |= 1;
 
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 					if(TEMP_PULSE_NUM_IN_BURST > 1){
+						//WRITE DATA TO DAC
+						while((SPI1->SR & 2) == 0);
+						SPI1->DR = TEMP_DAC_PHASE_ONE;
 						STIM_STATUS = STIM_STATUS_PHASE_ONE;
 						TEMP_PULSE_NUM_IN_BURST--;
 					}else{
+						//WRITE DATA TO DAC
+						while((SPI1->SR & 2) == 0);
+						SPI1->DR = TEMP_DAC_GAP;
 						STIM_STATUS = STIM_STATUS_INTER_BURST_DELAY;
 					}
 					PULSE_PROBE = 0;	// MARK AS STIMULATION END SO THE STIM_STATUS CAN BE CHANGED TO STOP STATUS
 					break;
 
 				case STIM_STATUS_INTER_BURST_DELAY:
-					//WRITE DATA TO DAC
-					while((SPI1->SR & 2) == 0);
-					SPI1->DR = TEMP_DAC_GAP;
-					while((SPI1->SR & 1) == 0);
 
-					TIM2->ARR = BURST_DELAY_TIMER;
-					TIM2->CR1 |= 1;
-
+					//UPDATE DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
+					TIM2->ARR = BURST_DELAY_TIMER;
+					TIM2->CR1 |= 1;
 					TEMP_PULSE_NUM_IN_BURST = PULSE_NUM_IN_ONE_BURST;
 					TEMP_BURST_NUM--;
+
+					//WRITE DATA TO DAC
+					while((SPI1->SR & 2) == 0);
+					SPI1->DR = TEMP_DAC_PHASE_ONE;
+
 					STIM_STATUS = STIM_STATUS_PHASE_ONE;
 					break;
 				default: break;
