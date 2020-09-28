@@ -131,27 +131,33 @@ void parse_command(char *command){
     else if (strcmp(result[0], "record_freq") == 0)
 	{
     	if(result[1] != NULL){
-    		RECORD_FREQ = atoi(result[1]);;
+    		RECORD_FREQ = atoi(result[1]);
 		}
 	}
     else if (strcmp(result[0], "dac_phase_one") == 0)
     {
     	if(result[1] != NULL){
-    		DAC_PHASE_ONE = atoi(result[1]);;
+    		DAC_PHASE_ONE = atoi(result[1]);
 		}
     }
     else if (strcmp(result[0], "dac_phase_two") == 0)
     {
     	if(result[1] != NULL){
-    		DAC_PHASE_TWO = atoi(result[1]);;
+    		DAC_PHASE_TWO = atoi(result[1]);
 		}
     }
     else if (strcmp(result[0], "dac_gap") == 0)
     {
     	if(result[1] != NULL){
-    		DAC_GAP = atoi(result[1]);;
+    		DAC_GAP = atoi(result[1]);
 		}
-    }else if (strcmp(result[0], "start") == 0)
+    }
+    else if (strcmp(result[0], "bypass_cap") == 0)
+	{
+		if(result[1] != NULL){
+			BYPASS_CAP = atoi(result[1]);
+		}
+	}else if (strcmp(result[0], "start") == 0)
     {
     	//check whether stimulation has been started
     	if(HAL_HSEM_Take(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID)==HAL_OK){
@@ -209,6 +215,12 @@ void parse_command(char *command){
 				TEMP_DAC_PHASE_ONE = DAC_PHASE_ONE;
 				TEMP_DAC_PHASE_TWO = DAC_PHASE_TWO;
 				TEMP_DAC_GAP = DAC_GAP;
+			}
+
+			if(BYPASS_CAP){
+				HAL_GPIO_WritePin(GPIOB, BYPASS_COUPLING_Pin, SET);
+			}else{
+				HAL_GPIO_WritePin(GPIOB, BYPASS_COUPLING_Pin, RESET);
 			}
 
 			//WRITE DATA TO DAC

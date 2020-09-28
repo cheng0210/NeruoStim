@@ -126,6 +126,9 @@ int main(void)
   __HAL_DBGMCU_FREEZE_TIM2();
   __HAL_DBGMCU_FREEZE_TIM1();
 
+  //short elec
+  HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin, SET);
+
   //enable spi
   LL_SPI_Enable(SPI1);
 
@@ -700,6 +703,7 @@ static void Param_Init(void){
 	PULSE_NUM_IN_ONE_BURST = 10;
 	RAMP_UP = 0;
 	SHORT_ELECTRODE = 1;
+	BYPASS_CAP = 0;
 
 	for(int i = 0; i < 100; i++){
 		ADC_BUFFER[0].data[i] = 0;

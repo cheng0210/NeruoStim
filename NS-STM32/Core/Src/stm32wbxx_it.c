@@ -273,6 +273,10 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
+					//short elec
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin, SET);
+
 					//disable low-power timer2 if it is enabled
 					if(RAMP_UP && HAL_LPTIM_GetState(&hlptim2)==HAL_LPTIM_STATE_BUSY){
 						HAL_LPTIM_Counter_Stop_IT(&hlptim2);
@@ -289,6 +293,9 @@ void TIM2_IRQHandler(void)
 					//update DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
 					TIM2->ARR = PHASE_ONE_TIMER;
 					TIM2->CR1 |= 1;
@@ -313,6 +320,9 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin, SET);
+
 					TIM2->ARR = PHASE_GAP_TIMER;
 					TIM2->CR1 |= 1;
 
@@ -328,6 +338,9 @@ void TIM2_IRQHandler(void)
 					//update DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
@@ -353,6 +366,9 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
+
 					TIM2->ARR = STIM_DELAY_TIMER;
 					TIM2->CR1 |= 1;
 					STIM_STATUS = STIM_STATUS_PHASE_ONE;
@@ -377,6 +393,9 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
+
 					if(RAMP_UP && HAL_LPTIM_GetState(&hlptim2)==HAL_LPTIM_STATE_BUSY){
 						HAL_LPTIM_Counter_Stop_IT(&hlptim2);
 					}
@@ -389,6 +408,9 @@ void TIM2_IRQHandler(void)
 						//update DAC
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+						HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+						HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
 						TIM2->ARR = PHASE_ONE_TIMER;
 						TIM2->CR1 |= 1;
@@ -410,6 +432,10 @@ void TIM2_IRQHandler(void)
 						STIM_STATUS = STIM_STATUS_STOP;
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+						HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+						HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
+
 						if(HAL_TIM_Base_GetState(&htim2)==HAL_TIM_STATE_BUSY){
 							HAL_TIM_Base_Stop_IT(&htim2);
 						}
@@ -427,6 +453,9 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin, SET);
+
 					TIM2->ARR = PHASE_GAP_TIMER;
 					TIM2->CR1 |= 1;
 
@@ -439,6 +468,9 @@ void TIM2_IRQHandler(void)
 					//update DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
@@ -459,6 +491,9 @@ void TIM2_IRQHandler(void)
 					//UPDATE DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
 
 					TEMP_PULSE_NUM--;
 					TIM2->ARR = STIM_DELAY_TIMER;
@@ -486,6 +521,9 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
+
 
 					if(RAMP_UP && HAL_LPTIM_GetState(&hlptim2)==HAL_LPTIM_STATE_BUSY){
 						HAL_LPTIM_Counter_Stop_IT(&hlptim2);
@@ -501,6 +539,9 @@ void TIM2_IRQHandler(void)
 					//UPDATE DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
 					TIM2->ARR = PHASE_ONE_TIMER;
 					TIM2->CR1 |= 1;
@@ -524,6 +565,9 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin , SET);
+
 					TIM2->ARR = PHASE_GAP_TIMER;
 					TIM2->CR1 |= 1;
 
@@ -537,6 +581,9 @@ void TIM2_IRQHandler(void)
 
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
@@ -569,6 +616,9 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
+
 					TIM2->ARR = STIM_DELAY_TIMER;
 					TIM2->CR1 |= 1;
 
@@ -591,6 +641,9 @@ void TIM2_IRQHandler(void)
 
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
 
 					TIM2->ARR = BURST_DELAY_TIMER;
 					TIM2->CR1 |= 1;
@@ -620,6 +673,9 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
+
 					if(RAMP_UP && HAL_LPTIM_GetState(&hlptim2)==HAL_LPTIM_STATE_BUSY){
 						HAL_LPTIM_Counter_Stop_IT(&hlptim2);
 					}
@@ -634,6 +690,9 @@ void TIM2_IRQHandler(void)
 						//update dac
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+						HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+						HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
 						TIM2->ARR = PHASE_ONE_TIMER;
 						TIM2->CR1 |= 1;
@@ -657,6 +716,10 @@ void TIM2_IRQHandler(void)
 						STIM_STATUS = STIM_STATUS_STOP;
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+						HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+						HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
+
 						if(HAL_TIM_Base_GetState(&htim2)==HAL_TIM_STATE_BUSY){
 							HAL_TIM_Base_Stop_IT(&htim2);
 						}
@@ -674,6 +737,10 @@ void TIM2_IRQHandler(void)
 					//UPDATE DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin , SET);
+
 					TIM2->ARR = PHASE_GAP_TIMER;
 					TIM2->CR1 |= 1;
 					//WRITE DATA TO DAC
@@ -687,6 +754,9 @@ void TIM2_IRQHandler(void)
 					//UPDATE DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
 					TIM2->ARR = PHASE_TWO_TIMER;
 					TIM2->CR1 |= 1;
@@ -719,6 +789,9 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
+
 					TIM2->ARR = STIM_DELAY_TIMER;
 					TIM2->CR1 |= 1;
 
@@ -742,6 +815,9 @@ void TIM2_IRQHandler(void)
 					//UPDATE DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
+
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
+					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
 
 					TIM2->ARR = BURST_DELAY_TIMER;
 					TIM2->CR1 |= 1;
