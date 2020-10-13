@@ -147,8 +147,8 @@ void Error_Handler(void);
 #define LDAC_GPIO_Port GPIOA
 #define TOGGLE_Pin GPIO_PIN_12
 #define TOGGLE_GPIO_Port GPIOB
-#define BYPASS_COUPLING_Pin GPIO_PIN_13
-#define BYPASS_COUPLING_GPIO_Port GPIOB
+#define STIM_EN_Pin GPIO_PIN_13
+#define STIM_EN_GPIO_Port GPIOB
 #define SHORT_ELECTRODE_Pin GPIO_PIN_14
 #define SHORT_ELECTRODE_GPIO_Port GPIOB
 #define DUMMY_LOAD_Pin GPIO_PIN_15
