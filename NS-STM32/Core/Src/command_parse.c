@@ -152,22 +152,35 @@ void parse_command(char *command){
     		DAC_GAP = atoi(result[1]);
 		}
     }
-    else if (strcmp(result[0], "bypass_cap") == 0)
+    /*else if (strcmp(result[0], "bypass_cap") == 0)
 	{
 		if(result[1] != NULL){
 			BYPASS_CAP = atoi(result[1]);
 		}
-	}else if (strcmp(result[0], "start") == 0)
+	}*/
+	else if (strcmp(result[0], "start") == 0)
     {
     	//check whether stimulation has been started
     	if(HAL_HSEM_Take(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID)==HAL_OK){
 
+    		//enable stim cct
+    		HAL_GPIO_WritePin(GPIOB, STIM_EN_Pin, SET);
+
     		//setup timer's value for each state
-    		PHASE_ONE_TIMER = 4 * PHASE_ONE_TIME;
-			PHASE_TWO_TIMER = 4 * PHASE_TWO_TIME;
-			PHASE_GAP_TIMER = 4 * INTER_PHASE_GAP;
-			STIM_DELAY_TIMER = 4 * INTER_STIM_DELAY;
-			BURST_DELAY_TIMER = 4 * INTER_BURST_DELAY;
+    		PHASE_ONE_TIMER = 4 * (PHASE_ONE_TIME-2);
+			PHASE_TWO_TIMER = 4 * (PHASE_TWO_TIME-2);
+			if(INTER_PHASE_GAP > 2){
+				PHASE_GAP_TIMER = 4 * (INTER_PHASE_GAP-2);
+			}else{
+				PHASE_GAP_TIMER = 4 * INTER_PHASE_GAP;
+			}
+
+			if(INTER_STIM_DELAY > 2){
+				STIM_DELAY_TIMER = 4 * (INTER_STIM_DELAY - 2);
+			}else{
+				STIM_DELAY_TIMER = 4 * INTER_STIM_DELAY;
+			}
+			BURST_DELAY_TIMER = 4 * (INTER_BURST_DELAY - 2);
 
 			//init temp value for pulse num/burst num
 			TEMP_PULSE_NUM = PULSE_NUM;
@@ -217,11 +230,6 @@ void parse_command(char *command){
 				TEMP_DAC_GAP = DAC_GAP;
 			}
 
-			if(BYPASS_CAP){
-				HAL_GPIO_WritePin(GPIOB, BYPASS_COUPLING_Pin, SET);
-			}else{
-				HAL_GPIO_WritePin(GPIOB, BYPASS_COUPLING_Pin, RESET);
-			}
 
 			//WRITE DATA TO DAC
 			while((SPI1->SR & 2) == 0);

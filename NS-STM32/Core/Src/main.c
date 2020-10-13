@@ -757,9 +757,9 @@ static void Param_Init(void){
 	PULSE_NUM_IN_ONE_BURST = 10;
 	RAMP_UP = 0;
 	SHORT_ELECTRODE = 1;
-	BYPASS_CAP = 0;
+	//BYPASS_CAP = 0;
 
-	for(int i = 0; i < 100; i++){
+	for(int i = 0; i < 120; i++){
 		ADC_BUFFER[0].data[i] = 0;
 		ADC_BUFFER[1].data[i] = 0;
 	}
@@ -791,12 +791,21 @@ static void Param_Init(void){
 	STIM_STATUS = 0;
 	PULSE_PROBE = 0;
 
-	// init timer value
-	PHASE_ONE_TIMER = 4 * PHASE_ONE_TIME;
-	PHASE_TWO_TIMER = 4 * PHASE_TWO_TIME;
-	PHASE_GAP_TIMER = 4 * INTER_PHASE_GAP;
-	STIM_DELAY_TIMER = 4 * INTER_STIM_DELAY;
-	BURST_DELAY_TIMER = 4 * INTER_BURST_DELAY;
+	// init timer value(-2us is delay compensation)
+	PHASE_ONE_TIMER = 4 * (PHASE_ONE_TIME-2);
+	PHASE_TWO_TIMER = 4 * (PHASE_TWO_TIME-2);
+	if(INTER_PHASE_GAP > 2){
+		PHASE_GAP_TIMER = 4 * (INTER_PHASE_GAP-2);
+	}else{
+		PHASE_GAP_TIMER = 4 * INTER_PHASE_GAP;
+	}
+
+	if(INTER_STIM_DELAY > 2){
+		STIM_DELAY_TIMER = 4 * (INTER_STIM_DELAY - 2);
+	}else{
+		STIM_DELAY_TIMER = 4 * INTER_STIM_DELAY;
+	}
+	BURST_DELAY_TIMER = 4 * (INTER_BURST_DELAY - 2);
 }
 
 static void Reset_Device( void )
