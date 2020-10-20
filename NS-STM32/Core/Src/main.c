@@ -353,7 +353,7 @@ static void MX_ADC1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN ADC1_Init 2 */
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)ADC_BUFFER, 240);
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)ADC_BUFFER, 150);
   /* USER CODE END ADC1_Init 2 */
 
 }
@@ -747,8 +747,8 @@ static void Param_Init(void){
 	PHASE_ONE_TIME = 10;// default 10us
 	PHASE_TWO_TIME = 10;// default 10us
 	STIM_AMP = 2000;// default 0uA
-	INTER_PHASE_GAP = 3;//default 0us
-	INTER_STIM_DELAY = 3;//default 0us
+	INTER_PHASE_GAP = 10;//default 0us
+	INTER_STIM_DELAY = 10;//default 0us
 	ANODIC_CATHODIC = 1;//default cathodic
 	STIM_TYPE = 0;//default uniform stim
 	PULSE_NUM = 0;//default 0 is forever in ms
@@ -759,7 +759,7 @@ static void Param_Init(void){
 	SHORT_ELECTRODE = 1;
 	//BYPASS_CAP = 0;
 
-	for(int i = 0; i < 120; i++){
+	for(int i = 0; i < 75; i++){
 		ADC_BUFFER[0].data[i] = 0;
 		ADC_BUFFER[1].data[i] = 0;
 	}
@@ -792,7 +792,7 @@ static void Param_Init(void){
 	PULSE_PROBE = 0;
 
 	// init timer value(-2us is delay compensation)
-	PHASE_ONE_TIMER = 4 * (PHASE_ONE_TIME-2);
+	/*PHASE_ONE_TIMER = 4 * (PHASE_ONE_TIME-2);
 	PHASE_TWO_TIMER = 4 * (PHASE_TWO_TIME-2);
 	if(INTER_PHASE_GAP > 2){
 		PHASE_GAP_TIMER = 4 * (INTER_PHASE_GAP-2);
@@ -805,7 +805,13 @@ static void Param_Init(void){
 	}else{
 		STIM_DELAY_TIMER = 4 * INTER_STIM_DELAY;
 	}
-	BURST_DELAY_TIMER = 4 * (INTER_BURST_DELAY - 2);
+	BURST_DELAY_TIMER = 4 * (INTER_BURST_DELAY - 2);*/
+
+	PHASE_ONE_TIMER = 4 * PHASE_ONE_TIME;
+	PHASE_TWO_TIMER = 4 * PHASE_TWO_TIME;
+	PHASE_GAP_TIMER = 4 * INTER_PHASE_GAP;
+	STIM_DELAY_TIMER = 4 * INTER_STIM_DELAY;
+	BURST_DELAY_TIMER = 4 * INTER_BURST_DELAY;
 }
 
 static void Reset_Device( void )

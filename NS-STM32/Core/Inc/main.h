@@ -95,7 +95,7 @@ Queue COMMAND_QUEUE;
 
 
 typedef struct ADC_DATA{
-	uint16_t data[120];
+	uint16_t data[75];
 }ADC_DATA;
 ADC_DATA ADC_BUFFER[2];
 uint8_t ENABLE_RECORD;

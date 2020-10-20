@@ -167,7 +167,7 @@ void parse_command(char *command){
     		HAL_GPIO_WritePin(GPIOB, STIM_EN_Pin, SET);
 
     		//setup timer's value for each state
-    		PHASE_ONE_TIMER = 4 * (PHASE_ONE_TIME-2);
+    		/*PHASE_ONE_TIMER = 4 * (PHASE_ONE_TIME-2);
 			PHASE_TWO_TIMER = 4 * (PHASE_TWO_TIME-2);
 			if(INTER_PHASE_GAP > 2){
 				PHASE_GAP_TIMER = 4 * (INTER_PHASE_GAP-2);
@@ -180,7 +180,36 @@ void parse_command(char *command){
 			}else{
 				STIM_DELAY_TIMER = 4 * INTER_STIM_DELAY;
 			}
-			BURST_DELAY_TIMER = 4 * (INTER_BURST_DELAY - 2);
+			BURST_DELAY_TIMER = 4 * (INTER_BURST_DELAY - 2);*/
+
+    		if(PHASE_ONE_TIME < 9){
+    			PHASE_ONE_TIME = 10;
+    		}
+
+    		if(PHASE_TWO_TIME < 9){
+				PHASE_ONE_TIME = 10;
+			}
+
+    		if(INTER_PHASE_GAP < 5 && INTER_PHASE_GAP != 0){
+    			INTER_PHASE_GAP = 5;
+    		}
+
+    		if(INTER_STIM_DELAY < 5 && INTER_STIM_DELAY != 0){
+				INTER_STIM_DELAY = 5;
+			}
+
+    		if(INTER_BURST_DELAY < 50){
+    			INTER_BURST_DELAY = 50;
+    		}
+
+
+    		PHASE_ONE_TIMER = 4 * (PHASE_ONE_TIME - 1);
+    		PHASE_TWO_TIMER = 4 * (PHASE_TWO_TIME - 1);
+    		PHASE_GAP_TIMER = 4 * INTER_PHASE_GAP;
+    		STIM_DELAY_TIMER = 4 * INTER_STIM_DELAY;
+    		BURST_DELAY_TIMER = 4 * (INTER_BURST_DELAY - 1);
+
+
 
 			//init temp value for pulse num/burst num
 			TEMP_PULSE_NUM = PULSE_NUM;

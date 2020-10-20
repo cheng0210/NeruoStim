@@ -254,7 +254,7 @@ void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
 	//pause timer2
-	TIM2->CR1 &= 0;
+	//TIM2->CR1 &= 0;
 	TIM2->CNT = 0;
 	switch(STIM_MODE){
 		// UNIFORM CONTINUOUS STIMULATION
@@ -295,13 +295,13 @@ void TIM2_IRQHandler(void)
 
 					//update DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					TIM2->ARR = PHASE_ONE_TIMER;
+					//TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
 					HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
-					TIM2->ARR = PHASE_ONE_TIMER;
-					TIM2->CR1 |= 1;
 					ADC1->CR |= 8;
 					if(PHASE_GAP_TIMER > 0){
 						STIM_STATUS = STIM_STATUS_INTER_PHASE_GAP;
@@ -321,13 +321,12 @@ void TIM2_IRQHandler(void)
 
 					//update DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					TIM2->ARR = PHASE_GAP_TIMER;
+					//TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
 					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin, SET);
-
-					TIM2->ARR = PHASE_GAP_TIMER;
-					TIM2->CR1 |= 1;
 
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
@@ -340,13 +339,13 @@ void TIM2_IRQHandler(void)
 
 					//update DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					TIM2->ARR = PHASE_TWO_TIMER;
+					//TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
 					HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
-					TIM2->ARR = PHASE_TWO_TIMER;
-					TIM2->CR1 |= 1;
 					ADC1->CR |= 32;
 
 					if(STIM_DELAY_TIMER > 0){
@@ -367,13 +366,13 @@ void TIM2_IRQHandler(void)
 
 					//update DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					TIM2->ARR = STIM_DELAY_TIMER;
+					//TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
 					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
 
-					TIM2->ARR = STIM_DELAY_TIMER;
-					TIM2->CR1 |= 1;
 					STIM_STATUS = STIM_STATUS_PHASE_ONE;
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
