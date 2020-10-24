@@ -770,6 +770,7 @@ static void Param_Init(void){
 	PULSE_NUM_IN_ONE_BURST = 10;
 	RAMP_UP = 0;
 	SHORT_ELECTRODE = 1;
+	ELEC_OFFSET = 2;
 	//BYPASS_CAP = 0;
 
 	for(int i = 0; i < 75; i++){

@@ -28,6 +28,12 @@ void parse_command(char *command){
 			ENABLE_RECORD = 0;
 		}
 	}
+    else if(strcmp(result[0],"elec_offset")==0){
+    	if(result[1] != NULL){
+			ELEC_OFFSET = atoi(result[1]);
+			PHASE_ONE_SAMPLE_TIMER = PHASE_ONE_TIMER - ELEC_OFFSET;
+		}
+	}
     else if(strcmp(result[0],"show_dac")==0){
 		if(result[1] != NULL){
 			int dac_value = atoi(result[1]);
@@ -209,7 +215,7 @@ void parse_command(char *command){
     		STIM_DELAY_TIMER = 4 * INTER_STIM_DELAY;
     		BURST_DELAY_TIMER = 4 * (INTER_BURST_DELAY - 1);
 
-    		PHASE_ONE_SAMPLE_TIMER = PHASE_ONE_TIMER - 4;
+    		PHASE_ONE_SAMPLE_TIMER = PHASE_ONE_TIMER - ELEC_OFFSET;
 
 			//init temp value for pulse num/burst num
 			TEMP_PULSE_NUM = PULSE_NUM;
