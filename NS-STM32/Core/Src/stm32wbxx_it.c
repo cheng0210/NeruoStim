@@ -412,13 +412,13 @@ void TIM2_IRQHandler(void)
 					if(TEMP_PULSE_NUM > 0){
 						//update DAC
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+						TIM2->ARR = PHASE_ONE_TIMER;
+						TIM2->CCR1 = PHASE_ONE_SAMPLE_TIMER;
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 						HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
 						HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
-						TIM2->ARR = PHASE_ONE_TIMER;
-						TIM2->CR1 |= 1;
 						ADC1->CR |= 8;
 						if(PHASE_GAP_TIMER > 0){
 							while((SPI1->SR & 2) == 0);
@@ -462,7 +462,7 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin, SET);
 
 					TIM2->ARR = PHASE_GAP_TIMER;
-					TIM2->CR1 |= 1;
+					//TIM2->CR1 |= 1;
 
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_PHASE_TWO;
@@ -478,7 +478,7 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
 					TIM2->ARR = PHASE_TWO_TIMER;
-					TIM2->CR1 |= 1;
+					//TIM2->CR1 |= 1;
 					ADC1->CR |= 32;
 
 					if(STIM_DELAY_TIMER > 0){
@@ -502,7 +502,7 @@ void TIM2_IRQHandler(void)
 
 					TEMP_PULSE_NUM--;
 					TIM2->ARR = STIM_DELAY_TIMER;
-					TIM2->CR1 |= 1;
+					//TIM2->CR1 |= 1;
 
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
@@ -546,13 +546,14 @@ void TIM2_IRQHandler(void)
 
 					//UPDATE DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+					TIM2->ARR = PHASE_ONE_TIMER;
+					TIM2->CCR1 = PHASE_ONE_SAMPLE_TIMER;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
 					HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
-					TIM2->ARR = PHASE_ONE_TIMER;
-					TIM2->CR1 |= 1;
+
 					ADC1->CR |= 8;
 					if(PHASE_GAP_TIMER > 0){
 						//WRITE DATA TO DAC
@@ -577,7 +578,7 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin , SET);
 
 					TIM2->ARR = PHASE_GAP_TIMER;
-					TIM2->CR1 |= 1;
+					//TIM2->CR1 |= 1;
 
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
@@ -594,7 +595,7 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
 					TIM2->ARR = PHASE_TWO_TIMER;
-					TIM2->CR1 |= 1;
+					//TIM2->CR1 |= 1;
 					ADC1->CR |= 32;
 					if(STIM_DELAY_TIMER > 0){
 						//WRITE DATA TO DAC
@@ -628,7 +629,7 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
 
 					TIM2->ARR = STIM_DELAY_TIMER;
-					TIM2->CR1 |= 1;
+					//TIM2->CR1 |= 1;
 
 					if(TEMP_PULSE_NUM_IN_BURST > 1){
 						//WRITE DATA TO DAC
@@ -654,7 +655,7 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
 
 					TIM2->ARR = BURST_DELAY_TIMER;
-					TIM2->CR1 |= 1;
+					//TIM2->CR1 |= 1;
 
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
@@ -700,13 +701,13 @@ void TIM2_IRQHandler(void)
 
 						//update dac
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
+						TIM2->ARR = PHASE_ONE_TIMER;
+						TIM2->CCR1 = PHASE_ONE_SAMPLE_TIMER;
 						HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
 						HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin| SHORT_ELECTRODE_Pin |TOGGLE_Pin, RESET);
 						HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
-						TIM2->ARR = PHASE_ONE_TIMER;
-						TIM2->CR1 |= 1;
 
 						ADC1->CR |= 8;
 						if(PHASE_GAP_TIMER > 0){
@@ -753,7 +754,7 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin , SET);
 
 					TIM2->ARR = PHASE_GAP_TIMER;
-					TIM2->CR1 |= 1;
+					//TIM2->CR1 |= 1;
 					//WRITE DATA TO DAC
 					while((SPI1->SR & 2) == 0);
 					SPI1->DR = TEMP_DAC_PHASE_TWO;
@@ -770,7 +771,7 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOB, TOGGLE_Pin, SET);
 
 					TIM2->ARR = PHASE_TWO_TIMER;
-					TIM2->CR1 |= 1;
+					//TIM2->CR1 |= 1;
 					ADC1->CR |= 32;
 					if(STIM_DELAY_TIMER > 0){
 						//WRITE DATA TO DAC
@@ -804,7 +805,7 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
 
 					TIM2->ARR = STIM_DELAY_TIMER;
-					TIM2->CR1 |= 1;
+					//TIM2->CR1 |= 1;
 
 					if(TEMP_PULSE_NUM_IN_BURST > 1){
 						//WRITE DATA TO DAC
@@ -831,7 +832,7 @@ void TIM2_IRQHandler(void)
 					HAL_GPIO_WritePin(GPIOB, DUMMY_LOAD_Pin | SHORT_ELECTRODE_Pin, SET);
 
 					TIM2->ARR = BURST_DELAY_TIMER;
-					TIM2->CR1 |= 1;
+					//TIM2->CR1 |= 1;
 					TEMP_PULSE_NUM_IN_BURST = PULSE_NUM_IN_ONE_BURST;
 					TEMP_BURST_NUM--;
 
