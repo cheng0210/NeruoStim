@@ -209,7 +209,7 @@ void parse_command(char *command){
     		STIM_DELAY_TIMER = 4 * INTER_STIM_DELAY;
     		BURST_DELAY_TIMER = 4 * (INTER_BURST_DELAY - 1);
 
-
+    		PHASE_ONE_SAMPLE_TIMER = PHASE_ONE_TIMER - 4;
 
 			//init temp value for pulse num/burst num
 			TEMP_PULSE_NUM = PULSE_NUM;
@@ -266,6 +266,7 @@ void parse_command(char *command){
 
 			//clear timer2 cnt and enable timer2 with interrupts
 			TIM2->CNT = 0;
+			TIM2->CCER |= 1;
 			HAL_TIM_Base_Start_IT(&htim2);
 
 			//use PB0(LED2) to indicate the start ot stimulation

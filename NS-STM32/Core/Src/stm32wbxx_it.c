@@ -296,6 +296,7 @@ void TIM2_IRQHandler(void)
 					//update DAC
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, RESET);
 					TIM2->ARR = PHASE_ONE_TIMER;
+					TIM2->CCR1 = PHASE_ONE_SAMPLE_TIMER;
 					//TIM2->CR1 |= 1;
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 
