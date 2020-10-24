@@ -30,11 +30,4 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>Utilities</name>
-			<type>2</type>
-			<locationURI>$%7BPROJECT_LOC%7D/Utilities</locationURI>
-		</link>
-	</linkedResources>
 </projectDescription>
