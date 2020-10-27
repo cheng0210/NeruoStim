@@ -145,38 +145,11 @@ int main(void)
   {
 	  UTIL_SEQ_Run( UTIL_SEQ_DEFAULT );
 	  if(IsEmptyQueue(&COMMAND_QUEUE) == 0){
-		  char *command_buffer = calloc(64,sizeof(char));
+		  uint8_t *command_buffer = calloc(5,sizeof(uint8_t));
 		  DeQueue(&COMMAND_QUEUE, command_buffer);
-		  if(strcmp(command_buffer,"electrode_voltage")==0){
-			  memset(command_buffer,0,64);
-			  sprintf(command_buffer,"ev:%d",(uint16_t)ADC1->JDR1);
-		  }else{
-			  parse_command(command_buffer);
-		  }
+		  execute_command(command_buffer);
 		  Custom_STM_App_Update_Char(CUSTOM_STM_CMD_FB_CHAR, (uint8_t *)command_buffer);
 	  }
-	  //HAL_SPI_TransmitReceive(&hspi1, (uint8_t *)& DAC_PHASE_TWO, &h, 1, HAL_MAX_DELAY);
-	  //while( hspi1.State == HAL_SPI_STATE_BUSY );
-
-//	  while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
-//	  SPI1->DR = DAC_PHASE_ONE;
-//	  while((SPI1->SR & 1<<0) == 0);//wait for recv complete
-//	  for(int i=0;i<3200;i++);
-//
-//	  while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
-//	  SPI1->DR = DAC_GAP;
-//	  while((SPI1->SR & 1<<0) == 0);//wait for recv complete
-//	  for(int i=0;i<3200;i++);
-//
-//	  while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
-//	  SPI1->DR = DAC_PHASE_TWO;
-//	  while((SPI1->SR & 1<<0) == 0);//wait for recv complete
-//	  for(int i=0;i<3200;i++);
-//
-//	  while((SPI1->SR & 1<<1) == 0);//wait for tx buf empty
-//	  SPI1->DR = DAC_GAP;
-//	  while((SPI1->SR & 1<<0) == 0);//wait for recv complete
-//	  for(int i=0;i<3200;i++);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

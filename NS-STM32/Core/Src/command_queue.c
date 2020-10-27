@@ -30,10 +30,10 @@ void EnQueue(PQueue queue, uint8_t *commands,uint8_t commands_len) {
     }
 }
 
-void DeQueue(PQueue queue,char *commands) {
+void DeQueue(PQueue queue,uint8_t *commands) {
     if (IsEmptyQueue(queue)!=1) {
     	PNODE  P= queue->Front->Next;
-    	memcpy(commands,P->command,64);
+    	memcpy(commands,P->command,5);
 		queue->Front->Next = P->Next;
 		if (queue->Rear==P)
 			queue->Rear = queue->Front;

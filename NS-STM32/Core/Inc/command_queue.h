@@ -17,7 +17,7 @@ typedef struct QNode {
 void InitQueue(PQueue queue);
 uint8_t IsEmptyQueue(PQueue queue);
 void EnQueue(PQueue queue, uint8_t *commands,uint8_t commands_len);
-void DeQueue(PQueue queue,char *commands);
+void DeQueue(PQueue queue,uint8_t *commands);
 void DestroyQueue(PQueue queue);
 
 
