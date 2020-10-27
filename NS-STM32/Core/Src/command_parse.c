@@ -14,7 +14,7 @@ void parse_command(char *command){
 			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);
     	}
     }
-    else if(strcmp(result[0],"start_recording")==0){
+    else if(strcmp(result[0],"b"/*"start_recording"*/)==0){
     	//setup sampling rate and enable timer1 to trigger ADC DMA
     	if(ENABLE_RECORD == 0 && HAL_TIM_Base_GetState(&htim1) == HAL_TIM_STATE_READY){
     		TIM1->ARR = 100000 / RECORD_FREQ;
@@ -22,7 +22,7 @@ void parse_command(char *command){
 			ENABLE_RECORD = 1;
     	}
 	}
-    else if(strcmp(result[0],"stop_recording")==0){
+    else if(strcmp(result[0],"c"/*"stop_recording"*/)==0){
     	if(ENABLE_RECORD && HAL_TIM_Base_GetState(&htim1) == HAL_TIM_STATE_BUSY){
 			HAL_TIM_Base_Stop(&htim1);
 			ENABLE_RECORD = 0;
@@ -62,73 +62,73 @@ void parse_command(char *command){
 			STIM_AMP = atoi(result[1]);
 		}
 	}
-	else if (strcmp(result[0], "stim_type")==0)
+	else if (strcmp(result[0], "e"/*"stim_type"*/)==0)
 	{
 		if(result[1] != NULL){
 			STIM_TYPE = atoi(result[1]);
 		}
 	}
-	else if (strcmp(result[0], "anodic_cathodic")==0)
+	else if (strcmp(result[0], "f"/*"anodic_cathodic"*/)==0)
 	{
 		if(result[1] != NULL){
 			ANODIC_CATHODIC = atoi(result[1]);
 		}
 	}
-	else if (strcmp(result[0], "phase_one_time")==0)
+	else if (strcmp(result[0],"g"/* "phase_one_time"*/)==0)
 	{
 		if(result[1] != NULL){
 			PHASE_ONE_TIME = atoi(result[1]);
 		}
 	}
-	else if (strcmp(result[0], "inter_phase_gap")==0)
+	else if (strcmp(result[0],"h"/* "inter_phase_gap"*/)==0)
 	{
 		if(result[1] != NULL){
 			INTER_PHASE_GAP = atoi(result[1]);
 		}
 	}
-	else if (strcmp(result[0], "phase_two_time")==0)
+	else if (strcmp(result[0],"i"/* "phase_two_time"*/)==0)
 	{
 		if(result[1] != NULL){
 			PHASE_TWO_TIME = atoi(result[1]);
 		}
 	}
-	else if (strcmp(result[0], "inter_stim_delay")==0)
+	else if (strcmp(result[0],"j"/* "inter_stim_delay"*/)==0)
 	{
 		if(result[1] != NULL){
 			INTER_STIM_DELAY = atoi(result[1]);
 		}
 	}
-	else if (strcmp(result[0], "pulse_num")==0)
+	else if (strcmp(result[0],"k"/* "pulse_num"*/)==0)
 	{
 		if(result[1] != NULL){
 			PULSE_NUM = atoi(result[1]);
 		}
 	}
-	else if (strcmp(result[0], "burst_num")==0)
+	else if (strcmp(result[0],"l"/* "burst_num"*/)==0)
 	{
 		if(result[1] != NULL){
 			BURST_NUM = atoi(result[1]);
 		}
 	}
-	else if (strcmp(result[0], "inter_burst_delay")==0)
+	else if (strcmp(result[0],"m" /*"inter_burst_delay"*/)==0)
 	{
 		if(result[1] != NULL){
 			INTER_BURST_DELAY = atoi(result[1]);
 		}
 	}
-	else if (strcmp(result[0], "ramp_up") == 0)
+	else if (strcmp(result[0],"n"/* "ramp_up"*/) == 0)
 	{
 		if(result[1] != NULL){
 			RAMP_UP = atoi(result[1]);
 		}
 	}
-	else if (strcmp(result[0], "short_electrode") == 0)
+	else if (strcmp(result[0], "o"/*"short_electrode"*/) == 0)
 	{
 		if(result[1] != NULL){
 			SHORT_ELECTRODE = atoi(result[1]);
 		}
 	}
-	else if (strcmp(result[0], "pulse_num_in_one_burst") == 0)
+	else if (strcmp(result[0],"p"/* "pulse_num_in_one_burst"*/) == 0)
 	{
 		if(result[1] != NULL){
 			PULSE_NUM_IN_ONE_BURST = atoi(result[1]);
@@ -140,13 +140,13 @@ void parse_command(char *command){
     		RECORD_FREQ = atoi(result[1]);
 		}
 	}
-    else if (strcmp(result[0], "dac_phase_one") == 0)
+    else if (strcmp(result[0], "q"/*"dac_phase_one"*/) == 0)
     {
     	if(result[1] != NULL){
     		DAC_PHASE_ONE = atoi(result[1]);
 		}
     }
-    else if (strcmp(result[0], "dac_phase_two") == 0)
+    else if (strcmp(result[0],"r"/* "dac_phase_two"*/) == 0)
     {
     	if(result[1] != NULL){
     		DAC_PHASE_TWO = atoi(result[1]);

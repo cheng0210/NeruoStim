@@ -132,8 +132,6 @@ int main(void)
   //enable spi
   LL_SPI_Enable(SPI1);
 
-  //calibrate adc1
-  HAL_ADCEx_Calibration_Start(&hadc1,ADC_SINGLE_ENDED);
 
   /* USER CODE END 2 */
 
@@ -150,7 +148,8 @@ int main(void)
 		  char *command_buffer = calloc(64,sizeof(char));
 		  DeQueue(&COMMAND_QUEUE, command_buffer);
 		  if(strcmp(command_buffer,"electrode_voltage")==0){
-			  sprintf(command_buffer,"electrode_voltage:%d",(uint16_t)ADC1->JDR1);
+			  memset(command_buffer,0,64);
+			  sprintf(command_buffer,"ev:%d",(uint16_t)ADC1->JDR1);
 		  }else{
 			  parse_command(command_buffer);
 		  }
@@ -337,7 +336,7 @@ static void MX_ADC1_Init(void)
   */
   sConfigInjected.InjectedChannel = ADC_CHANNEL_7;
   sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1;
-  sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_24CYCLES_5;
   sConfigInjected.InjectedSingleDiff = ADC_SINGLE_ENDED;
   sConfigInjected.InjectedOffsetNumber = ADC_OFFSET_NONE;
   sConfigInjected.InjectedOffset = 0;
@@ -345,7 +344,7 @@ static void MX_ADC1_Init(void)
   sConfigInjected.InjectedDiscontinuousConvMode = DISABLE;
   sConfigInjected.AutoInjectedConv = DISABLE;
   sConfigInjected.QueueInjectedContext = DISABLE;
-  sConfigInjected.ExternalTrigInjecConv = ADC_EXTERNALTRIGINJEC_T2_CC1;
+  sConfigInjected.ExternalTrigInjecConv = ADC_EXTERNALTRIGINJEC_T2_TRGO;
   sConfigInjected.ExternalTrigInjecConvEdge = ADC_EXTERNALTRIGINJECCONV_EDGE_RISING;
   sConfigInjected.InjecOversamplingMode = DISABLE;
   if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
@@ -353,6 +352,10 @@ static void MX_ADC1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN ADC1_Init 2 */
+
+  //calibrate adc1
+  HAL_ADCEx_Calibration_Start(&hadc1,ADC_SINGLE_ENDED);
+
   HAL_ADC_Start_DMA(&hadc1, (uint32_t *)ADC_BUFFER, 150);
   /* USER CODE END ADC1_Init 2 */
 
@@ -610,21 +613,22 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_OC1REF;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.OCMode = TIM_OCMODE_PWM2;
   sConfigOC.Pulse = 0xffffffff;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
   }
   /* USER CODE BEGIN TIM2_Init 2 */
+  __HAL_TIM_DISABLE_OCxPRELOAD(&htim2, TIM_CHANNEL_1);
 
   /* USER CODE END TIM2_Init 2 */
 
@@ -770,7 +774,7 @@ static void Param_Init(void){
 	PULSE_NUM_IN_ONE_BURST = 10;
 	RAMP_UP = 0;
 	SHORT_ELECTRODE = 1;
-	ELEC_OFFSET = 2;
+	ELEC_OFFSET = 4;
 	//BYPASS_CAP = 0;
 
 	for(int i = 0; i < 75; i++){
