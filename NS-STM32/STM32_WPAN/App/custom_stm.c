@@ -61,8 +61,8 @@ typedef struct{
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-static const uint8_t SizeSerial_Cmd_Char=64;
-static const uint8_t SizeCmd_Fb_Char=64;
+static const uint8_t SizeSerial_Cmd_Char=5;
+static const uint8_t SizeCmd_Fb_Char=5;
 static const uint8_t SizeRec_Stream_Char=240;
 /**
  * START of Section BLE_DRIVER_CONTEXT
@@ -242,7 +242,7 @@ void SVCCTL_InitCustomSvc(void)
                       ATTR_PERMISSION_NONE,
                       GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP,
                       0x10,
-                      CHAR_VALUE_LEN_VARIABLE,
+                      CHAR_VALUE_LEN_CONSTANT,
                       &(CustomContext.CustomSerial_Cmd_CharHdle));
     /**
      *  COMMAND_FEEDBACK_CHAR
@@ -255,7 +255,7 @@ void SVCCTL_InitCustomSvc(void)
                       ATTR_PERMISSION_NONE,
                       GATT_NOTIFY_ATTRIBUTE_WRITE,
                       0x10,
-                      CHAR_VALUE_LEN_VARIABLE,
+                      CHAR_VALUE_LEN_CONSTANT,
                       &(CustomContext.CustomCmd_Fb_CharHdle));
 
     /*
