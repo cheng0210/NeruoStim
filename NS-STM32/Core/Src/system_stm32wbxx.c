@@ -161,12 +161,10 @@
   const uint32_t MSIRangeTable[16UL] = {100000UL, 200000UL, 400000UL, 800000UL, 1000000UL, 2000000UL, \
                                       4000000UL, 8000000UL, 16000000UL, 24000000UL, 32000000UL, 48000000UL, 0UL, 0UL, 0UL, 0UL}; /* 0UL values are incorrect cases */
 
-#if defined(STM32WB55xx) || defined(STM32WB5Mxx) || defined(STM32WB35xx)
   const uint32_t SmpsPrescalerTable[4UL][6UL]={{1UL,3UL,2UL,2UL,1UL,2UL}, \
                                         {2UL,6UL,4UL,3UL,2UL,4UL}, \
                                         {4UL,12UL,8UL,6UL,4UL,8UL}, \
                                         {4UL,12UL,8UL,6UL,4UL,8UL}};
-#endif
 
 /**
   * @}
@@ -192,12 +190,11 @@
 void SystemInit(void)
 {
   /* Configure the Vector Table location add offset address ------------------*/
-#if defined(VECT_TAB_SRAM) && defined(VECT_TAB_BASE_ADDRESS)  
-  /* program in SRAMx */
-  SCB->VTOR = VECT_TAB_BASE_ADDRESS | VECT_TAB_OFFSET;  /* Vector Table Relocation in Internal SRAMx for CPU1 */
-#else    /* program in FLASH */
-  SCB->VTOR = VECT_TAB_OFFSET;              /* Vector Table Relocation in Internal FLASH */
-#endif
+  /**
+   * When the application is expected to be downloaded by OTA, the SCB->VTOR shall not be modified
+   * as it has already been set to the correct value by the BLE_Ota application before jumping
+   * to the current application
+   */
 
   /* FPU settings ------------------------------------------------------------*/
   #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
@@ -223,11 +220,9 @@ void SystemInit(void)
   /* Reset PLLCFGR register */
   RCC->PLLCFGR = 0x22041000U;
 
-#if defined(STM32WB55xx) || defined(STM32WB5Mxx)
   /* Reset PLLSAI1CFGR register */
   RCC->PLLSAI1CFGR = 0x22041000U;
-#endif
-  
+
   /* Reset HSEBYP bit */
   RCC->CR &= 0xFFFBFFFFU;
 
