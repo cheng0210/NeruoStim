@@ -152,8 +152,11 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
 			{
 			  BLE_DBG_P2P_STM_MSG("-- GATT : REBOOT REQUEST RECEIVED\n");
 			  Notification.Custom_Evt_Opcode = CUSTOM_STM_OTA_REQ_WRITE_NO_RESP_EVT;
-			  Notification.DataTransfered.Length=attribute_modified->Data_Length;
-			  Notification.DataTransfered.pPayload=attribute_modified->Data;
+			  Notification.DataTransfered.Length=3;
+			  Notification.DataTransfered.pPayload = calloc(3,sizeof(uint8_t));
+			  Notification.DataTransfered.pPayload[0]=attribute_modified->Data[3];
+			  Notification.DataTransfered.pPayload[1]=attribute_modified->Data[4];
+			  Notification.DataTransfered.pPayload[2]=attribute_modified->Data[5];
 			  Custom_STM_App_Notification(&Notification);
 			}
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED */

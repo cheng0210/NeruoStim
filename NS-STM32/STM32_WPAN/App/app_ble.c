@@ -705,7 +705,7 @@ static void Ble_Hci_Gap_Gatt_Init(void){
 static void Adv_Request(APP_BLE_ConnStatus_t New_Status)
 {
   tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
-
+  const char local_name[] = { AD_TYPE_COMPLETE_LOCAL_NAME ,'N','e','u','r','o','S','T'};
     BleApplicationContext.Device_Connection_Status = New_Status;
     /* Start Fast or Low Power Advertising */
     ret = aci_gap_set_discoverable(
@@ -714,8 +714,8 @@ static void Adv_Request(APP_BLE_ConnStatus_t New_Status)
         CFG_FAST_CONN_ADV_INTERVAL_MAX,
         BLE_ADDR_TYPE,
         ADV_FILTER,
-        0,
-        0,
+		sizeof(local_name),
+		(uint8_t*) &local_name,
         0,
         0,
         0,
