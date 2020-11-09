@@ -13,7 +13,7 @@ void execute_command(uint8_t *command){
 			if(HAL_HSEM_Take(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID)==HAL_OK){
 
 				//enable stim cct
-				HAL_GPIO_WritePin(GPIOB, STIM_EN_Pin, SET);
+				HAL_GPIO_WritePin(STIM_EN_GPIO_Port, STIM_EN_Pin, SET);
 
 
 				//make sure all param are satisfy requirememt

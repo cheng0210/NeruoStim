@@ -283,7 +283,7 @@ void TIM2_IRQHandler(void)
 					}
 
 					//disable stim cct
-					HAL_GPIO_WritePin(GPIOB, STIM_EN_Pin, RESET);
+					HAL_GPIO_WritePin(STIM_EN_GPIO_Port, STIM_EN_Pin, RESET);
 
 					//release lock
 					HAL_HSEM_Release(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID);
@@ -403,7 +403,7 @@ void TIM2_IRQHandler(void)
 						HAL_LPTIM_Counter_Stop_IT(&hlptim2);
 					}
 					//disable stim cct
-					HAL_GPIO_WritePin(GPIOB, STIM_EN_Pin, RESET);
+					HAL_GPIO_WritePin(STIM_EN_GPIO_Port, STIM_EN_Pin, RESET);
 
 					HAL_HSEM_Release(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID);
 					break;
@@ -535,7 +535,7 @@ void TIM2_IRQHandler(void)
 					}
 
 					//disable stim cct
-					HAL_GPIO_WritePin(GPIOB, STIM_EN_Pin, RESET);
+					HAL_GPIO_WritePin(STIM_EN_GPIO_Port, STIM_EN_Pin, RESET);
 
 					HAL_HSEM_Release(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID);
 
@@ -690,7 +690,7 @@ void TIM2_IRQHandler(void)
 					}
 
 					//disable stim cct
-					HAL_GPIO_WritePin(GPIOB, STIM_EN_Pin, RESET);
+					HAL_GPIO_WritePin(STIM_EN_GPIO_Port, STIM_EN_Pin, RESET);
 
 					HAL_HSEM_Release(STIM_HSEM_ID, STIM_HSEM_PROCESS_ID);
 					break;
