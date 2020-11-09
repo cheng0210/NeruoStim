@@ -144,7 +144,8 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
 
     case CUSTOM_STM_OTA_REQ_WRITE_NO_RESP_EVT:
 /* USER CODE BEGIN CUSTOM_STM_OTA_REQ_WRITE_NO_RESP_EVT */
-
+    	 *(uint32_t*)SRAM1_BASE = *(uint32_t*)pNotification->DataTransfered.pPayload;
+		  NVIC_SystemReset();
 /* USER CODE END CUSTOM_STM_OTA_REQ_WRITE_NO_RESP_EVT */
       break;
 
