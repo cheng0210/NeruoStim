@@ -200,6 +200,11 @@ void execute_command(uint8_t *command){
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, SET);
 			break;
 		case 0x19:
+			if(STIM_STATUS == STIM_STATUS_STOP){
+				command[4] = 1;
+			}else{
+				command[4] = 2;
+			}
 			break;
 		default:break;
 	}

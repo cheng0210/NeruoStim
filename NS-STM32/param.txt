@@ -29,5 +29,7 @@ stimulation_commands:
     show_dac:65535 // [0,65535]; //0x17 ffffffff
     return_idle // dac will return to DAC_GAP(1.5V) 0x18 00000000
     
+    check_state:0 //0x19 0000000x  1 is idle, 2 is running; this one also can be used to check connection
+    
     
 
